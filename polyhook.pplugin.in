@@ -1,0 +1,1722 @@
+{
+  "$schema": "https://raw.githubusercontent.com/untrustedmodders/plugify/refs/heads/main/schemas/plugin.schema.json",
+  "fileVersion": 1,
+  "version": "${POLYHOOK_VERSION}",
+  "friendlyName": "PolyHook API",
+  "description": "The x86/x64 API Hooking Library.",
+  "createdBy": "stevemk14ebr",
+  "createdByURL": "https://github.com/stevemk14ebr/PolyHook_2_0",
+  "docsURL": "https://github.com/stevemk14ebr/PolyHook_2_0",
+  "downloadURL": "https://github.com/untrustedmodders/polyhook/releases/download/v${POLYHOOK_VERSION}/${POLYHOOK_PACKAGE}.zip",
+  "updateURL": "https://untrustedmodders.github.com/polyhook/polyhook.json",
+  "entryPoint": "bin/polyhook",
+  "supportedPlatforms": [],
+  "languageModule": {
+    "name": "cpp"
+  },
+  "dependencies": [],
+  "exportedMethods": [
+    {
+      "name": "HookDetour",
+      "group": "Core",
+      "description": "Sets a detour hook",
+      "funcName": "HookDetour",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "pFunc",
+          "description": "Function address"
+        },
+        {
+          "type": "uint8",
+          "name": "returnType",
+          "description": "Return type",
+		  "enum": {
+			"name": "DataType",
+			"description": "Enum representing different data types in the system.",
+			"values": [
+			  {
+				"value": 0,
+				"name": "Void",
+				"description": "Represents no data type (void)."
+			  },
+			  {
+				"value": 1,
+				"name": "Bool",
+				"description": "Represents a boolean data type (true or false)."
+			  },
+			  {
+				"value": 2,
+				"name": "Int8",
+				"description": "Represents an 8-bit signed integer."
+			  },
+			  {
+				"value": 3,
+				"name": "UInt8",
+				"description": "Represents an 8-bit unsigned integer."
+			  },
+			  {
+				"value": 4,
+				"name": "Int16",
+				"description": "Represents a 16-bit signed integer."
+			  },
+			  {
+				"value": 5,
+				"name": "UInt16",
+				"description": "Represents a 16-bit unsigned integer."
+			  },
+			  {
+				"value": 6,
+				"name": "Int32",
+				"description": "Represents a 32-bit signed integer."
+			  },
+			  {
+				"value": 7,
+				"name": "UInt32",
+				"description": "Represents a 32-bit unsigned integer."
+			  },
+			  {
+				"value": 8,
+				"name": "Int64",
+				"description": "Represents a 64-bit signed integer."
+			  },
+			  {
+				"value": 9,
+				"name": "UInt64",
+				"description": "Represents a 64-bit unsigned integer."
+			  },
+			  {
+				"value": 10,
+				"name": "Float",
+				"description": "Represents a 32-bit floating point number."
+			  },
+			  {
+				"value": 11,
+				"name": "Double",
+				"description": "Represents a 64-bit double precision floating point number."
+			  },
+			  {
+				"value": 12,
+				"name": "Pointer",
+				"description": "Represents a pointer to any type of data."
+			  },
+			  {
+				"value": 13,
+				"name": "String",
+				"description": "Represents a string data type."
+			  }
+			]
+		  }
+        },
+        {
+          "type": "uint8[]",
+          "name": "arguments",
+          "description": "Arguments type array",
+		  "enum": {
+			"name": "DataType"
+		  }
+        }
+      ],
+      "retType": {
+        "type": "ptr64",
+        "description": "Returns hook pointer"
+      }
+    },
+    {
+      "name": "HookVirtual",
+      "group": "Core",
+      "description": "Sets a virtual hook",
+      "funcName": "HookVirtual",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "pClass",
+          "description": "Object pointer"
+        },
+        {
+          "type": "int32",
+          "name": "index",
+          "description": "Vtable offset"
+        },
+        {
+          "type": "uint8",
+          "name": "returnType",
+          "description": "Return type",
+		  "enum": {
+			"name": "DataType"
+		  }
+        },
+        {
+          "type": "uint8[]",
+          "name": "arguments",
+          "description": "Arguments type array",
+		  "enum": {
+			"name": "DataType"
+		  }
+        }
+      ],
+      "retType": {
+        "type": "ptr64",
+        "description": "Returns hook pointer"
+      }
+    },
+    {
+      "name": "HookVirtualByFunc",
+      "group": "Core",
+      "description": "Sets a virtual hook by pointer",
+      "funcName": "HookVirtualByFunc",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "pClass",
+          "description": "Object pointer"
+        },
+        {
+          "type": "ptr64",
+          "name": "pFunc",
+          "description": "Vtable member function address"
+        },
+        {
+          "type": "uint8",
+          "name": "returnType",
+          "description": "Return type",
+		  "enum": {
+			"name": "DataType"
+		  }
+        },
+        {
+          "type": "uint8[]",
+          "name": "arguments",
+          "description": "Arguments type array",
+		  "enum": {
+			"name": "DataType"
+		  }
+        }
+      ],
+      "retType": {
+        "type": "ptr64",
+        "description": "Returns hook pointer"
+      }
+    },
+    {
+      "name": "UnhookDetour",
+      "group": "Core",
+      "description": "Removes a detour hook",
+      "funcName": "UnhookDetour",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "pFunc",
+          "description": "Function address"
+        }
+      ],
+      "retType": {
+        "type": "bool",
+        "description": "Returns true on success, false otherwise"
+      }
+    },
+    {
+      "name": "UnhookVirtual",
+      "group": "Core",
+      "description": "Removes a virtual hook",
+      "funcName": "UnhookVirtual",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "pClass",
+          "description": "Object pointer"
+        },
+        {
+          "type": "int32",
+          "name": "index",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "bool",
+        "description": "Returns true on success, false otherwise"
+      }
+    },
+    {
+      "name": "UnhookVirtualByFunc",
+      "group": "Core",
+      "description": "Removes a virtual hook by pointer",
+      "funcName": "UnhookVirtualByFunc",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "pClass",
+          "description": "Object pointer"
+        },
+        {
+          "type": "ptr64",
+          "name": "pFunc",
+          "description": "Vtable member function address"
+        }
+      ],
+      "retType": {
+        "type": "bool",
+        "description": "Returns true on success, false otherwise"
+      }
+    },
+    {
+      "name": "FindDetour",
+      "group": "Lookup",
+      "description": "Attempts to find existing detour hook",
+      "funcName": "FindDetour",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "pFunc",
+          "description": "Function address"
+        }
+      ],
+      "retType": {
+        "type": "ptr64",
+        "description": "Returns hook pointer"
+      }
+    },
+    {
+      "name": "FindVirtual",
+      "group": "Lookup",
+      "description": "Attempts to find existing virtual hook",
+      "funcName": "FindVirtual",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "pClass",
+          "description": "Object pointer"
+        },
+        {
+          "type": "int32",
+          "name": "index",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "ptr64",
+        "description": "Returns hook pointer"
+      }
+    },
+    {
+      "name": "FindVirtualByFunc",
+      "group": "Lookup",
+      "description": "Attempts to find existing detour hook by pointer",
+      "funcName": "FindVirtualByFunc",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "pClass",
+          "description": "Object pointer"
+        },
+        {
+          "type": "ptr64",
+          "name": "pFunc",
+          "description": "Function address"
+        }
+      ],
+      "retType": {
+        "type": "ptr64",
+        "description": "Returns hook pointer"
+      }
+    },
+    {
+      "name": "FindOriginalAddr",
+      "group": "Lookup",
+      "description": "Attempts to find original address of function before setting hook",
+      "funcName": "FindOriginalAddr",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "pClass",
+          "description": "Object pointer"
+        },
+        {
+          "type": "ptr64",
+          "name": "pAddr",
+          "description": "Address of function set by hook"
+        }
+      ],
+      "retType": {
+        "type": "ptr64",
+        "description": "Address of original function"
+      }
+    },
+    {
+      "name": "GetVTableIndex",
+      "group": "Lookup",
+      "description": "Attempts to find virtual table index of virtual function",
+      "funcName": "GetVTableIndex",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "pFunc",
+          "description": "Function address"
+        }
+      ],
+      "retType": {
+        "type": "int32",
+        "description": "Virtual table index"
+      }
+    },
+    {
+      "name": "UnhookAll",
+      "group": "Core",
+      "description": "Removes all previously set hooks",
+      "funcName": "UnhookAll",
+      "paramTypes": [
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "UnhookAllVirtual",
+      "group": "Core",
+      "description": "Removes all previously set hooks on the object",
+      "funcName": "UnhookAllVirtual",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "pClass",
+          "description": "Object pointer"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "AddCallback",
+      "group": "Core",
+      "description": "Adds a callback to existing hook",
+      "funcName": "AddCallback",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "hook",
+          "description": "Hook pointer"
+        },
+        {
+          "type": "bool",
+          "name": "post",
+          "description": "True indicates post hook"
+        },
+        {
+          "type": "function",
+          "name": "handler",
+          "description": "Callback function which trigger by hook.",
+          "prototype": {
+            "name": "CallbackHandler",
+            "funcName": "CallbackHandler",
+			"description": "Callback function",
+            "paramTypes": [
+              {
+                "type": "bool",
+                "name": "post",
+                "description": "True indicates post hook"
+              },
+              {
+                "type": "ptr64",
+                "name": "params",
+                "description": "Pointer to params structure"
+              },
+              {
+                "type": "int32",
+                "name": "count",
+                "description": "Parameter count"
+              },
+              {
+                "type": "ptr64",
+                "name": "ret",
+                "description": "Pointer to return structure"
+              }
+            ],
+            "retType": {
+              "type": "int32",
+              "description": "Ignored for post hooks.",
+			  "enum": {
+				"name": "ResultType",
+				"description": "Enum representing the possible results of an operation.",
+				"values": [
+			      {
+				    "value": 0,
+                    "name": "Ignored",
+                    "description": "Handler didn't take any action."
+                  },
+				  {
+				    "value": 1,
+                    "name": "Handled",
+                    "description": "We did something, but real function should still be called."
+                  },
+				  {
+				    "value": 2,
+                    "name": "Override",
+                    "description": "Call real function, but use my return value."
+                  },
+				  {
+				    "value": 3,
+                    "name": "Supercede",
+                    "description": "Skip real function; use my return value."
+                  }
+			    ]
+			  }
+            }
+          }
+        }
+      ],
+      "retType": {
+        "type": "bool",
+        "description": "Returns true on success, false otherwise"
+      }
+    },
+    {
+      "name": "RemoveCallback",
+      "group": "Core",
+      "description": "Removes a callback from existing hook",
+      "funcName": "RemoveCallback",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "hook",
+          "description": "Hook pointer"
+        },
+        {
+          "type": "bool",
+          "name": "post",
+          "description": "True indicates post hook"
+        },
+        {
+          "type": "function",
+          "name": "handler",
+          "description": "Callback function which trigger by hook.",
+          "prototype": {
+            "name": "CallbackHandler",
+            "funcName": "CallbackHandler",
+			"description": "Callback function",
+            "paramTypes": [
+              {
+                "type": "bool",
+                "name": "post",
+                "description": "True indicates post hook"
+              },
+              {
+                "type": "ptr64",
+                "name": "params",
+                "description": "Pointer to params structure"
+              },
+              {
+                "type": "int32",
+                "name": "count",
+                "description": "Parameter count"
+              },
+              {
+                "type": "ptr64",
+                "name": "ret",
+                "description": "Pointer to return structure"
+              }
+            ],
+            "retType": {
+              "type": "int32",
+              "description": "Ignored for post hooks.",
+			  "enum": {
+				"name": "ResultType"
+			  }
+            }
+          }
+        }
+      ],
+      "retType": {
+        "type": "bool",
+        "description": "Returns true on success, false otherwise"
+      }
+    },
+    {
+      "name": "IsCallbackRegistered",
+      "group": "Core",
+      "description": "Checks that a callback exists on existing hook",
+      "funcName": "IsCallbackRegistered",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "hook",
+          "description": "Hook pointer"
+        },
+        {
+          "type": "bool",
+          "name": "post",
+          "description": "True indicates post hook"
+        },
+        {
+          "type": "function",
+          "name": "handler",
+          "description": "Callback function which trigger by hook.",
+          "prototype": {
+            "name": "CallbackHandler",
+            "funcName": "CallbackHandler",
+			"description": "Callback function",
+            "paramTypes": [
+              {
+                "type": "bool",
+                "name": "post",
+                "description": "True indicates post hook"
+              },
+              {
+                "type": "ptr64",
+                "name": "params",
+                "description": "Pointer to params structure"
+              },
+              {
+                "type": "int32",
+                "name": "count",
+                "description": "Parameter count"
+              },
+              {
+                "type": "ptr64",
+                "name": "ret",
+                "description": "Pointer to return structure"
+              }
+            ],
+            "retType": {
+              "type": "int32",
+              "description": "Ignored for post hooks.",
+			  "enum": {
+				"name": "ResultType"
+			  }
+            }
+          }
+        }
+      ],
+      "retType": {
+        "type": "bool",
+        "description": "Returns true on success, false otherwise"
+      }
+    },
+    {
+      "name": "AreCallbacksRegistered",
+      "group": "Core",
+      "description": "Checks that a any callback exists on existing hook",
+      "funcName": "AreCallbacksRegistered",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "hook",
+          "description": "Hook pointer"
+        }
+      ],
+      "retType": {
+        "type": "bool",
+        "description": "Returns true on success, false otherwise"
+      }
+    },
+    {
+      "name": "GetCallbackAddr",
+      "group": "Getters",
+      "description": "Get callback function address",
+      "funcName": "GetCallbackAddr",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "hook",
+          "description": "Hook pointer"
+        }
+      ],
+      "retType": {
+        "type": "ptr64",
+        "description": "Returns jit generated callback pointer"
+      }
+    },
+    {
+      "name": "GetArgumentBool",
+      "group": "Getters",
+      "description": "Get argument value",
+      "funcName": "GetArgumentBool",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "params",
+          "description": "Pointer to params structure"
+        },
+        {
+          "type": "uint64",
+          "name": "index",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "bool"
+      }
+    },
+    {
+      "name": "GetArgumentInt8",
+      "group": "Getters",
+      "description": "Get argument value",
+      "funcName": "GetArgumentInt8",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "params",
+          "description": "Pointer to params structure"
+        },
+        {
+          "type": "uint64",
+          "name": "index",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "int8"
+      }
+    },
+    {
+      "name": "GetArgumentUInt8",
+      "group": "Getters",
+      "description": "Get argument value",
+      "funcName": "GetArgumentUInt8",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "params",
+          "description": "Pointer to params structure"
+        },
+        {
+          "type": "uint64",
+          "name": "index",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "uint8"
+      }
+    },
+    {
+      "name": "GetArgumentInt16",
+      "group": "Getters",
+      "description": "Get argument value",
+      "funcName": "GetArgumentInt16",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "params",
+          "description": "Pointer to params structure"
+        },
+        {
+          "type": "uint64",
+          "name": "index",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "int16"
+      }
+    },
+    {
+      "name": "GetArgumentUInt16",
+      "group": "Getters",
+      "description": "Get argument value",
+      "funcName": "GetArgumentUInt16",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "params",
+          "description": "Pointer to params structure"
+        },
+        {
+          "type": "uint64",
+          "name": "index",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "uint16"
+      }
+    },
+    {
+      "name": "GetArgumentInt32",
+      "group": "Getters",
+      "description": "Get argument value",
+      "funcName": "GetArgumentInt32",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "params",
+          "description": "Pointer to params structure"
+        },
+        {
+          "type": "uint64",
+          "name": "index",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "int32"
+      }
+    },
+    {
+      "name": "GetArgumentUInt32",
+      "group": "Getters",
+      "description": "Get argument value",
+      "funcName": "GetArgumentUInt32",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "params",
+          "description": "Pointer to params structure"
+        },
+        {
+          "type": "uint64",
+          "name": "index",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "uint32"
+      }
+    },
+    {
+      "name": "GetArgumentInt64",
+      "group": "Getters",
+      "description": "Get argument value",
+      "funcName": "GetArgumentInt64",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "params",
+          "description": "Pointer to params structure"
+        },
+        {
+          "type": "uint64",
+          "name": "index",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "int64"
+      }
+    },
+    {
+      "name": "GetArgumentUInt64",
+      "group": "Getters",
+      "description": "Get argument value",
+      "funcName": "GetArgumentUInt64",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "params",
+          "description": "Pointer to params structure"
+        },
+        {
+          "type": "uint64",
+          "name": "index",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "uint64"
+      }
+    },
+    {
+      "name": "GetArgumentFloat",
+      "group": "Getters",
+      "description": "Get argument value",
+      "funcName": "GetArgumentFloat",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "params",
+          "description": "Pointer to params structure"
+        },
+        {
+          "type": "uint64",
+          "name": "index",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "float"
+      }
+    },
+    {
+      "name": "GetArgumentDouble",
+      "group": "Getters",
+      "description": "Get argument value",
+      "funcName": "GetArgumentDouble",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "params",
+          "description": "Pointer to params structure"
+        },
+        {
+          "type": "uint64",
+          "name": "index",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "double"
+      }
+    },
+    {
+      "name": "GetArgumentPointer",
+      "group": "Getters",
+      "description": "Get argument value",
+      "funcName": "GetArgumentPointer",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "params",
+          "description": "Pointer to params structure"
+        },
+        {
+          "type": "uint64",
+          "name": "index",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "ptr64"
+      }
+    },
+    {
+      "name": "GetArgumentString",
+      "group": "Getters",
+      "description": "Get argument value",
+      "funcName": "GetArgumentString",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "params",
+          "description": "Pointer to params structure"
+        },
+        {
+          "type": "uint64",
+          "name": "index",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "string"
+      }
+    },
+    {
+      "name": "SetArgumentBool",
+      "group": "Setters",
+      "description": "Set argument value",
+      "funcName": "SetArgumentBool",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "params",
+          "description": "Pointer to params structure"
+        },
+        {
+          "type": "uint64",
+          "name": "index",
+          "description": "Value to set"
+        },
+        {
+          "type": "bool",
+          "name": "value",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "SetArgumentInt8",
+      "group": "Setters",
+      "description": "Set argument value",
+      "funcName": "SetArgumentInt8",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "params",
+          "description": "Pointer to params structure"
+        },
+        {
+          "type": "uint64",
+          "name": "index",
+          "description": "Value to set"
+        },
+        {
+          "type": "int8",
+          "name": "value",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "SetArgumentUInt8",
+      "group": "Setters",
+      "description": "Set argument value",
+      "funcName": "SetArgumentUInt8",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "params",
+          "description": "Pointer to params structure"
+        },
+        {
+          "type": "uint64",
+          "name": "index",
+          "description": "Value to set"
+        },
+        {
+          "type": "uint8",
+          "name": "value",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "SetArgumentInt16",
+      "group": "Setters",
+      "description": "Set argument value",
+      "funcName": "SetArgumentInt16",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "params",
+          "description": "Pointer to params structure"
+        },
+        {
+          "type": "uint64",
+          "name": "index",
+          "description": "Value to set"
+        },
+        {
+          "type": "int16",
+          "name": "value",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "SetArgumentUInt16",
+      "group": "Setters",
+      "description": "Set argument value",
+      "funcName": "SetArgumentUInt16",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "params",
+          "description": "Pointer to params structure"
+        },
+        {
+          "type": "uint64",
+          "name": "index",
+          "description": "Value to set"
+        },
+        {
+          "type": "uint16",
+          "name": "value",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "SetArgumentInt32",
+      "group": "Setters",
+      "description": "Set argument value",
+      "funcName": "SetArgumentInt32",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "params",
+          "description": "Pointer to params structure"
+        },
+        {
+          "type": "uint64",
+          "name": "index",
+          "description": "Value to set"
+        },
+        {
+          "type": "int32",
+          "name": "value",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "SetArgumentUInt32",
+      "group": "Setters",
+      "description": "Set argument value",
+      "funcName": "SetArgumentUInt32",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "params",
+          "description": "Pointer to params structure"
+        },
+        {
+          "type": "uint64",
+          "name": "index",
+          "description": "Value to set"
+        },
+        {
+          "type": "uint32",
+          "name": "value",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "SetArgumentInt64",
+      "group": "Setters",
+      "description": "Set argument value",
+      "funcName": "SetArgumentInt64",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "params",
+          "description": "Pointer to params structure"
+        },
+        {
+          "type": "uint64",
+          "name": "index",
+          "description": "Value to set"
+        },
+        {
+          "type": "int64",
+          "name": "value",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "SetArgumentUInt64",
+      "group": "Setters",
+      "description": "Set argument value",
+      "funcName": "SetArgumentUInt64",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "params",
+          "description": "Pointer to params structure"
+        },
+        {
+          "type": "uint64",
+          "name": "index",
+          "description": "Value to set"
+        },
+        {
+          "type": "uint64",
+          "name": "value",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "SetArgumentFloat",
+      "group": "Setters",
+      "description": "Set argument value",
+      "funcName": "SetArgumentFloat",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "params",
+          "description": "Pointer to params structure"
+        },
+        {
+          "type": "uint64",
+          "name": "index",
+          "description": "Value to set"
+        },
+        {
+          "type": "float",
+          "name": "value",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "SetArgumentDouble",
+      "group": "Setters",
+      "description": "Set argument value",
+      "funcName": "SetArgumentDouble",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "params",
+          "description": "Pointer to params structure"
+        },
+        {
+          "type": "uint64",
+          "name": "index",
+          "description": "Value to set"
+        },
+        {
+          "type": "double",
+          "name": "value",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "SetArgumentPointer",
+      "group": "Setters",
+      "description": "Set argument value",
+      "funcName": "SetArgumentPointer",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "params",
+          "description": "Pointer to params structure"
+        },
+        {
+          "type": "uint64",
+          "name": "index",
+          "description": "Value to set"
+        },
+        {
+          "type": "ptr64",
+          "name": "value",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "SetArgumentString",
+      "group": "Setters",
+      "description": "Set argument value",
+      "funcName": "SetArgumentString",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "params",
+          "description": "Pointer to params structure"
+        },
+        {
+          "type": "uint64",
+          "name": "index",
+          "description": "Value to set"
+        },
+        {
+          "type": "string",
+          "name": "value",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "GetReturnBool",
+      "group": "Getters",
+      "description": "Get return value",
+      "funcName": "GetReturnBool",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "ret",
+          "description": "Pointer to return structure"
+        }
+      ],
+      "retType": {
+        "type": "bool"
+      }
+    },
+    {
+      "name": "GetReturnInt8",
+      "group": "Getters",
+      "description": "Get return value",
+      "funcName": "GetReturnInt8",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "ret",
+          "description": "Pointer to return structure"
+        }
+      ],
+      "retType": {
+        "type": "int8"
+      }
+    },
+    {
+      "name": "GetReturnUInt8",
+      "group": "Getters",
+      "description": "Get return value",
+      "funcName": "GetReturnUInt8",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "ret",
+          "description": "Pointer to return structure"
+        }
+      ],
+      "retType": {
+        "type": "uint8"
+      }
+    },
+    {
+      "name": "GetReturnInt16",
+      "group": "Getters",
+      "description": "Get return value",
+      "funcName": "GetReturnInt16",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "ret",
+          "description": "Pointer to return structure"
+        }
+      ],
+      "retType": {
+        "type": "int16"
+      }
+    },
+    {
+      "name": "GetReturnUInt16",
+      "group": "Getters",
+      "description": "Get return value",
+      "funcName": "GetReturnUInt16",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "ret",
+          "description": "Pointer to return structure"
+        }
+      ],
+      "retType": {
+        "type": "uint16"
+      }
+    },
+    {
+      "name": "GetReturnInt32",
+      "group": "Getters",
+      "description": "Get return value",
+      "funcName": "GetReturnInt32",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "ret",
+          "description": "Pointer to return structure"
+        }
+      ],
+      "retType": {
+        "type": "int32"
+      }
+    },
+    {
+      "name": "GetReturnUInt32",
+      "group": "Getters",
+      "description": "Get return value",
+      "funcName": "GetReturnUInt32",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "ret",
+          "description": "Pointer to return structure"
+        }
+      ],
+      "retType": {
+        "type": "uint32"
+      }
+    },
+    {
+      "name": "GetReturnInt64",
+      "group": "Getters",
+      "description": "Get return value",
+      "funcName": "GetReturnInt64",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "ret",
+          "description": "Pointer to return structure"
+        }
+      ],
+      "retType": {
+        "type": "int64"
+      }
+    },
+    {
+      "name": "GetReturnUInt64",
+      "group": "Getters",
+      "description": "Get return value",
+      "funcName": "GetReturnUInt64",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "ret",
+          "description": "Pointer to return structure"
+        }
+      ],
+      "retType": {
+        "type": "uint64"
+      }
+    },
+    {
+      "name": "GetReturnFloat",
+      "group": "Getters",
+      "description": "Get return value",
+      "funcName": "GetReturnFloat",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "ret",
+          "description": "Pointer to return structure"
+        }
+      ],
+      "retType": {
+        "type": "float"
+      }
+    },
+    {
+      "name": "GetReturnDouble",
+      "group": "Getters",
+      "description": "Get return value",
+      "funcName": "GetReturnDouble",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "ret",
+          "description": "Pointer to return structure"
+        }
+      ],
+      "retType": {
+        "type": "double"
+      }
+    },
+    {
+      "name": "GetReturnPointer",
+      "group": "Getters",
+      "description": "Get return value",
+      "funcName": "GetReturnPointer",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "ret",
+          "description": "Pointer to return structure"
+        }
+      ],
+      "retType": {
+        "type": "ptr64"
+      }
+    },
+    {
+      "name": "GetReturnString",
+      "group": "Getters",
+      "description": "Get return value",
+      "funcName": "GetReturnString",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "ret",
+          "description": "Pointer to return structure"
+        }
+      ],
+      "retType": {
+        "type": "string"
+      }
+    },
+    {
+      "name": "SetReturnBool",
+      "group": "Setters",
+      "description": "Set return value",
+      "funcName": "SetReturnBool",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "ret",
+          "description": "Pointer to return structure"
+        },
+        {
+          "type": "bool",
+          "name": "value",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "SetReturnInt8",
+      "group": "Setters",
+      "description": "Set return value",
+      "funcName": "SetReturnInt8",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "ret",
+          "description": "Pointer to return structure"
+        },
+        {
+          "type": "int8",
+          "name": "value",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "SetReturnUInt8",
+      "group": "Setters",
+      "description": "Set return value",
+      "funcName": "SetReturnUInt8",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "ret",
+          "description": "Pointer to return structure"
+        },
+        {
+          "type": "uint8",
+          "name": "value",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "SetReturnInt16",
+      "group": "Setters",
+      "description": "Set return value",
+      "funcName": "SetReturnInt16",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "ret",
+          "description": "Pointer to return structure"
+        },
+        {
+          "type": "int16",
+          "name": "value",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "SetReturnUInt16",
+      "group": "Setters",
+      "description": "Set return value",
+      "funcName": "SetReturnUInt16",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "ret",
+          "description": "Pointer to return structure"
+        },
+        {
+          "type": "uint16",
+          "name": "value",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "SetReturnInt32",
+      "group": "Setters",
+      "description": "Set return value",
+      "funcName": "SetReturnInt32",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "ret",
+          "description": "Pointer to return structure"
+        },
+        {
+          "type": "int32",
+          "name": "value",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "SetReturnUInt32",
+      "group": "Setters",
+      "description": "Set return value",
+      "funcName": "SetReturnUInt32",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "ret",
+          "description": "Pointer to return structure"
+        },
+        {
+          "type": "uint32",
+          "name": "value",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "SetReturnInt64",
+      "group": "Setters",
+      "description": "Set return value",
+      "funcName": "SetReturnInt64",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "ret",
+          "description": "Pointer to return structure"
+        },
+        {
+          "type": "int64",
+          "name": "value",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "SetReturnUInt64",
+      "group": "Setters",
+      "description": "Set return value",
+      "funcName": "SetReturnUInt64",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "ret",
+          "description": "Pointer to return structure"
+        },
+        {
+          "type": "uint64",
+          "name": "value",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "SetReturnFloat",
+      "group": "Setters",
+      "description": "Set return value",
+      "funcName": "SetReturnFloat",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "ret",
+          "description": "Pointer to return structure"
+        },
+        {
+          "type": "float",
+          "name": "value",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "SetReturnDouble",
+      "group": "Setters",
+      "description": "Set return value",
+      "funcName": "SetReturnDouble",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "ret",
+          "description": "Pointer to return structure"
+        },
+        {
+          "type": "double",
+          "name": "value",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "SetReturnPointer",
+      "group": "Setters",
+      "description": "Set return value",
+      "funcName": "SetReturnPointer",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "ret",
+          "description": "Pointer to return structure"
+        },
+        {
+          "type": "ptr64",
+          "name": "value",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "SetReturnString",
+      "group": "Setters",
+      "description": "Set return value",
+      "funcName": "SetReturnString",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "ret",
+          "description": "Pointer to return structure"
+        },
+        {
+          "type": "string",
+          "name": "value",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    }
+  ]
+}

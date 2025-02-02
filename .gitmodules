@@ -1,0 +1,3 @@
+[submodule "external/dynohook"]
+	path = external/dynohook
+	url = https://github.com/qubka/DynoHook.git
