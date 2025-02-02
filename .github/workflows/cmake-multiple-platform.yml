@@ -232,7 +232,7 @@ jobs:
                     "version": version,
                     "checksum": checksum,
                     "download": f"https://github.com/untrustedmodders/polyhook/releases/download/v{version}/{package.format(platform)}.zip",
-                    "platforms": [platform"]
+                    "platforms": [platform]
                 }
             
                 versions = data["content"]["polyhook"]["versions"]
