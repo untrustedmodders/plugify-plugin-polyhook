@@ -1,8 +1,6 @@
 {
     global:
-        Plugify_Init;
-        Plugify_PluginStart;
-        Plugify_PluginEnd;
+        Plugify_*;
         HookDetour;
         HookVirtual;
         HookVirtualByFunc;
