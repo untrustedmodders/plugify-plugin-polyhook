@@ -236,6 +236,7 @@ void* PolyHookPlugin::findOriginalAddr(void* pClass, void* pAddr) {
 				return (void*) origVFuncs[index];
 			}
 		}
+		return pAddr;
 	}
 	return nullptr;
 }
