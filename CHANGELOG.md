@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.4](https://github.com/untrustedmodders/polyhook/compare/v1.0.3...v1.0.4) (2025-02-11)
+
+
+### Bug Fixes
+
+* version and exports ([5fb0e79](https://github.com/untrustedmodders/polyhook/commit/5fb0e7956830f388ff7501dec862b849ce79e8e2))
+
 ## [1.0.3](https://github.com/untrustedmodders/polyhook/compare/v1.0.2...v1.0.3) (2025-02-05)
 
 
