@@ -19,10 +19,10 @@
 
 namespace PLH {
 	class PolyHookPlugin final : public plg::IPluginEntry, public MemAccessor {
+	public:
 		void OnPluginStart() final;
 		void OnPluginEnd() final;
-		
-	public:
+
 		Callback* hookDetour(void* pFunc, DataType returnType, std::span<const DataType> arguments);
 		Callback* hookVirtual(void* pClass, int index, DataType returnType, std::span<const DataType> arguments);
 		Callback* hookVirtual(void* pClass, void* pFunc, DataType returnType, std::span<const DataType> arguments);

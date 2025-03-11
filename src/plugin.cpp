@@ -1,7 +1,7 @@
 #include "plugin.hpp"
 
-PLH::PolyHookPlugin g_polyHookPlugin;
-EXPOSE_PLUGIN(PLUGIN_API, &g_polyHookPlugin)
+static PLH::PolyHookPlugin g_polyHookPlugin;
+EXPOSE_PLUGIN(PLUGIN_API, PLH::PolyHookPlugin, &g_polyHookPlugin)
 
 using namespace PLH;
 
