@@ -101,7 +101,7 @@ Callback* PolyHookPlugin::hookVirtual(void* pClass, int index, DataType returnTy
 	auto& [redirectMap, origVFuncs] = m_tables[pClass];
 	redirectMap[index] = JIT;
 
-	auto vtable = std::make_unique<VTableSwapHook>((uint64_t) pClass, redirectMap, &origVFuncs);
+	auto vtable = std::make_unique<VFuncSwapHook>((uint64_t) pClass, redirectMap, &origVFuncs);
 	if (!vtable->hook())
 		return nullptr;
 
@@ -157,7 +157,7 @@ bool PolyHookPlugin::unhookVirtual(void* pClass, int index) {
 				return true;
 			}
 
-			vtable = std::make_unique<VTableSwapHook>((uint64_t) pClass, redirectMap, &origVFuncs);
+			vtable = std::make_unique<VFuncSwapHook>((uint64_t) pClass, redirectMap, &origVFuncs);
 			if (!vtable->hook()) {
 				m_vhooks.erase(it);
 				return false;
