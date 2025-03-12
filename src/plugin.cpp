@@ -10,6 +10,8 @@ static void PreCallback(Callback* callback, const Callback::Parameters* params, 
 
 	auto [callbacks, lock] = callback->getCallbacks(CallbackType::Pre);
 
+	callback->cleanup();
+
 	for (const auto& cb : callbacks) {
 		ReturnAction result = cb(CallbackType::Pre, params, property->count, ret);
 		if (result > returnAction)
@@ -435,6 +437,14 @@ PLUGIN_API void* GetCallbackAddr(Callback* callback) {
 	return (void*) *callback->getFunctionHolder();
 }
 
+PLUGIFY_WARN_PUSH()
+
+#if defined(__clang)
+PLUGIFY_WARN_IGNORE("-Wreturn-type-c-linkage")
+#elif defined(_MSC_VER)
+PLUGIFY_WARN_IGNORE(4190)
+#endif
+
 extern "C"
 PLUGIN_API bool GetArgumentBool(const Callback::Parameters* params, size_t index) { return params->getArg<bool>(index); }
 extern "C"
@@ -460,9 +470,7 @@ PLUGIN_API double GetArgumentDouble(const Callback::Parameters* params, size_t i
 extern "C"
 PLUGIN_API void* GetArgumentPointer(const Callback::Parameters* params, size_t index) { return params->getArg<void*>(index); }
 extern "C"
-PLUGIN_API const char* GetArgumentString(const Callback::Parameters* params, size_t index) { return params->getArg<const char*>(index); }
-extern "C"
-PLUGIN_API const wchar_t* GetArgumentWString(const Callback::Parameters* params, size_t index) { return params->getArg<const wchar_t*>(index); }
+PLUGIN_API plg::string GetArgumentString(const Callback::Parameters* params, size_t index) { return params->getArg<const char*>(index); }
 
 extern "C"
 PLUGIN_API void SetArgumentBool(const Callback::Parameters* params, size_t index, bool value) { return params->setArg(index, value); }
@@ -489,9 +497,7 @@ PLUGIN_API void SetArgumentDouble(const Callback::Parameters* params, size_t ind
 extern "C"
 PLUGIN_API void SetArgumentPointer(const Callback::Parameters* params, size_t index, void* value) { return params->setArg(index, value); }
 extern "C"
-PLUGIN_API void SetArgumentString(const Callback::Parameters* params, size_t index, const char* value) { return params->setArg(index, value); }
-extern "C"
-PLUGIN_API void SetArgumentWString(const Callback::Parameters* params, size_t index, const wchar_t* value) { return params->setArg(index, value); }
+PLUGIN_API void SetArgumentString(Callback* callback, const Callback::Parameters* params, size_t index, const plg::string& value) { return params->setArg(index, callback->store(value).c_str()); }
 
 extern "C"
 PLUGIN_API bool GetReturnBool(const Callback::Return* ret) { return ret->getRet<bool>(); }
@@ -518,9 +524,7 @@ PLUGIN_API double GetReturnDouble(const Callback::Return* ret) { return ret->get
 extern "C"
 PLUGIN_API void* GetReturnPointer(const Callback::Return* ret) { return ret->getRet<void*>(); }
 extern "C"
-PLUGIN_API const char* GetReturnString(const Callback::Return* ret) { return ret->getRet<const char*>(); }
-extern "C"
-PLUGIN_API const wchar_t* GetReturnWString(const Callback::Return* ret) { return ret->getRet<const wchar_t*>(); }
+PLUGIN_API plg::string GetReturnString(const Callback::Return* ret) { return ret->getRet<const char*>(); }
 
 extern "C"
 PLUGIN_API void SetReturnBool(const Callback::Return* ret, bool value) { return ret->setRet(value); }
@@ -547,6 +551,6 @@ PLUGIN_API void SetReturnDouble(const Callback::Return* ret, double value) { ret
 extern "C"
 PLUGIN_API void SetReturnPointer(const Callback::Return* ret, void* value) { return ret->setRet(value); }
 extern "C"
-PLUGIN_API void SetReturnString(const Callback::Return* ret, const char* value) { return ret->setRet(value); }
-extern "C"
-PLUGIN_API void SetReturnWString(const Callback::Return* ret, const wchar_t* value) { return ret->setRet(value); }
+PLUGIN_API void SetReturnString(Callback* callback, const Callback::Return* ret, const plg::string& value) { return ret->setRet(callback->store(value).c_str()); }
+
+PLUGIFY_WARN_POP()

@@ -398,6 +398,15 @@ std::string_view PLH::Callback::getError() const {
 	return !m_functionPtr && m_errorCode ? m_errorCode : "";
 }
 
+const std::string& PLH::Callback::store(std::string_view str) {
+	std::unique_lock lock(m_mutex);
+	return *m_storage.emplace_back(std::make_unique<std::string>(str));
+}
+
+void PLH::Callback::cleanup() {
+	m_storage.clear();
+}
+
 PLH::Callback::Callback(std::weak_ptr<asmjit::JitRuntime> rt) : m_rt(std::move(rt)) {
 }
 

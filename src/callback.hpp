@@ -11,6 +11,8 @@
 #include "polyhook2/PolyHookOs.hpp"
 
 #include <array>
+#include <vector>
+#include <string>
 #include <span>
 #include <shared_mutex>
 #include <atomic>
@@ -139,6 +141,9 @@ namespace PLH {
 		Callbacks getCallbacks(CallbackType type);
 		std::string_view getError() const;
 
+		const std::string& store(std::string_view str);
+		void cleanup();
+
 		bool addCallback(CallbackType type, CallbackHandler callback);
 		bool removeCallback(CallbackType type, CallbackHandler callback);
 		bool isCallbackRegistered(CallbackType type, CallbackHandler callback) const;
@@ -156,6 +161,7 @@ namespace PLH {
 			uint64_t m_trampolinePtr = 0;
 			const char* m_errorCode;
 		};
+		std::vector<std::unique_ptr<std::string>> m_storage;
 	};
 }
 
