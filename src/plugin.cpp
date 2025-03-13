@@ -1,7 +1,5 @@
 #include "plugin.hpp"
 
-#include <dynlibutils/module.hpp>
-
 static PLH::PolyHookPlugin g_polyHookPlugin;
 EXPOSE_PLUGIN(PLUGIN_API, PLH::PolyHookPlugin, &g_polyHookPlugin)
 
@@ -38,18 +36,10 @@ static void PostCallback(Callback* callback, const Callback::Parameters* params,
 
 void PolyHookPlugin::OnPluginStart() {
 	m_jitRuntime = std::make_unique<asmjit::JitRuntime>();
-
-	DynLibUtils::CModule plugify("plugify");
-	if (plugify.GetHandle()) {
-		m_hooked = plugify.GetFunctionByName("Plugify_SourceHooked").CCast<IsFunctionHooked>();
-	} else {
-		m_hooked = nullptr;
-	}
 }
 
 void PolyHookPlugin::OnPluginEnd() {
 	unhookAll();
-	m_hooked = nullptr;
 }
 
 Callback* PolyHookPlugin::hookDetour(void* pFunc, DataType returnType, std::span<const DataType> arguments) {
@@ -113,7 +103,7 @@ Callback* PolyHookPlugin::hookVirtual(void* pClass, int index, DataType returnTy
 	auto& [redirectMap, origVFuncs] = m_tables[pClass];
 	redirectMap[index] = JIT;
 
-	auto vtable = createVHook(pClass, index, redirectMap, &origVFuncs);
+	auto vtable = std::make_unique<VTableSwapHook>((uint64_t) pClass, redirectMap, &origVFuncs);
 	if (!vtable->hook())
 		return nullptr;
 
@@ -169,7 +159,7 @@ bool PolyHookPlugin::unhookVirtual(void* pClass, int index) {
 				return true;
 			}
 
-			vtable = createVHook(pClass, index, redirectMap, &origVFuncs);
+			vtable = std::make_unique<VTableSwapHook>((uint64_t) pClass, redirectMap, &origVFuncs);
 			if (!vtable->hook()) {
 				m_vhooks.erase(it);
 				return false;
@@ -357,15 +347,6 @@ int PolyHookPlugin::getVirtualTableIndex(void* pFunc, ProtFlag flag) const {
 #endif
 }
 
-std::unique_ptr<IHook> PolyHookPlugin::createVHook(void* pClass, int index, const VFuncMap& redirectMap, VFuncMap* origVFuncs) {
-	void** vtable = *(void***)(pClass);
-	if (m_hooked && m_hooked(&vtable[index])) {
-		return std::make_unique<VFuncSwapHook>((uint64_t) pClass, redirectMap, origVFuncs);
-	} else {
-		return std::make_unique<VTableSwapHook>((uint64_t) pClass, redirectMap, origVFuncs);
-	}
-}
-
 PLUGIFY_WARN_PUSH()
 
 #if defined(__clang)
@@ -459,7 +440,13 @@ extern "C" {
 	PLUGIN_API float GetArgumentFloat(const Callback::Parameters* params, size_t index) { return params->getArg<float>(index); }
 	PLUGIN_API double GetArgumentDouble(const Callback::Parameters* params, size_t index) { return params->getArg<double>(index); }
 	PLUGIN_API void* GetArgumentPointer(const Callback::Parameters* params, size_t index) { return params->getArg<void*>(index); }
-	PLUGIN_API plg::string GetArgumentString(const Callback::Parameters* params, size_t index) { return params->getArg<const char*>(index); }
+	PLUGIN_API plg::string GetArgumentString(const Callback::Parameters* params, size_t index) {
+		const char* str = params->getArg<const char*>(index);
+		if (str == nullptr)
+			return {};
+		else
+			return str;
+	}
 
 	PLUGIN_API void SetArgumentBool(const Callback::Parameters* params, size_t index, bool value) { return params->setArg(index, value); }
 	PLUGIN_API void SetArgumentInt8(const Callback::Parameters* params, size_t index, int8_t value) { return params->setArg(index, value); }
@@ -473,7 +460,9 @@ extern "C" {
 	PLUGIN_API void SetArgumentFloat(const Callback::Parameters* params, size_t index, float value) { return params->setArg(index, value); }
 	PLUGIN_API void SetArgumentDouble(const Callback::Parameters* params, size_t index, double value) { return params->setArg(index, value); }
 	PLUGIN_API void SetArgumentPointer(const Callback::Parameters* params, size_t index, void* value) { return params->setArg(index, value); }
-	PLUGIN_API void SetArgumentString(Callback* callback, const Callback::Parameters* params, size_t index, const plg::string& value) { return params->setArg(index, callback->store(value).c_str()); }
+	PLUGIN_API void SetArgumentString(Callback* callback, const Callback::Parameters* params, size_t index, const plg::string& value) {
+		return params->setArg(index, callback->store(value).c_str());
+	}
 
 	PLUGIN_API bool GetReturnBool(const Callback::Return* ret) { return ret->getRet<bool>(); }
 	PLUGIN_API int8_t GetReturnInt8(const Callback::Return* ret) { return ret->getRet<int8_t>(); }
@@ -487,7 +476,13 @@ extern "C" {
 	PLUGIN_API float GetReturnFloat(const Callback::Return* ret) { return ret->getRet<float>(); }
 	PLUGIN_API double GetReturnDouble(const Callback::Return* ret) { return ret->getRet<double>(); }
 	PLUGIN_API void* GetReturnPointer(const Callback::Return* ret) { return ret->getRet<void*>(); }
-	PLUGIN_API plg::string GetReturnString(const Callback::Return* ret) { return ret->getRet<const char*>(); }
+	PLUGIN_API plg::string GetReturnString(const Callback::Return* ret) {
+		const char* str = ret->getRet<const char*>();
+		if (str == nullptr)
+			return {};
+		else
+			return str;
+	}
 
 	PLUGIN_API void SetReturnBool(const Callback::Return* ret, bool value) { return ret->setRet(value); }
 	PLUGIN_API void SetReturnInt8(const Callback::Return* ret, int8_t value) { return ret->setRet(value); }
@@ -501,7 +496,9 @@ extern "C" {
 	PLUGIN_API void SetReturnFloat(const Callback::Return* ret, float value) { return ret->setRet(value); }
 	PLUGIN_API void SetReturnDouble(const Callback::Return* ret, double value) { return ret->setRet(value); }
 	PLUGIN_API void SetReturnPointer(const Callback::Return* ret, void* value) { return ret->setRet(value); }
-	PLUGIN_API void SetReturnString(Callback* callback, const Callback::Return* ret, const plg::string& value) { return ret->setRet(callback->store(value).c_str()); }
+	PLUGIN_API void SetReturnString(Callback* callback, const Callback::Return* ret, const plg::string& value) {
+		return ret->setRet(callback->store(value).c_str());
+	}
 }
 
 PLUGIFY_WARN_POP()

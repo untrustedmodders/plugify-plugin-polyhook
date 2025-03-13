@@ -30,7 +30,6 @@ include(cmake/compat_format.cmake)
 # Polyhook & DynLibUtils
 #
 include(cmake/polyhook.cmake)
-include(cmake/dynlibutils.cmake)
 
 #
 # Plugin
@@ -40,8 +39,8 @@ file(GLOB_RECURSE PLUGIN_SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "src/*.cpp
 add_library(${PROJECT_NAME} SHARED ${PLUGIN_SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
-target_link_libraries(${PROJECT_NAME} PRIVATE PolyHook_2 cpp-memory_utils)
-target_include_directories(${PROJECT_NAME} PRIVATE ${PolyHook_2_SOURCE_DIR} ${dynlibutils_SOURCE_DIR}/include)
+target_link_libraries(${PROJECT_NAME} PRIVATE PolyHook_2)
+target_include_directories(${PROJECT_NAME} PRIVATE ${PolyHook_2_SOURCE_DIR}e)
 
 if(MSVC)
     target_compile_options(asmjit PUBLIC /wd5054)
