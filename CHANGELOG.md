@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.1](https://github.com/untrustedmodders/polyhook/compare/v1.1.0...v1.1.1) (2025-03-13)
+
+
+### Bug Fixes
+
+* revert sourcehook fix ([f27618e](https://github.com/untrustedmodders/polyhook/commit/f27618e275935ee1ec951330cfce6d642a2591ee))
+* update includes ([5559c1e](https://github.com/untrustedmodders/polyhook/commit/5559c1e70c0451d431bdbafd981b9fa6c1272461))
+
 ## [1.1.0](https://github.com/untrustedmodders/polyhook/compare/v1.0.4...v1.1.0) (2025-03-13)
 
 
