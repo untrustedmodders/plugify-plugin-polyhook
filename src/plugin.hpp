@@ -18,6 +18,8 @@
 #include <mutex>
 
 namespace PLH {
+	using IsFunctionHooked = bool(*)(void*);
+
 	class PolyHookPlugin final : public plg::IPluginEntry, public MemAccessor {
 	public:
 		void OnPluginStart() final;
@@ -38,6 +40,7 @@ namespace PLH {
 		void unhookAll();
 		void unhookAllVirtual(void* pClass);
 
+		std::unique_ptr<IHook> createVHook(void* pClass, int index, const VFuncMap& redirectMap, VFuncMap* origVFuncs);
 		void* findOriginalAddr(void* pClass, void* pAddr);
 		int getVirtualTableIndex(void* pFunc, ProtFlag flag = RWX) const;
 
@@ -48,5 +51,7 @@ namespace PLH {
 		std::unordered_map<void*, std::unique_ptr<IHook>> m_vhooks;
 		std::unordered_map<void*, std::unique_ptr<NatDetour>> m_detours;
 		std::mutex m_mutex;
+
+		IsFunctionHooked m_hooked{};
 	};
 }

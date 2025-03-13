@@ -127,7 +127,7 @@ namespace PLH {
 		};
 
 		typedef void (*CallbackEntry)(Callback* callback, const Parameters* params, Property* property, const Return* ret);
-		typedef ReturnAction (*CallbackHandler)(CallbackType type, const Parameters* params, int32_t count, const Return* ret);
+		typedef ReturnAction (*CallbackHandler)(Callback* callback, const Parameters* params, int32_t count, const Return* ret, CallbackType type);
 		using Callbacks = std::pair<std::vector<CallbackHandler>&, std::shared_lock<SharedMutexWithCounter>>;
 
 		explicit Callback(std::weak_ptr<asmjit::JitRuntime> rt);

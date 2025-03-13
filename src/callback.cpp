@@ -97,7 +97,7 @@ uint64_t PLH::Callback::getJitFunc(const asmjit::FuncSignature& sig, const Callb
 	// map argument slots to registers, following abi.
 	std::vector<asmjit::x86::Reg> argRegisters;
 	argRegisters.reserve( sig.argCount());
-	for (uint8_t argIdx = 0; argIdx < sig.argCount(); argIdx++) {
+	for (uint32_t argIdx = 0; argIdx < sig.argCount(); argIdx++) {
 		const auto argType = sig.args()[argIdx];
 
 		asmjit::x86::Reg arg;
@@ -131,7 +131,7 @@ uint64_t PLH::Callback::getJitFunc(const asmjit::FuncSignature& sig, const Callb
 	// set i = 0
 	cc.mov(i, 0);
 	//// mov from arguments registers into the stack structure
-	for (uint8_t argIdx = 0; argIdx < sig.argCount(); argIdx++) {
+	for (uint32_t argIdx = 0; argIdx < sig.argCount(); argIdx++) {
 		const auto argType = sig.args()[argIdx];
 
 		// have to cast back to explicit register types to gen right mov type
@@ -200,7 +200,7 @@ uint64_t PLH::Callback::getJitFunc(const asmjit::FuncSignature& sig, const Callb
 
 	// mov from arguments stack structure into regs
 	cc.mov(i, 0); // reset idx
-	for (uint8_t argIdx = 0; argIdx < sig.argCount(); argIdx++) {
+	for (uint32_t argIdx = 0; argIdx < sig.argCount(); argIdx++) {
 		const auto argType = sig.args()[argIdx];
 
 		if (asmjit::TypeUtils::isInt(argType)) {
@@ -223,7 +223,7 @@ uint64_t PLH::Callback::getJitFunc(const asmjit::FuncSignature& sig, const Callb
 
 	asmjit::InvokeNode* origInvokeNode;
 	cc.invoke(&origInvokeNode, origPtr, sig);
-	for (uint8_t argIdx = 0; argIdx < sig.argCount(); argIdx++) {
+	for (uint32_t argIdx = 0; argIdx < sig.argCount(); argIdx++) {
 		origInvokeNode->setArg(argIdx, argRegisters.at(argIdx));
 	}
 
@@ -263,7 +263,7 @@ uint64_t PLH::Callback::getJitFunc(const asmjit::FuncSignature& sig, const Callb
 
 	// mov from arguments stack structure into regs
 	cc.mov(i, 0); // reset idx
-	for (uint8_t argIdx = 0; argIdx < sig.argCount(); argIdx++) {
+	for (uint32_t argIdx = 0; argIdx < sig.argCount(); argIdx++) {
 		const auto argType = sig.args()[argIdx];
 
 		if (asmjit::TypeUtils::isInt(argType)) {

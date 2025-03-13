@@ -412,9 +412,9 @@
 			"description": "Callback function",
             "paramTypes": [
               {
-                "type": "bool",
-                "name": "post",
-                "description": "True indicates post hook"
+                "type": "ptr64",
+                "name": "hook",
+                "description": "Hook pointer"
               },
               {
                 "type": "ptr64",
@@ -430,6 +430,11 @@
                 "type": "ptr64",
                 "name": "ret",
                 "description": "Pointer to return structure"
+              },
+              {
+                "type": "bool",
+                "name": "post",
+                "description": "True indicates post hook"
               }
             ],
             "retType": {
@@ -496,9 +501,9 @@
 			"description": "Callback function",
             "paramTypes": [
               {
-                "type": "bool",
-                "name": "post",
-                "description": "True indicates post hook"
+                "type": "ptr64",
+                "name": "hook",
+                "description": "Hook pointer"
               },
               {
                 "type": "ptr64",
@@ -514,13 +519,41 @@
                 "type": "ptr64",
                 "name": "ret",
                 "description": "Pointer to return structure"
+              },
+              {
+                "type": "bool",
+                "name": "post",
+                "description": "True indicates post hook"
               }
             ],
             "retType": {
               "type": "int32",
               "description": "Ignored for post hooks.",
 			  "enum": {
-				"name": "ResultType"
+				"name": "ResultType",
+                "description": "Enum representing the possible results of an operation.",
+                "values": [
+                  {
+                    "value": 0,
+                    "name": "Ignored",
+                    "description": "Handler didn't take any action."
+                  },
+                  {
+                    "value": 1,
+                    "name": "Handled",
+                    "description": "We did something, but real function should still be called."
+                  },
+                  {
+                    "value": 2,
+                    "name": "Override",
+                    "description": "Call real function, but use my return value."
+                  },
+                  {
+                    "value": 3,
+                    "name": "Supercede",
+                    "description": "Skip real function; use my return value."
+                  }
+                ]
 			  }
             }
           }
@@ -557,9 +590,9 @@
 			"description": "Callback function",
             "paramTypes": [
               {
-                "type": "bool",
-                "name": "post",
-                "description": "True indicates post hook"
+                "type": "ptr64",
+                "name": "hook",
+                "description": "Hook pointer"
               },
               {
                 "type": "ptr64",
@@ -575,13 +608,41 @@
                 "type": "ptr64",
                 "name": "ret",
                 "description": "Pointer to return structure"
+              },
+              {
+                "type": "bool",
+                "name": "post",
+                "description": "True indicates post hook"
               }
             ],
             "retType": {
               "type": "int32",
               "description": "Ignored for post hooks.",
 			  "enum": {
-				"name": "ResultType"
+				"name": "ResultType",
+                "description": "Enum representing the possible results of an operation.",
+                "values": [
+                  {
+                    "value": 0,
+                    "name": "Ignored",
+                    "description": "Handler didn't take any action."
+                  },
+                  {
+                    "value": 1,
+                    "name": "Handled",
+                    "description": "We did something, but real function should still be called."
+                  },
+                  {
+                    "value": 2,
+                    "name": "Override",
+                    "description": "Call real function, but use my return value."
+                  },
+                  {
+                    "value": 3,
+                    "name": "Supercede",
+                    "description": "Skip real function; use my return value."
+                  }
+                ]
 			  }
             }
           }
@@ -1219,6 +1280,11 @@
       "paramTypes": [
         {
           "type": "ptr64",
+          "name": "hook",
+          "description": "Hook pointer"
+        },
+        {
+          "type": "ptr64",
           "name": "params",
           "description": "Pointer to params structure"
         },
@@ -1703,6 +1769,11 @@
       "description": "Set return value",
       "funcName": "SetReturnString",
       "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "hook",
+          "description": "Hook pointer"
+        },
         {
           "type": "ptr64",
           "name": "ret",
