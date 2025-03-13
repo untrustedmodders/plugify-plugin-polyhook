@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.1.0](https://github.com/untrustedmodders/polyhook/compare/v1.0.4...v1.1.0) (2025-03-13)
+
+
+### Features
+
+* add new sourcehook fix and update abi ([04aba32](https://github.com/untrustedmodders/polyhook/commit/04aba323ad6da224e4f6a8a46a1873e2d2176c5a))
+* add strings methods ([87ad49d](https://github.com/untrustedmodders/polyhook/commit/87ad49dcb159d77424d330fd880dae9f0fde6354))
+
+
+### Bug Fixes
+
+* add version strip ([27d2840](https://github.com/untrustedmodders/polyhook/commit/27d2840482d8bf61d70decb05285a78c9c83b4d6))
+* entry macro ([1dcbf03](https://github.com/untrustedmodders/polyhook/commit/1dcbf03725252ccb86284d6d2de81822e0a996af))
+* update sdk ([93f5e01](https://github.com/untrustedmodders/polyhook/commit/93f5e0176f50f46e12db82648949a36f3cacd389))
+
 ## [1.0.4](https://github.com/untrustedmodders/polyhook/compare/v1.0.3...v1.0.4) (2025-02-11)
 
 
