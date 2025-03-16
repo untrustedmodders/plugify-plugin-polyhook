@@ -43,7 +43,7 @@ namespace PLH {
 		Supercede ///< Skip real function; use my return value
 	};
 
-	enum class CallbackType : bool {
+	enum class CallbackType : uint8_t {
 		Pre,  ///< Callback will be executed before the original function
 		Post  ///< Callback will be executed after the original function
 	};

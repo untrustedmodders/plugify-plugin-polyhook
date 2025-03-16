@@ -398,9 +398,25 @@
           "description": "Hook pointer"
         },
         {
-          "type": "bool",
-          "name": "post",
-          "description": "True indicates post hook"
+          "type": "uint8",
+          "name": "type",
+          "description": "Whether the hook was in post mode (after processing) or pre mode (before processing).",
+          "enum": {
+            "name": "CallbackType",
+            "description": "Enum representing the type of callback.",
+            "values": [
+              {
+                "name": "Pre",
+                "description": "Callback will be executed before the original function",
+                "value": 0
+              },
+              {
+                "name": "Post",
+                "description": "Callback will be executed after the original function",
+                "value": 1
+              }
+            ]
+          }
         },
         {
           "type": "function",
@@ -432,9 +448,25 @@
                 "description": "Pointer to return structure"
               },
               {
-                "type": "bool",
-                "name": "post",
-                "description": "True indicates post hook"
+                "type": "uint8",
+                "name": "type",
+                "description": "Whether the hook was in post mode (after processing) or pre mode (before processing).",
+                "enum": {
+                  "name": "CallbackType",
+                  "description": "Enum representing the type of callback.",
+                  "values": [
+                    {
+                      "name": "Pre",
+                      "description": "Callback will be executed before the original function",
+                      "value": 0
+                    },
+                    {
+                      "name": "Post",
+                      "description": "Callback will be executed after the original function",
+                      "value": 1
+                    }
+                  ]
+                }
               }
             ],
             "retType": {
@@ -487,9 +519,25 @@
           "description": "Hook pointer"
         },
         {
-          "type": "bool",
-          "name": "post",
-          "description": "True indicates post hook"
+          "type": "uint8",
+          "name": "type",
+          "description": "Whether the hook was in post mode (after processing) or pre mode (before processing).",
+          "enum": {
+            "name": "CallbackType",
+            "description": "Enum representing the type of callback.",
+            "values": [
+              {
+                "name": "Pre",
+                "description": "Callback will be executed before the original function",
+                "value": 0
+              },
+              {
+                "name": "Post",
+                "description": "Callback will be executed after the original function",
+                "value": 1
+              }
+            ]
+          }
         },
         {
           "type": "function",
@@ -521,9 +569,25 @@
                 "description": "Pointer to return structure"
               },
               {
-                "type": "bool",
-                "name": "post",
-                "description": "True indicates post hook"
+                "type": "uint8",
+                "name": "type",
+                "description": "Whether the hook was in post mode (after processing) or pre mode (before processing).",
+                "enum": {
+                  "name": "CallbackType",
+                  "description": "Enum representing the type of callback.",
+                  "values": [
+                    {
+                      "name": "Pre",
+                      "description": "Callback will be executed before the original function",
+                      "value": 0
+                    },
+                    {
+                      "name": "Post",
+                      "description": "Callback will be executed after the original function",
+                      "value": 1
+                    }
+                  ]
+                }
               }
             ],
             "retType": {
@@ -576,9 +640,25 @@
           "description": "Hook pointer"
         },
         {
-          "type": "bool",
-          "name": "post",
-          "description": "True indicates post hook"
+          "type": "uint8",
+          "name": "type",
+          "description": "Whether the hook was in post mode (after processing) or pre mode (before processing).",
+          "enum": {
+            "name": "CallbackType",
+            "description": "Enum representing the type of callback.",
+            "values": [
+              {
+                "name": "Pre",
+                "description": "Callback will be executed before the original function",
+                "value": 0
+              },
+              {
+                "name": "Post",
+                "description": "Callback will be executed after the original function",
+                "value": 1
+              }
+            ]
+          }
         },
         {
           "type": "function",
@@ -610,9 +690,25 @@
                 "description": "Pointer to return structure"
               },
               {
-                "type": "bool",
-                "name": "post",
-                "description": "True indicates post hook"
+                "type": "uint8",
+                "name": "type",
+                "description": "Whether the hook was in post mode (after processing) or pre mode (before processing).",
+                "enum": {
+                  "name": "CallbackType",
+                  "description": "Enum representing the type of callback.",
+                  "values": [
+                    {
+                      "name": "Pre",
+                      "description": "Callback will be executed before the original function",
+                      "value": 0
+                    },
+                    {
+                      "name": "Post",
+                      "description": "Callback will be executed after the original function",
+                      "value": 1
+                    }
+                  ]
+                }
               }
             ],
             "retType": {

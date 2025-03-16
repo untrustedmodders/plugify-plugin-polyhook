@@ -319,18 +319,13 @@ uint64_t PLH::Callback::getJitFunc(const DataType retType, std::span<const DataT
 	return getJitFunc(sig, pre, post);
 }
 
-template<typename E>
-constexpr auto to_integral(E e) -> std::underlying_type_t<E> {
-	return static_cast<std::underlying_type_t<E>>(e);
-}
-
 bool PLH::Callback::addCallback(const CallbackType type, const CallbackHandler callback) {
 	if (!callback)
 		return false;
 
 	std::unique_lock lock(m_mutex);
 
-	std::vector<CallbackHandler>& callbacks = m_callbacks[to_integral(type)];
+	std::vector<CallbackHandler>& callbacks = m_callbacks[static_cast<size_t>(type)];
 
 	for (const CallbackHandler c : callbacks) {
 		if (c == callback) {
@@ -348,7 +343,7 @@ bool PLH::Callback::removeCallback(const CallbackType type, const CallbackHandle
 
 	std::unique_lock lock(m_mutex);
 
-	std::vector<CallbackHandler>& callbacks = m_callbacks[to_integral(type)];
+	std::vector<CallbackHandler>& callbacks = m_callbacks[static_cast<size_t>(type)];
 
 	for (size_t i = 0; i < callbacks.size(); i++) {
 		if (callbacks[i] == callback) {
@@ -364,7 +359,7 @@ bool PLH::Callback::isCallbackRegistered(const CallbackType type, const Callback
 	if (!callback)
 		return false;
 
-	const std::vector<CallbackHandler>& callbacks = m_callbacks[to_integral(type)];
+	const std::vector<CallbackHandler>& callbacks = m_callbacks[static_cast<size_t>(type)];
 
 	for (const CallbackHandler c : callbacks) {
 		if (c == callback)
@@ -375,7 +370,7 @@ bool PLH::Callback::isCallbackRegistered(const CallbackType type, const Callback
 }
 
 bool PLH::Callback::areCallbacksRegistered(const CallbackType type) const {
-	return !m_callbacks[to_integral(type)].empty();
+	return !m_callbacks[static_cast<size_t>(type)].empty();
 }
 
 bool PLH::Callback::areCallbacksRegistered() const {
@@ -383,7 +378,7 @@ bool PLH::Callback::areCallbacksRegistered() const {
 }
 
 PLH::Callback::Callbacks PLH::Callback::getCallbacks(const CallbackType type) {
-	return { m_callbacks[to_integral(type)], std::shared_lock(m_mutex) };
+	return { m_callbacks[static_cast<size_t>(type)], std::shared_lock(m_mutex) };
 }
 
 uint64_t* PLH::Callback::getTrampolineHolder() {
