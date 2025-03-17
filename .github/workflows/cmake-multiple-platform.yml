@@ -68,10 +68,11 @@ jobs:
           cmake --build . --target polyhook --config ${{ env.BUILD_TYPE }} -- /m
 
       - name: Clean build directory
+        shell: pwsh
         run: |
-          mkdir -p build/output/bin
-          cp build/${{ env.BUILD_TYPE }}/polyhook.dll build/output/bin
-          cp build/polyhook.pplugin build/output
+          New-Item -ItemType Directory -Force -Path build\output\bin
+          Move-Item -Path build\${{ env.BUILD_TYPE }}\polyhook.dll -Destination build\output\bin
+          Move-Item -Path build\polyhook.pmodule -Destination build\output
 
       - uses: actions/upload-artifact@v4
         with:
