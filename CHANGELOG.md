@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.1.2](https://github.com/untrustedmodders/polyhook/compare/v1.1.1...v1.1.2) (2025-03-17)
+
+
+### Bug Fixes
+
+* add using enum ([431647a](https://github.com/untrustedmodders/polyhook/commit/431647a0822febc939a4c178b30e668941f8c617))
+* update callbacks with new enum instead of bool ([35b9c07](https://github.com/untrustedmodders/polyhook/commit/35b9c0779301d4f40d348c70c501210ab070ac21))
+* update plugify ([c987bc5](https://github.com/untrustedmodders/polyhook/commit/c987bc5fb076ea19590d7e809fb758659f24de8d))
+
 ## [1.1.1](https://github.com/untrustedmodders/polyhook/compare/v1.1.0...v1.1.1) (2025-03-13)
 
 
