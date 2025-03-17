@@ -72,7 +72,7 @@ jobs:
         run: |
           New-Item -ItemType Directory -Force -Path build\output\bin
           Move-Item -Path build\${{ env.BUILD_TYPE }}\polyhook.dll -Destination build\output\bin
-          Move-Item -Path build\polyhook.pmodule -Destination build\output
+          Move-Item -Path build\polyhook.pplugin -Destination build\output
 
       - uses: actions/upload-artifact@v4
         with:
