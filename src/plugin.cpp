@@ -4,21 +4,22 @@ static PLH::PolyHookPlugin g_polyHookPlugin;
 EXPOSE_PLUGIN(PLUGIN_API, PLH::PolyHookPlugin, &g_polyHookPlugin)
 
 using namespace PLH;
+using enum CallbackType;
 
 static void PreCallback(Callback* callback, const Callback::Parameters* params, Callback::Property* property, const Callback::Return* ret) {
 	ReturnAction returnAction = ReturnAction::Ignored;
 
-	auto [callbacks, lock] = callback->getCallbacks(CallbackType::Pre);
+	auto [callbacks, lock] = callback->getCallbacks(Pre);
 
 	callback->cleanup();
 
 	for (const auto& cb : callbacks) {
-		ReturnAction result = cb(callback, params, property->count, ret, CallbackType::Pre);
+		ReturnAction result = cb(callback, params, property->count, ret, Pre);
 		if (result > returnAction)
 			returnAction = result;
 	}
 
-	if (!callback->areCallbacksRegistered(CallbackType::Post)) {
+	if (!callback->areCallbacksRegistered(Post)) {
 		property->flag |= ReturnFlag::NoPost;
 	}
 	if (returnAction >= ReturnAction::Supercede) {
@@ -27,10 +28,10 @@ static void PreCallback(Callback* callback, const Callback::Parameters* params, 
 }
 
 static void PostCallback(Callback* callback, const Callback::Parameters* params, Callback::Property* property, const Callback::Return* ret) {
-	auto [callbacks, lock] = callback->getCallbacks(CallbackType::Post);
+	auto [callbacks, lock] = callback->getCallbacks(Post);
 
 	for (const auto& cb : callbacks) {
-		cb(callback, params, property->count, ret, CallbackType::Post);
+		cb(callback, params, property->count, ret, Post);
 	}
 }
 
