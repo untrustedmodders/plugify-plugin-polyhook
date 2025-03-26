@@ -80,7 +80,7 @@ if(NOT COMPILER_SUPPORTS_FORMAT)
     target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt-header-only)
 endif()
 
-file(READ "${CMAKE_SOURCE_DIR}/version.txt" VERSION_FILE_CONTENTS)
+file(READ "${CMAKE_CURRENT_SOURCE_DIR}/version.txt" VERSION_FILE_CONTENTS)
 string(STRIP "${VERSION_FILE_CONTENTS}" VERSION_FILE_CONTENTS)
 set(POLYHOOK_VERSION "${VERSION_FILE_CONTENTS}" CACHE STRING "Set version name")
 set(POLYHOOK_PACKAGE "polyhook" CACHE STRING "Set package name")
@@ -88,6 +88,6 @@ string(REPLACE "v" "" POLYHOOK_VERSION "${POLYHOOK_VERSION}")
 
 
 configure_file(
-    ${CMAKE_SOURCE_DIR}/polyhook.pplugin.in
-    ${CMAKE_BINARY_DIR}/polyhook.pplugin
+    ${CMAKE_CURRENT_SOURCE_DIR}/polyhook.pplugin.in
+    ${CMAKE_CURRENT_BINARY_DIR}/polyhook.pplugin
 )

@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/untrustedmodders/plugify/refs/heads/main/schemas/package.schema.json",
   "content": {
-    "dynohook": {
+    "polyhook": {
       "name": "polyhook",
       "type": "plugin",
       "author": "stevemk14ebr",
