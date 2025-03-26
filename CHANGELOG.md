@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.1.3](https://github.com/untrustedmodders/polyhook/compare/v1.1.2...v1.1.3) (2025-03-26)
+
+
+### Bug Fixes
+
+* build when dep ([e6930d4](https://github.com/untrustedmodders/polyhook/commit/e6930d4790ae353ba2d27c2cbd5731a005aeae9e))
+* typo ([161bb59](https://github.com/untrustedmodders/polyhook/commit/161bb5955bb6731111b89ef5aa00888df007b4cf))
+* update build action ([ce2e2d5](https://github.com/untrustedmodders/polyhook/commit/ce2e2d5850fc92f0def8545531e8ee665972572c))
+
 ## [1.1.2](https://github.com/untrustedmodders/polyhook/compare/v1.1.1...v1.1.2) (2025-03-17)
 
 
