@@ -321,28 +321,6 @@
       }
     },
     {
-      "name": "FindOriginalAddr",
-      "group": "Lookup",
-      "description": "Attempts to find original address of function before setting hook",
-      "funcName": "FindOriginalAddr",
-      "paramTypes": [
-        {
-          "type": "ptr64",
-          "name": "pClass",
-          "description": "Object pointer"
-        },
-        {
-          "type": "ptr64",
-          "name": "pAddr",
-          "description": "Address of function set by hook"
-        }
-      ],
-      "retType": {
-        "type": "ptr64",
-        "description": "Address of original function"
-      }
-    },
-    {
       "name": "GetVTableIndex",
       "group": "Lookup",
       "description": "Attempts to find virtual table index of virtual function",

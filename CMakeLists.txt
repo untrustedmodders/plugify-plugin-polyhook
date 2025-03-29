@@ -30,6 +30,7 @@ include(cmake/compat_format.cmake)
 # Polyhook & DynLibUtils
 #
 include(cmake/polyhook.cmake)
+include(cmake/dynlibutils.cmake)
 
 #
 # Plugin
@@ -39,8 +40,8 @@ file(GLOB_RECURSE PLUGIN_SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "src/*.cpp
 add_library(${PROJECT_NAME} SHARED ${PLUGIN_SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
-target_link_libraries(${PROJECT_NAME} PRIVATE PolyHook_2)
-target_include_directories(${PROJECT_NAME} PRIVATE ${PolyHook_2_SOURCE_DIR}e)
+target_link_libraries(${PROJECT_NAME} PRIVATE PolyHook_2 cpp-memory_utils)
+target_include_directories(${PROJECT_NAME} PRIVATE ${PolyHook_2_SOURCE_DIR} ${dynlibutils_SOURCE_DIR}/include)
 
 if(MSVC)
     target_compile_options(asmjit PUBLIC /wd5054)
@@ -67,7 +68,6 @@ elseif(UNIX)
 endif()
 
 if(LINUX)
-    target_compile_definitions(${PROJECT_NAME} PRIVATE _GLIBCXX_USE_CXX11_ABI=0)
     target_link_libraries(${PROJECT_NAME} PRIVATE -static-libstdc++ -static-libgcc)
 endif()
 
@@ -75,6 +75,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
         PLUGIFY_FORMAT_SUPPORT=$<BOOL:${COMPILER_SUPPORTS_FORMAT}> 
         PLUGIFY_IS_DEBUG=$<STREQUAL:${CMAKE_BUILD_TYPE},Debug>
         PLUGIFY_IS_RELEASE=$<STREQUAL:${CMAKE_BUILD_TYPE},Release>
+        PLH_SOURCEHOOK=1 # Enable sourcehook fix (for vhooks only)
 )
 if(NOT COMPILER_SUPPORTS_FORMAT)
     target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt-header-only)

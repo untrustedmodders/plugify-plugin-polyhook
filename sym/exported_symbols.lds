@@ -8,7 +8,6 @@ UnhookVirtualByFunc
 FindDetour
 FindVirtual
 FindVirtualByFunc
-FindOriginalAddr
 GetVTableIndex
 UnhookAll
 UnhookAllVirtual

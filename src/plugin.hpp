@@ -18,6 +18,15 @@
 #include <mutex>
 
 namespace PLH {
+#if PLH_SOURCEHOOK
+	struct ShPointer {
+		void* ptr;
+	};
+	struct ShDeleter {
+		void operator()(ShPointer* dp) const;
+	};
+#endif
+
 	class PolyHookPlugin final : public plg::IPluginEntry, public MemAccessor {
 	public:
 		void OnPluginStart() final;
@@ -38,15 +47,30 @@ namespace PLH {
 		void unhookAll();
 		void unhookAllVirtual(void* pClass);
 
-		void* findOriginalAddr(void* pClass, void* pAddr);
 		int getVirtualTableIndex(void* pFunc, ProtFlag flag = RWX) const;
 
 	private:
 		std::shared_ptr<asmjit::JitRuntime> m_jitRuntime;
-		std::unordered_map<std::pair<void*, int>, std::unique_ptr<Callback>> m_callbacks;
-		std::unordered_map<void*, std::pair<VFuncMap, VFuncMap>> m_tables;
-		std::unordered_map<void*, std::unique_ptr<IHook>> m_vhooks;
-		std::unordered_map<void*, std::unique_ptr<NatDetour>> m_detours;
+#if PLH_SOURCEHOOK
+		struct SHook {
+			std::unique_ptr<ShPointer, ShDeleter> pre;
+			std::unique_ptr<ShPointer, ShDeleter> post;
+			std::unique_ptr<Callback> callback;
+		};
+		std::unordered_map<std::pair<void*, int>, SHook> m_shooks;
+#endif
+		struct VHook {
+			std::unique_ptr<VTableSwapHook> vtable;
+			std::map<int, Callback> callbacks;
+			VFuncMap redirectMap;
+			VFuncMap origVFuncs;
+		};
+		std::unordered_map<void*, VHook> m_vhooks;
+		struct DHook {
+			std::unique_ptr<NatDetour> detour;
+			std::unique_ptr<Callback> callback;
+		};
+		std::unordered_map<void*, DHook> m_detours;
 		std::mutex m_mutex;
 	};
 }
