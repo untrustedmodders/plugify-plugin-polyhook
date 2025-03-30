@@ -97,7 +97,7 @@ uint64_t PLH::Callback::getJitFunc(const asmjit::FuncSignature& sig, const Callb
 	// map argument slots to registers, following abi.
 	std::vector<asmjit::x86::Reg> argRegisters;
 	argRegisters.reserve( sig.argCount());
-	for (uint32_t argIdx = 0; argIdx < sig.argCount(); argIdx++) {
+	for (uint32_t argIdx = 0; argIdx < sig.argCount(); ++argIdx) {
 		const auto argType = sig.args()[argIdx];
 
 		asmjit::x86::Reg arg;
@@ -131,7 +131,7 @@ uint64_t PLH::Callback::getJitFunc(const asmjit::FuncSignature& sig, const Callb
 	// set i = 0
 	cc.mov(i, 0);
 	//// mov from arguments registers into the stack structure
-	for (uint32_t argIdx = 0; argIdx < sig.argCount(); argIdx++) {
+	for (uint32_t argIdx = 0; argIdx < sig.argCount(); ++argIdx) {
 		const auto argType = sig.args()[argIdx];
 
 		// have to cast back to explicit register types to gen right mov type
@@ -200,7 +200,7 @@ uint64_t PLH::Callback::getJitFunc(const asmjit::FuncSignature& sig, const Callb
 
 	// mov from arguments stack structure into regs
 	cc.mov(i, 0); // reset idx
-	for (uint32_t argIdx = 0; argIdx < sig.argCount(); argIdx++) {
+	for (uint32_t argIdx = 0; argIdx < sig.argCount(); ++argIdx) {
 		const auto argType = sig.args()[argIdx];
 
 		if (asmjit::TypeUtils::isInt(argType)) {
@@ -223,7 +223,7 @@ uint64_t PLH::Callback::getJitFunc(const asmjit::FuncSignature& sig, const Callb
 
 	asmjit::InvokeNode* origInvokeNode;
 	cc.invoke(&origInvokeNode, origPtr, sig);
-	for (uint32_t argIdx = 0; argIdx < sig.argCount(); argIdx++) {
+	for (uint32_t argIdx = 0; argIdx < sig.argCount(); ++argIdx) {
 		origInvokeNode->setArg(argIdx, argRegisters.at(argIdx));
 	}
 
@@ -263,7 +263,7 @@ uint64_t PLH::Callback::getJitFunc(const asmjit::FuncSignature& sig, const Callb
 
 	// mov from arguments stack structure into regs
 	cc.mov(i, 0); // reset idx
-	for (uint32_t argIdx = 0; argIdx < sig.argCount(); argIdx++) {
+	for (uint32_t argIdx = 0; argIdx < sig.argCount(); ++argIdx) {
 		const auto argType = sig.args()[argIdx];
 
 		if (asmjit::TypeUtils::isInt(argType)) {
@@ -383,7 +383,7 @@ uint64_t PLH::Callback::getJitFunc2(const asmjit::FuncSignature& sig, const Call
 	// map argument slots to registers, following abi.
 	std::vector<asmjit::x86::Reg> argRegisters;
 	argRegisters.reserve( sig.argCount());
-	for (uint32_t argIdx = 0; argIdx < sig.argCount(); argIdx++) {
+	for (uint32_t argIdx = 0; argIdx < sig.argCount(); ++argIdx) {
 		const auto argType = sig.args()[argIdx];
 
 		asmjit::x86::Reg arg;
@@ -417,7 +417,7 @@ uint64_t PLH::Callback::getJitFunc2(const asmjit::FuncSignature& sig, const Call
 	// set i = 0
 	cc.mov(i, 0);
 	//// mov from arguments registers into the stack structure
-	for (uint32_t argIdx = 0; argIdx < sig.argCount(); argIdx++) {
+	for (uint32_t argIdx = 0; argIdx < sig.argCount(); ++argIdx) {
 		const auto argType = sig.args()[argIdx];
 
 		// have to cast back to explicit register types to gen right mov type
@@ -514,7 +514,7 @@ bool PLH::Callback::addCallback(const CallbackType type, const CallbackHandler c
 		}
 	}
 
-	callbacks.push_back(callback);
+	callbacks.emplace_back(callback);
 	return true;
 }
 
@@ -536,7 +536,7 @@ bool PLH::Callback::removeCallback(const CallbackType type, const CallbackHandle
 	return false;
 }
 
-bool PLH::Callback::isCallbackRegistered(const CallbackType type, const CallbackHandler callback) const {
+bool PLH::Callback::isCallbackRegistered(const CallbackType type, const CallbackHandler callback) const noexcept {
 	if (!callback)
 		return false;
 
@@ -550,64 +550,49 @@ bool PLH::Callback::isCallbackRegistered(const CallbackType type, const Callback
 	return false;
 }
 
-bool PLH::Callback::areCallbacksRegistered(const CallbackType type) const {
+bool PLH::Callback::areCallbacksRegistered(const CallbackType type) const noexcept {
 	return !m_callbacks[static_cast<size_t>(type)].empty();
 }
 
-bool PLH::Callback::areCallbacksRegistered() const {
+bool PLH::Callback::areCallbacksRegistered() const noexcept {
 	return areCallbacksRegistered(CallbackType::Pre) || areCallbacksRegistered(CallbackType::Post);
 }
 
-PLH::Callback::Callbacks PLH::Callback::getCallbacks(const CallbackType type) {
+PLH::Callback::Callbacks PLH::Callback::getCallbacks(const CallbackType type) noexcept {
 	return { m_callbacks[static_cast<size_t>(type)], std::shared_lock(m_mutex) };
 }
 
-uint64_t* PLH::Callback::getTrampolineHolder() {
+uint64_t* PLH::Callback::getTrampolineHolder() noexcept {
 	return &m_trampolinePtr;
 }
 
-uint64_t* PLH::Callback::getFunctionHolder() {
+uint64_t* PLH::Callback::getFunctionHolder() noexcept {
 	return &m_functionPtr;
 }
 
-std::string_view PLH::Callback::getError() const {
+std::string_view PLH::Callback::getError() const noexcept {
 	return !m_functionPtr && m_errorCode ? m_errorCode : "";
 }
 
 const std::string& PLH::Callback::store(std::string_view str) {
 	std::unique_lock lock(m_mutex);
-	return *m_storage.emplace_back(std::make_unique<std::string>(str));
+	if (!m_storage) {
+		m_storage = std::make_unique<std::unordered_map<std::thread::id, std::deque<std::string>>>();
+	}
+	return (*m_storage)[std::this_thread::get_id()].emplace_back(str);
 }
 
 void PLH::Callback::cleanup() {
-	m_storage.clear();
+	if (m_storage) {
+		std::unique_lock lock(m_mutex);
+		(*m_storage)[std::this_thread::get_id()].clear();
+	}
 }
 
 PLH::Callback::Callback(std::weak_ptr<asmjit::JitRuntime> rt) : m_rt(std::move(rt)) {
 }
 
-bool is_mutex_free(std::shared_mutex& mtx) {
-	if (mtx.try_lock()) {
-		mtx.unlock();
-		return true;
-	}
-	if (mtx.try_lock_shared()) {
-		mtx.unlock_shared();
-		return true;
-	}
-	return false;
-}
-
 PLH::Callback::~Callback() {
-	int spin_count = 0;
-	while (!is_mutex_free(m_mutex)) {
-		if (++spin_count < 16) {
-			_mm_pause();
-		} else {
-			std::this_thread::yield();
-			spin_count = 0;
-		}
-	}
 	if (auto rt = m_rt.lock()) {
 		if (m_functionPtr) {
 			rt->release(m_functionPtr);

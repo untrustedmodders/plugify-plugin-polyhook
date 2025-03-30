@@ -6,13 +6,14 @@ EXPOSE_PLUGIN(PLUGIN_API, PLH::PolyHookPlugin, &g_polyHookPlugin)
 
 using namespace PLH;
 using enum CallbackType;
+using namespace std::chrono_literals;
 
 static void PreCallback(Callback* callback, const Callback::Parameters* params, Callback::Property* property, const Callback::Return* ret) {
-	ReturnAction returnAction = ReturnAction::Ignored;
+	callback->cleanup();
 
 	auto [callbacks, lock] = callback->getCallbacks(Pre);
 
-	callback->cleanup();
+	ReturnAction returnAction = ReturnAction::Ignored;
 
 	for (const auto& cb : callbacks) {
 		ReturnAction result = cb(callback, params, property->count, ret, Pre);
@@ -22,7 +23,7 @@ static void PreCallback(Callback* callback, const Callback::Parameters* params, 
 
 	if (!callback->areCallbacksRegistered(Post)) {
 		property->flag |= ReturnFlag::NoPost;
-	}n
+	}
 	if (returnAction >= ReturnAction::Supercede) {
 		property->flag |= ReturnFlag::Supercede;
 	}
@@ -50,11 +51,11 @@ void ShDeleter::operator()(ShPointer* dp) const {
 }
 
 static void PreCallback2(Callback* callback, const Callback::Parameters* params, Callback::Property* property, const Callback::Return* ret) {
-	ReturnAction returnAction = ReturnAction::Ignored;
+	callback->cleanup();
 
 	auto [callbacks, lock] = callback->getCallbacks(Pre);
 
-	callback->cleanup();
+	ReturnAction returnAction = ReturnAction::Ignored;
 
 	for (const auto& cb : callbacks) {
 		ReturnAction result = cb(callback, params, property->count, ret, Pre);
@@ -66,9 +67,9 @@ static void PreCallback2(Callback* callback, const Callback::Parameters* params,
 }
 
 static void PostCallback2(Callback* callback, const Callback::Parameters* params, Callback::Property* property, const Callback::Return* ret) {
-	ReturnAction returnAction = ReturnAction::Ignored;
-
 	auto [callbacks, lock] = callback->getCallbacks(Post);
+
+	ReturnAction returnAction = ReturnAction::Ignored;
 
 	for (const auto& cb : callbacks) {
 		ReturnAction result = cb(callback, params, property->count, ret, Post);
@@ -105,8 +106,22 @@ void PolyHookPlugin::OnPluginStart() {
 #endif
 }
 
+void PolyHookPlugin::OnPluginUpdate(float dt) {
+	if (!m_removals.empty() && Clock::now() >= m_removals.top().when) {
+		m_removals.pop();
+	}
+}
+
 void PolyHookPlugin::OnPluginEnd() {
 	unhookAll();
+
+	while (!m_removals.empty()) {
+		m_removals.pop();
+	}
+
+	m_jitRuntime.reset();
+
+	SourceHook = false;
 }
 
 Callback* PolyHookPlugin::hookDetour(void* pFunc, DataType returnType, std::span<const DataType> arguments) {
@@ -170,7 +185,7 @@ Callback* PolyHookPlugin::hookVirtual(void* pClass, int index, DataType returnTy
 		if (it != m_vhooks.end()) {
 			auto it2 = it->second.callbacks.find(index);
 			if (it2 != it->second.callbacks.end()) {
-				return const_cast<Callback*>(&it2->second);
+				return it2->second.get();
 			} else {
 				it->second.vtable->unHook();
 			}
@@ -180,27 +195,30 @@ Callback* PolyHookPlugin::hookVirtual(void* pClass, int index, DataType returnTy
 
 		auto& [vtable, callbacks, redirectMap, origVFuncs] = it->second;
 
-		auto& callback = callbacks.emplace(index, m_jitRuntime).first->second;
-		auto error = callback.getError();
+		auto& callback = callbacks.emplace(index, std::make_unique<Callback>(m_jitRuntime)).first->second;
+		auto error = callback->getError();
 		if (!error.empty()) {
 			std::puts(error.data());
 			std::terminate();
 		}
 
-		uint64_t JIT = callback.getJitFunc(returnType, arguments, &PreCallback, &PostCallback);
+		uint64_t JIT = callback->getJitFunc(returnType, arguments, &PreCallback, &PostCallback);
 
 		redirectMap[index] = JIT;
 
 		vtable = std::make_unique<VTableSwapHook>((uint64_t) pClass, redirectMap, &origVFuncs);
 		if (!vtable->hook()) {
-			m_vhooks.erase(pClass);
+			for (auto& [_, cb] : callbacks) {
+				m_removals.push({std::move(cb), Clock::now() + 1s});
+			}
+			m_vhooks.erase(it);
 			return nullptr;
 		}
 
 		uint64_t origVFunc = origVFuncs[index];
-		*callback.getTrampolineHolder() = origVFunc;
+		*callback->getTrampolineHolder() = origVFunc;
 
-		return &callback;
+		return callback.get();
 	}
 }
 
@@ -217,8 +235,8 @@ bool PolyHookPlugin::unhookDetour(void* pFunc) {
 	auto it = m_detours.find(pFunc);
 	if (it != m_detours.end()) {
 		auto& [detour, callback] = it->second;
-
 		detour->unHook();
+		m_removals.push({std::move(callback), Clock::now() + 1s});
 		m_detours.erase(it);
 		return true;
 	}
@@ -234,7 +252,13 @@ bool PolyHookPlugin::unhookVirtual(void* pClass, int index) {
 
 #if PLH_SOURCEHOOK
 	if (SourceHook) {
-		m_shooks.erase({pClass, index});
+		auto it = m_shooks.find({pClass, index});
+		if (it != m_shooks.end()) {
+			auto& [pre, post, callback] = it->second;
+			m_removals.push({std::move(callback), Clock::now() + 1s});
+			m_shooks.erase(it);
+			return true;
+		}
 	}
 	else
 #endif
@@ -244,7 +268,11 @@ bool PolyHookPlugin::unhookVirtual(void* pClass, int index) {
 			auto& [vtable, callbacks, redirectMap, origVFuncs] = it->second;
 
 			vtable->unHook();
-			callbacks.erase(index);
+			auto it2 = callbacks.find(index);
+			if (it2 != callbacks.end()) {
+				m_removals.push({std::move(it2->second), Clock::now() + 1s});
+				callbacks.erase(it2);
+			}
 
 			redirectMap.erase(index);
 			if (redirectMap.empty()) {
@@ -254,6 +282,9 @@ bool PolyHookPlugin::unhookVirtual(void* pClass, int index) {
 
 			vtable = std::make_unique<VTableSwapHook>((uint64_t) pClass, redirectMap, &origVFuncs);
 			if (!vtable->hook()) {
+				for (auto& [_, cb] : callbacks) {
+					m_removals.push({std::move(cb), Clock::now() + 1s});
+				}
 				m_vhooks.erase(it);
 				return false;
 			}
@@ -293,10 +324,11 @@ Callback* PolyHookPlugin::findVirtual(void* pClass, int index) const {
 		if (it != m_vhooks.end()) {
 			auto it2 = it->second.callbacks.find(index);
 			if (it2 != it->second.callbacks.end()) {
-				return const_cast<Callback*>(&it2->second);
+				return it2->second.get();
 			}
 		}
 	}
+
 	return nullptr;
 }
 

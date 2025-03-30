@@ -16,6 +16,8 @@
 #include <unordered_map>
 #include <memory>
 #include <mutex>
+#include <queue>
+#include <chrono>
 
 namespace PLH {
 #if PLH_SOURCEHOOK
@@ -26,10 +28,10 @@ namespace PLH {
 		void operator()(ShPointer* dp) const;
 	};
 #endif
-
 	class PolyHookPlugin final : public plg::IPluginEntry, public MemAccessor {
 	public:
 		void OnPluginStart() final;
+		void OnPluginUpdate(float dt) final;
 		void OnPluginEnd() final;
 
 		Callback* hookDetour(void* pFunc, DataType returnType, std::span<const DataType> arguments);
@@ -61,7 +63,7 @@ namespace PLH {
 #endif
 		struct VHook {
 			std::unique_ptr<VTableSwapHook> vtable;
-			std::map<int, Callback> callbacks;
+			std::unordered_map<int, std::unique_ptr<Callback>> callbacks;
 			VFuncMap redirectMap;
 			VFuncMap origVFuncs;
 		};
@@ -71,6 +73,15 @@ namespace PLH {
 			std::unique_ptr<Callback> callback;
 		};
 		std::unordered_map<void*, DHook> m_detours;
+		using Clock = std::chrono::steady_clock;
+		using TimePoint = std::chrono::time_point<Clock>;
+		struct DelayedRemoval {
+			std::unique_ptr<Callback> callback;
+			TimePoint when;
+
+			bool operator<(const DelayedRemoval& t) const { return when > t.when; }
+		};
+		std::priority_queue<DelayedRemoval> m_removals;
 		std::mutex m_mutex;
 	};
 }

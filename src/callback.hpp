@@ -16,6 +16,9 @@
 #include <span>
 #include <shared_mutex>
 #include <atomic>
+#include <map>
+#include <deque>
+#include <thread>
 
 namespace PLH {
 	enum class DataType : uint8_t {
@@ -116,19 +119,19 @@ namespace PLH {
 		uint64_t getJitFunc2(const asmjit::FuncSignature& sig, CallbackEntry cb, CallbackType type);
 #endif
 
-		uint64_t* getTrampolineHolder();
-		uint64_t* getFunctionHolder();
-		Callbacks getCallbacks(CallbackType type);
-		std::string_view getError() const;
+		uint64_t* getTrampolineHolder() noexcept;
+		uint64_t* getFunctionHolder() noexcept;
+		Callbacks getCallbacks(CallbackType type) noexcept;
+		std::string_view getError() const noexcept;
 
 		const std::string& store(std::string_view str);
 		void cleanup();
 
 		bool addCallback(CallbackType type, CallbackHandler callback);
 		bool removeCallback(CallbackType type, CallbackHandler callback);
-		bool isCallbackRegistered(CallbackType type, CallbackHandler callback) const;
-		bool areCallbacksRegistered(CallbackType type) const;
-		bool areCallbacksRegistered() const;
+		bool isCallbackRegistered(CallbackType type, CallbackHandler callback) const noexcept;
+		bool areCallbacksRegistered(CallbackType type) const noexcept;
+		bool areCallbacksRegistered() const noexcept;
 
 	private:
 		static asmjit::TypeId getTypeId(DataType type);
@@ -144,7 +147,8 @@ namespace PLH {
 			uint64_t m_trampolinePtr = 0;
 			const char* m_errorCode;
 		};
-		std::vector<std::unique_ptr<std::string>> m_storage;
+
+		std::unique_ptr<std::unordered_map<std::thread::id, std::deque<std::string>>> m_storage;
 	};
 }
 
