@@ -121,7 +121,9 @@ void PolyHookPlugin::OnPluginEnd() {
 
 	m_jitRuntime.reset();
 
+#if PLH_SOURCEHOOK
 	SourceHook = false;
+#endif
 }
 
 Callback* PolyHookPlugin::hookDetour(void* pFunc, DataType returnType, std::span<const DataType> arguments) {
