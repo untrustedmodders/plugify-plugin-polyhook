@@ -115,6 +115,11 @@
 		  "enum": {
 			"name": "DataType"
 		  }
+        },
+        {
+          "type": "int32",
+          "name": "varIndex",
+          "description": "Index of a first variadic argument or -1"
         }
       ],
       "retType": {
@@ -153,6 +158,11 @@
 		  "enum": {
 			"name": "DataType"
 		  }
+        },
+        {
+          "type": "int32",
+          "name": "varIndex",
+          "description": "Index of a first variadic argument or -1"
         }
       ],
       "retType": {
@@ -191,6 +201,11 @@
 		  "enum": {
 			"name": "DataType"
 		  }
+        },
+        {
+          "type": "int32",
+          "name": "varIndex",
+          "description": "Index of a first variadic argument or -1"
         }
       ],
       "retType": {

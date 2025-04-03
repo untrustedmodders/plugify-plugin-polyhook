@@ -311,8 +311,8 @@ uint64_t PLH::Callback::getJitFunc(const asmjit::FuncSignature& sig, const Callb
 	return m_functionPtr;
 }
 
-uint64_t PLH::Callback::getJitFunc(const DataType retType, std::span<const DataType> paramTypes, const CallbackEntry pre, const CallbackEntry post) {
-	asmjit::FuncSignature sig(asmjit::CallConvId::kHost, asmjit::FuncSignature::kNoVarArgs, getTypeId(retType));
+uint64_t PLH::Callback::getJitFunc(const DataType retType, std::span<const DataType> paramTypes, const CallbackEntry pre, const CallbackEntry post, uint8_t vaIndex) {
+	asmjit::FuncSignature sig(asmjit::CallConvId::kHost, vaIndex, getTypeId(retType));
 	for (const DataType& type : paramTypes) {
 		sig.addArg(getTypeId(type));
 	}
@@ -324,8 +324,8 @@ std::pair<uint64_t, uint64_t> PLH::Callback::getJitFunc2(const asmjit::FuncSigna
 	return { getJitFunc2(sig, pre, CallbackType::Pre), getJitFunc2(sig, post, CallbackType::Post) };
 }
 
-std::pair<uint64_t, uint64_t> PLH::Callback::getJitFunc2(const DataType retType, std::span<const DataType> paramTypes, const CallbackEntry pre, const CallbackEntry post) {
-	asmjit::FuncSignature sig(asmjit::CallConvId::kHost, asmjit::FuncSignature::kNoVarArgs, getTypeId(retType));
+std::pair<uint64_t, uint64_t> PLH::Callback::getJitFunc2(const DataType retType, std::span<const DataType> paramTypes, const CallbackEntry pre, const CallbackEntry post, uint8_t vaIndex) {
+	asmjit::FuncSignature sig(asmjit::CallConvId::kHost, vaIndex, getTypeId(retType));
 	for (const DataType& type : paramTypes) {
 		sig.addArg(getTypeId(type));
 	}

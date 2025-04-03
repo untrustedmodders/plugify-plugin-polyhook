@@ -34,9 +34,9 @@ namespace PLH {
 		void OnPluginUpdate(float dt) final;
 		void OnPluginEnd() final;
 
-		Callback* hookDetour(void* pFunc, DataType returnType, std::span<const DataType> arguments);
-		Callback* hookVirtual(void* pClass, int index, DataType returnType, std::span<const DataType> arguments);
-		Callback* hookVirtual(void* pClass, void* pFunc, DataType returnType, std::span<const DataType> arguments);
+		Callback* hookDetour(void* pFunc, DataType returnType, std::span<const DataType> arguments, uint8_t vaIndex);
+		Callback* hookVirtual(void* pClass, int index, DataType returnType, std::span<const DataType> arguments, uint8_t vaIndex);
+		Callback* hookVirtual(void* pClass, void* pFunc, DataType returnType, std::span<const DataType> arguments, uint8_t vaIndex);
 
 		bool unhookDetour(void* pFunc);
 		bool unhookVirtual(void* pClass, int index);
