@@ -760,10 +760,10 @@
       }
     },
     {
-      "name": "GetCallbackAddr",
+      "name": "GetFunctionAddr",
       "group": "Getters",
-      "description": "Get callback function address",
-      "funcName": "GetCallbackAddr",
+      "description": "Get generated function address",
+      "funcName": "GetFunctionAddr",
       "paramTypes": [
         {
           "type": "ptr64",
@@ -773,7 +773,24 @@
       ],
       "retType": {
         "type": "ptr64",
-        "description": "Returns jit generated callback pointer"
+        "description": "Returns jit generated function pointer"
+      }
+    },
+    {
+      "name": "GetOriginalAddr",
+      "group": "Getters",
+      "description": "Get original function address",
+      "funcName": "GetOriginalAddr",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "hook",
+          "description": "Hook pointer"
+        }
+      ],
+      "retType": {
+        "type": "ptr64",
+        "description": "Returns original function pointer"
       }
     },
     {

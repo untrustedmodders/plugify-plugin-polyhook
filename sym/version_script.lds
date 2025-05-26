@@ -17,7 +17,8 @@
         RemoveCallback;
         IsCallbackRegistered;
         AreCallbacksRegistered;
-        GetCallbackAddr;
+        GetFunctionAddr;
+        GetOriginalAddr;
         GetArgumentBool;
         GetArgumentInt8;
         GetArgumentUInt8;

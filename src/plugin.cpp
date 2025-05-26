@@ -554,8 +554,12 @@ extern "C" {
 		return callback->areCallbacksRegistered();
 	}
 
-	PLUGIN_API void* GetCallbackAddr(Callback* callback) {
+	PLUGIN_API void* GetFunctionAddr(Callback* callback) {
 		return (void*) *callback->getFunctionHolder();
+	}
+
+	PLUGIN_API void* GetOriginalAddr(Callback* callback) {
+		return (void*) *callback->getTrampolineHolder();
 	}
 
 	PLUGIN_API bool GetArgumentBool(const Callback::Parameters* params, size_t index) { return params->getArg<bool>(index); }
