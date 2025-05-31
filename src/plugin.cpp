@@ -8,7 +8,7 @@ using namespace PLH;
 using enum CallbackType;
 using namespace std::chrono_literals;
 
-static void PreCallback(Callback* callback, const Callback::Parameters* params, Callback::Property* property, const Callback::Return* ret) {
+static void PreCallback(Callback* callback, const Callback::Parameters* params, size_t count, const Callback::Return* ret, ReturnFlag* flag) {
 	callback->cleanup();
 
 	auto [callbacks, lock] = callback->getCallbacks(Pre);
@@ -16,24 +16,24 @@ static void PreCallback(Callback* callback, const Callback::Parameters* params, 
 	ReturnAction returnAction = ReturnAction::Ignored;
 
 	for (const auto& cb : callbacks) {
-		ReturnAction result = cb(callback, params, property->count, ret, Pre);
+		ReturnAction result = cb(callback, params, static_cast<int32_t>(count), ret, Pre);
 		if (result > returnAction)
 			returnAction = result;
 	}
 
 	if (!callback->areCallbacksRegistered(Post)) {
-		property->flag |= ReturnFlag::NoPost;
+		*flag |= ReturnFlag::NoPost;
 	}
 	if (returnAction >= ReturnAction::Supercede) {
-		property->flag |= ReturnFlag::Supercede;
+		*flag |= ReturnFlag::Supercede;
 	}
 }
 
-static void PostCallback(Callback* callback, const Callback::Parameters* params, Callback::Property* property, const Callback::Return* ret) {
+static void PostCallback(Callback* callback, const Callback::Parameters* params, size_t count, const Callback::Return* ret, ReturnFlag*) {
 	auto [callbacks, lock] = callback->getCallbacks(Post);
 
 	for (const auto& cb : callbacks) {
-		cb(callback, params, property->count, ret, Post);
+		cb(callback, params, static_cast<int32_t>(count), ret, Post);
 	}
 }
 
@@ -50,7 +50,7 @@ void ShDeleter::operator()(ShPointer* dp) const {
 	DeleteHook(dp);
 }
 
-static void PreCallback2(Callback* callback, const Callback::Parameters* params, Callback::Property* property, const Callback::Return* ret) {
+static void PreCallback2(Callback* callback, const Callback::Parameters* params, size_t count, const Callback::Return* ret, ReturnFlag*) {
 	callback->cleanup();
 
 	auto [callbacks, lock] = callback->getCallbacks(Pre);
@@ -58,7 +58,7 @@ static void PreCallback2(Callback* callback, const Callback::Parameters* params,
 	ReturnAction returnAction = ReturnAction::Ignored;
 
 	for (const auto& cb : callbacks) {
-		ReturnAction result = cb(callback, params, property->count, ret, Pre);
+		ReturnAction result = cb(callback, params, static_cast<int32_t>(count), ret, Pre);
 		if (result > returnAction)
 			returnAction = result;
 	}
@@ -66,13 +66,13 @@ static void PreCallback2(Callback* callback, const Callback::Parameters* params,
 	HookSetRes(returnAction);
 }
 
-static void PostCallback2(Callback* callback, const Callback::Parameters* params, Callback::Property* property, const Callback::Return* ret) {
+static void PostCallback2(Callback* callback, const Callback::Parameters* params,  size_t count, const Callback::Return* ret, ReturnFlag*) {
 	auto [callbacks, lock] = callback->getCallbacks(Post);
 
 	ReturnAction returnAction = ReturnAction::Ignored;
 
 	for (const auto& cb : callbacks) {
-		ReturnAction result = cb(callback, params, property->count, ret, Post);
+		ReturnAction result = cb(callback, params, static_cast<int32_t>(count), ret, Post);
 		if (result > returnAction)
 			returnAction = result;
 	}
@@ -138,13 +138,14 @@ Callback* PolyHookPlugin::hookDetour(void* pFunc, DataType returnType, std::span
 	}
 
 	auto callback = std::make_unique<Callback>(m_jitRuntime);
+
+	uint64_t JIT = callback->getJitFunc(returnType, arguments, &PreCallback, &PostCallback, varIndex);
+
 	auto error = callback->getError();
 	if (!error.empty()) {
 		std::puts(error.data());
 		std::terminate();
 	}
-
-	uint64_t JIT = callback->getJitFunc(returnType, arguments, &PreCallback, &PostCallback, varIndex);
 
 	auto detour = std::make_unique<NatDetour>((uint64_t) pFunc, JIT, callback->getTrampolineHolder());
 	if (!detour->hook())
@@ -167,13 +168,14 @@ Callback* PolyHookPlugin::hookVirtual(void* pClass, int index, DataType returnTy
 		}
 
 		auto callback = std::make_unique<Callback>(m_jitRuntime);
+
+		auto [preJIT, postJIT] = callback->getJitFunc2(returnType, arguments, &PreCallback2, &PostCallback2, varIndex);
+
 		auto error = callback->getError();
 		if (!error.empty()) {
 			std::puts(error.data());
 			std::terminate();
 		}
-
-		auto [preJIT, postJIT] = callback->getJitFunc2(returnType, arguments, &PreCallback2, &PostCallback2, varIndex);
 
 		auto pre = std::unique_ptr<ShPointer, ShDeleter>(CreateHook(pClass, returnType, arguments, (void*) preJIT, index, false));
 		auto post = std::unique_ptr<ShPointer, ShDeleter>(CreateHook(pClass, returnType, arguments, (void*) postJIT, index, true));
@@ -198,13 +200,13 @@ Callback* PolyHookPlugin::hookVirtual(void* pClass, int index, DataType returnTy
 		auto& [vtable, callbacks, redirectMap, origVFuncs] = it->second;
 
 		auto& callback = callbacks.emplace(index, std::make_unique<Callback>(m_jitRuntime)).first->second;
+		uint64_t JIT = callback->getJitFunc(returnType, arguments, &PreCallback, &PostCallback, varIndex);
+
 		auto error = callback->getError();
 		if (!error.empty()) {
 			std::puts(error.data());
 			std::terminate();
 		}
-
-		uint64_t JIT = callback->getJitFunc(returnType, arguments, &PreCallback, &PostCallback, varIndex);
 
 		redirectMap[index] = JIT;
 

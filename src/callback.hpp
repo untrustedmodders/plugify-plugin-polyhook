@@ -51,7 +51,7 @@ namespace PLH {
 		Post  ///< Callback will be executed after the original function
 	};
 
-	enum class ReturnFlag : int32_t {
+	enum class ReturnFlag : uint8_t {
 		Default = 0, ///< Value means this gives no information about return flag.
 		NoPost = 1,
 		Supercede = 2,
@@ -97,12 +97,7 @@ namespace PLH {
 			volatile uint64_t m_retVal;
 		};
 
-		struct Property {
-			int32_t count;
-			ReturnFlag flag;
-		};
-
-		typedef void (*CallbackEntry)(Callback* callback, const Parameters* params, Property* property, const Return* ret);
+		typedef void (*CallbackEntry)(Callback* callback, const Parameters* params, size_t count, const Return* ret, ReturnFlag* flag);
 		typedef ReturnAction (*CallbackHandler)(Callback* callback, const Parameters* params, int32_t count, const Return* ret, CallbackType type);
 		using Callbacks = std::pair<std::vector<CallbackHandler>&, std::shared_lock<std::shared_mutex>>;
 
@@ -134,7 +129,8 @@ namespace PLH {
 		bool areCallbacksRegistered() const noexcept;
 
 	private:
-		static asmjit::TypeId getTypeId(DataType type);
+		static asmjit::TypeId getTypeId(DataType type) noexcept;
+		static bool hasHiArgSlot(const asmjit::x86::Compiler& compiler, const asmjit::TypeId typeId) noexcept;
 
 		std::weak_ptr<asmjit::JitRuntime> m_rt;
 		std::array<std::vector<CallbackHandler>, 2> m_callbacks;
