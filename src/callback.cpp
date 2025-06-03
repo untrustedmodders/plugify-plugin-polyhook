@@ -384,7 +384,7 @@ uint64_t PLH::Callback::getJitFunc(const FuncSignature& sig, const CallbackEntry
 }
 
 uint64_t PLH::Callback::getJitFunc(const DataType retType, std::span<const DataType> paramTypes, const CallbackEntry pre, const CallbackEntry post, uint8_t vaIndex) {
-	FuncSignature sig(CallConvId::kHost, vaIndex, getTypeId(retType));
+	FuncSignature sig(CallConvId::kCDecl, vaIndex, getTypeId(retType));
 	for (const DataType& type : paramTypes) {
 		sig.addArg(getTypeId(type));
 	}
@@ -397,7 +397,7 @@ std::pair<uint64_t, uint64_t> PLH::Callback::getJitFunc2(const FuncSignature& si
 }
 
 std::pair<uint64_t, uint64_t> PLH::Callback::getJitFunc2(const DataType retType, std::span<const DataType> paramTypes, const CallbackEntry pre, const CallbackEntry post, uint8_t vaIndex) {
-	FuncSignature sig(CallConvId::kHost, vaIndex, getTypeId(retType));
+	FuncSignature sig(CallConvId::kCDecl, vaIndex, getTypeId(retType));
 	for (const DataType& type : paramTypes) {
 		sig.addArg(getTypeId(type));
 	}
