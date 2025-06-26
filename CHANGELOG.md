@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.2.1](https://github.com/untrustedmodders/polyhook/compare/v1.2.0...v1.2.1) (2025-06-26)
+
+
+### Bug Fixes
+
+* add default build type ([686db98](https://github.com/untrustedmodders/polyhook/commit/686db98c767bc8f3179bbe94dec5e1e1f293cf9b))
+* add default params ([6449a02](https://github.com/untrustedmodders/polyhook/commit/6449a025cf665e06aef022e4df300cd711dcf3b0))
+* add macos export symbols ([3205226](https://github.com/untrustedmodders/polyhook/commit/32052264951cf84fed158bba5c79d43546948d24))
+* add x86 support ([f635d81](https://github.com/untrustedmodders/polyhook/commit/f635d81aca47d1f5d05c8cbe535cad8d461b3532))
+* correct file name ([a476c06](https://github.com/untrustedmodders/polyhook/commit/a476c06969730b7e34c9684ea4a4bdf1ba54b63f))
+* remove deprecated call conv ([02e0716](https://github.com/untrustedmodders/polyhook/commit/02e071657132c0f91c1f2ef4463b938e1f1601a2))
+* update arch tags for action build ([f166090](https://github.com/untrustedmodders/polyhook/commit/f166090c2fa3d44b7ec1416bdef872c72e19a807))
+* update plugify ([97d858b](https://github.com/untrustedmodders/polyhook/commit/97d858be406664ca6b3ef4401b909fd81cb20631))
+* update plugify ([f466631](https://github.com/untrustedmodders/polyhook/commit/f466631323e8cb71e6d8c2e44ee3e3b1bcef34df))
+* update version naming ([03ffc4e](https://github.com/untrustedmodders/polyhook/commit/03ffc4e47f6db5c54d8c51b72aa0a298dbf4fc7c))
+
 ## [1.2.0](https://github.com/untrustedmodders/polyhook/compare/v1.1.3...v1.2.0) (2025-05-26)
 
 
