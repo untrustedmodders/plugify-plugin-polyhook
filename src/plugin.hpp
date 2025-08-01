@@ -20,14 +20,6 @@
 #include <chrono>
 
 namespace PLH {
-#if PLH_SOURCEHOOK
-	struct ShPointer {
-		void* ptr;
-	};
-	struct ShDeleter {
-		void operator()(ShPointer* dp) const;
-	};
-#endif
 	class PolyHookPlugin final : public plg::IPluginEntry, public MemAccessor {
 	public:
 		void OnPluginStart() final;
@@ -53,14 +45,6 @@ namespace PLH {
 
 	private:
 		std::shared_ptr<asmjit::JitRuntime> m_jitRuntime;
-#if PLH_SOURCEHOOK
-		struct SHook {
-			std::unique_ptr<ShPointer, ShDeleter> pre;
-			std::unique_ptr<ShPointer, ShDeleter> post;
-			std::unique_ptr<Callback> callback;
-		};
-		std::unordered_map<std::pair<void*, int>, SHook> m_shooks;
-#endif
 		struct VHook {
 			std::unique_ptr<VTableSwapHook> vtable;
 			std::unordered_map<int, std::unique_ptr<Callback>> callbacks;

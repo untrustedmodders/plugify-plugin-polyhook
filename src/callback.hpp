@@ -107,13 +107,6 @@ namespace PLH {
 		uint64_t getJitFunc(const asmjit::FuncSignature& sig, CallbackEntry pre, CallbackEntry post);
 		uint64_t getJitFunc(DataType retType, std::span<const DataType> paramTypes, CallbackEntry pre, CallbackEntry post, uint8_t vaIndex);
 
-#if PLH_SOURCEHOOK
-		std::pair<uint64_t, uint64_t> getJitFunc2(const asmjit::FuncSignature& sig, CallbackEntry pre, CallbackEntry post);
-		std::pair<uint64_t, uint64_t> getJitFunc2(DataType retType, std::span<const DataType> paramTypes, CallbackEntry pre, CallbackEntry post, uint8_t vaIndex);
-
-		uint64_t getJitFunc2(const asmjit::FuncSignature& sig, CallbackEntry cb, CallbackType type);
-#endif
-
 		uint64_t* getTrampolineHolder() noexcept;
 		uint64_t* getFunctionHolder() noexcept;
 		Callbacks getCallbacks(CallbackType type) noexcept;
@@ -136,9 +129,6 @@ namespace PLH {
 		std::array<std::vector<CallbackHandler>, 2> m_callbacks;
 		std::shared_mutex m_mutex;
 		uint64_t m_functionPtr = 0;
-#if PLH_SOURCEHOOK
-		uint64_t m_function2Ptr = 0;
-#endif
 		union {
 			uint64_t m_trampolinePtr = 0;
 			const char* m_errorCode;
