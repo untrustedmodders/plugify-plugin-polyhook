@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.2.2](https://github.com/untrustedmodders/polyhook/compare/v1.2.1...v1.2.2) (2025-08-01)
+
+
+### Bug Fixes
+
+* bump c++ to 23 ([e3e5ff8](https://github.com/untrustedmodders/polyhook/commit/e3e5ff887e2384614668f8b5f6ea164f8fe83550))
+* remove SourceHook mode ([8ffae7c](https://github.com/untrustedmodders/polyhook/commit/8ffae7cf2e9ddf923d9fa119b08299f214456252))
+* update readme and add missing permission ([a8e177e](https://github.com/untrustedmodders/polyhook/commit/a8e177e8374dbd5a3c31612ecb83ec33b9e0e165))
+
 ## [1.2.1](https://github.com/untrustedmodders/polyhook/compare/v1.2.0...v1.2.1) (2025-06-26)
 
 
