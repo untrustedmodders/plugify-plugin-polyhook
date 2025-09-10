@@ -1,0 +1,46 @@
+{% set name = "plugify-plugin-polyhook" %}
+{% set version = "REPLACE_VERSION" %}
+
+package:
+  name: {{ name|lower }}
+  version: {{ version }}
+
+source:
+  path: .
+
+build:
+  number: 0
+  string: "{{ target_platform | replace('-', '_') }}"
+  missing_dso_whitelist:
+    - "*/ld-linux*.so.*"  # [linux]
+    - "*/libc.so.*"       # [linux]
+    - "*/libm.so.*"       # [linux]
+    - "*/libdl.so.*"      # [linux]
+    - "*/libpthread.so.*" # [linux]
+    - "*/librt.so.*"      # [linux]
+
+requirements:
+  run:
+    - __glibc >=2.17 # [linux64]
+
+test:
+  commands:
+    - test -f $PREFIX/bin/libplugify-plugin-polyhook.so  # [linux]
+    - test -f $PREFIX/plugify-plugin-polyhook.pplugin    # [linux]
+    - if not exist %PREFIX%\\bin\\plugify-plugin-polyhook.dll exit 1  # [win]
+    - if not exist %PREFIX%\\plugify-plugin-polyhook.pplugin exit 1   # [win]
+
+about:
+  home: https://github.com/{{ environ.get('GITHUB_REPOSITORY', 'your-org/your-repo') }}
+  license: MIT
+  license_family: MIT
+  license_file: LICENSE
+  summary: PolyHook Plugin for Plugify
+  description: |
+    The x86/x64 API Hooking Library for Windows/Linux which can easily embed it into other programming languages.
+  doc_url: https://github.com/{{ environ.get('GITHUB_REPOSITORY', 'your-org/your-repo') }}/blob/main/README.md
+  dev_url: https://github.com/{{ environ.get('GITHUB_REPOSITORY', 'your-org/your-repo') }}
+
+extra:
+  recipe-maintainers:
+    - {{ environ.get('GITHUB_ACTOR', 'your-username') }}

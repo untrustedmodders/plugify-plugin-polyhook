@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/untrustedmodders/plugify/refs/heads/main/schemas/plugin.schema.json",
   "version": "${POLYHOOK_VERSION}",
   "name": "${POLYHOOK_PACKAGE}",
-  "description": "The x86/x64 API Hooking Library.",
+  "description": "The x86/x64 API Hooking Library for Windows/Linux which can easily embed it into other programming languages.",
   "author": "stevemk14ebr",
   "licence": "MIT",
   "entry": "bin/plugify-plugin-polyhook",
