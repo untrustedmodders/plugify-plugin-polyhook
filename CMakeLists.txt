@@ -17,17 +17,17 @@ list(GET POLYHOOK_VERSION_LIST 0 POLYHOOK_VERSION_MAJOR)
 list(GET POLYHOOK_VERSION_LIST 1 POLYHOOK_VERSION_MINOR)
 list(GET POLYHOOK_VERSION_LIST 2 POLYHOOK_VERSION_PATCH)
 
-project(polyhook 
+project(plugify-plugin-polyhook
 		VERSION "${POLYHOOK_VERSION_MAJOR}.${POLYHOOK_VERSION_MINOR}.${POLYHOOK_VERSION_PATCH}"
 		DESCRIPTION "PolyHook Plugin" 
-		HOMEPAGE_URL "https://github.com/untrustedmodders/polyhook" 
+		HOMEPAGE_URL "https://github.com/untrustedmodders/plugify-plugin-polyhook"
 		LANGUAGES CXX
 )
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+#set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>")
 
 if(NOT CMAKE_BUILD_TYPE MATCHES "Debug|Devel|MinSizeRel|RelWithDebInfo|Release")
@@ -40,15 +40,10 @@ if(UNIX AND NOT APPLE)
 endif()
 
 #
-# Format
-#
-include(CompatFormat)
-
-#
 # Polyhook & DynLibUtils
 #
 include(FetchPolyhook)
-include(FetchDynlibUtils)
+#include(FetchDynlibUtils)
 
 #
 # Plugin
@@ -56,10 +51,10 @@ include(FetchDynlibUtils)
 file(GLOB_RECURSE PLUGIN_SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "src/*.cpp")
 
 add_library(${PROJECT_NAME} SHARED ${PLUGIN_SOURCES})
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/external/plugify/include")
 
-target_link_libraries(${PROJECT_NAME} PRIVATE PolyHook_2 cpp-memory_utils)
-target_include_directories(${PROJECT_NAME} PRIVATE ${PolyHook_2_SOURCE_DIR} ${dynlibutils_SOURCE_DIR}/include)
+target_link_libraries(${PROJECT_NAME} PRIVATE PolyHook_2)
+target_include_directories(${PROJECT_NAME} PRIVATE ${PolyHook_2_SOURCE_DIR})
 
 if(MSVC)
     target_compile_options(asmjit PUBLIC /wd5054)
@@ -86,6 +81,7 @@ elseif(UNIX)
 endif()
 
 if(LINUX)
+    #target_compile_definitions(${PROJECT_NAME} PRIVATE _GLIBCXX_USE_CXX11_ABI=1)
     target_link_libraries(${PROJECT_NAME} PRIVATE -static-libstdc++ -static-libgcc)
 endif()
 
@@ -95,10 +91,10 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
         PLUGIFY_IS_RELEASE=$<STREQUAL:${CMAKE_BUILD_TYPE},Release>
 )
 if(NOT COMPILER_SUPPORTS_FORMAT)
-    target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt-header-only)
+    #target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt-header-only)
 endif()
 
 configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/polyhook.pplugin.in
-    ${CMAKE_CURRENT_BINARY_DIR}/polyhook.pplugin
+        ${CMAKE_CURRENT_SOURCE_DIR}/plugify-plugin-polyhook.pplugin.in
+        ${CMAKE_CURRENT_BINARY_DIR}/plugify-plugin-polyhook.pplugin
 )

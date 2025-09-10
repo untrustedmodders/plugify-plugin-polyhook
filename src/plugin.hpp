@@ -3,7 +3,7 @@
 #include "callback.hpp"
 #include "hash.hpp"
 
-#include <plugify/cpp_plugin.hpp>
+#include <plg/plugin.hpp>
 #include <plugin_export.h>
 
 #include <polyhook2/Detour/NatDetour.hpp>
@@ -23,7 +23,7 @@ namespace PLH {
 	class PolyHookPlugin final : public plg::IPluginEntry, public MemAccessor {
 	public:
 		void OnPluginStart() final;
-		void OnPluginUpdate(float dt) final;
+		void OnPluginUpdate(std::chrono::microseconds dt) final;
 		void OnPluginEnd() final;
 
 		Callback* hookDetour(void* pFunc, DataType returnType, std::span<const DataType> arguments, uint8_t vaIndex);

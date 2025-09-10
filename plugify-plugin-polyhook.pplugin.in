@@ -1,21 +1,15 @@
 {
   "$schema": "https://raw.githubusercontent.com/untrustedmodders/plugify/refs/heads/main/schemas/plugin.schema.json",
-  "fileVersion": 1,
   "version": "${POLYHOOK_VERSION}",
-  "friendlyName": "PolyHook API",
+  "name": "${POLYHOOK_PACKAGE}",
   "description": "The x86/x64 API Hooking Library.",
-  "createdBy": "stevemk14ebr",
-  "createdByURL": "https://github.com/stevemk14ebr/PolyHook_2_0",
-  "docsURL": "https://github.com/stevemk14ebr/PolyHook_2_0",
-  "downloadURL": "https://github.com/untrustedmodders/polyhook/releases/download/v${POLYHOOK_VERSION}/${POLYHOOK_PACKAGE}.zip",
-  "updateURL": "https://untrustedmodders.github.io/polyhook/polyhook.json",
-  "entryPoint": "bin/polyhook",
-  "supportedPlatforms": [],
-  "languageModule": {
-    "name": "cpp"
-  },
+  "author": "stevemk14ebr",
+  "licence": "MIT",
+  "entry": "bin/plugify-plugin-polyhook",
+  "platforms": [],
+  "language": "cpp",
   "dependencies": [],
-  "exportedMethods": [
+  "methods": [
     {
       "name": "HookDetour",
       "group": "Core",
