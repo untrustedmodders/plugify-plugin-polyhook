@@ -40,7 +40,7 @@ void PolyHookPlugin::OnPluginStart() {
 	m_jitRuntime = std::make_unique<asmjit::JitRuntime>();
 }
 
-void PolyHookPlugin::OnPluginUpdate([[maybe_unused]] std::chrono::microseconds dt) {
+void PolyHookPlugin::OnPluginUpdate([[maybe_unused]] std::chrono::milliseconds dt) {
 	if (!m_removals.empty() && Clock::now() >= m_removals.top().when) {
 		m_removals.pop();
 	}

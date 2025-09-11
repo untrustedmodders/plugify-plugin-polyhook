@@ -23,7 +23,7 @@ namespace PLH {
 	class PolyHookPlugin final : public plg::IPluginEntry, public MemAccessor {
 	public:
 		void OnPluginStart() final;
-		void OnPluginUpdate(std::chrono::microseconds dt) final;
+		void OnPluginUpdate(std::chrono::milliseconds dt) final;
 		void OnPluginEnd() final;
 
 		Callback* hookDetour(void* pFunc, DataType returnType, std::span<const DataType> arguments, uint8_t vaIndex);
