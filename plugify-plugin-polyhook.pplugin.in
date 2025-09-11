@@ -4,7 +4,7 @@
   "name": "${POLYHOOK_PACKAGE}",
   "description": "The x86/x64 API Hooking Library for Windows/Linux which can easily embed it into other programming languages.",
   "author": "stevemk14ebr",
-  "licence": "MIT",
+  "license": "MIT",
   "entry": "bin/plugify-plugin-polyhook",
   "platforms": [],
   "language": "cpp",
