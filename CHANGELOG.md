@@ -1,5 +1,25 @@
 # Changelog
 
+## [2.0.0](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v1.2.2...v2.0.0) (2025-09-14)
+
+
+### ⚠ BREAKING CHANGES
+
+* update for a new plugify
+
+### Features
+
+* update for a new plugify ([8c5cfe4](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/8c5cfe4f95c38ea249ed6bd7a276e85e3becbc00))
+
+
+### Bug Fixes
+
+* add conda recipe ([6782acd](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/6782acd6f1be5aa7640ab7b4371517f2199579bd))
+* build script ([3cd10f3](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/3cd10f3e7a8262383256dccfba69810009a535ba))
+* linux build ([c13fd70](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/c13fd7095352671f35fa6ba4d1510c069b9f8fcb))
+* replace static by reinterpret cast ([065fa09](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/065fa09f739217c7d4c16e8cc8d90bcb95a0eb39))
+* update clang format ([a0b6d69](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/a0b6d697522df98ea6cba64f31a4aad20a9edfcf))
+
 ## [1.2.2](https://github.com/untrustedmodders/polyhook/compare/v1.2.1...v1.2.2) (2025-08-01)
 
 
