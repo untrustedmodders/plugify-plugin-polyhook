@@ -5,7 +5,7 @@ message(STATUS "Pulling and configuring PolyHook_2")
 FetchContent_Declare(
         PolyHook_2
         GIT_REPOSITORY https://github.com/stevemk14ebr/PolyHook_2_0.git
-        GIT_TAG 19e7cec8cce4a0068f6db04b6d3680c078183002
+        GIT_TAG 298d56210b9d9e66cde8f96481d6053925c6ae15
 )
 
 set(FMT_DOC OFF CACHE INTERNAL "Generate the doc target.")

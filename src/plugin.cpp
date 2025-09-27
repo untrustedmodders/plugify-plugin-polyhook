@@ -349,15 +349,15 @@ PLUGIFY_WARN_IGNORE(4190)
 
 extern "C" {
 	PLUGIN_API Callback* HookDetour(void* pFunc, DataType returnType, const plg::vector<DataType>& arguments, int varIndex) {
-		return g_polyHookPlugin.hookDetour(pFunc, returnType, arguments.span(), static_cast<uint8_t>(varIndex));
+		return g_polyHookPlugin.hookDetour(pFunc, returnType, arguments, static_cast<uint8_t>(varIndex));
 	}
 
 	PLUGIN_API Callback* HookVirtual(void* pClass, int index, DataType returnType, const plg::vector<DataType>& arguments, int varIndex) {
-		return g_polyHookPlugin.hookVirtual(pClass, index, returnType, arguments.span(), static_cast<uint8_t>(varIndex));
+		return g_polyHookPlugin.hookVirtual(pClass, index, returnType, arguments, static_cast<uint8_t>(varIndex));
 	}
 
 	PLUGIN_API Callback* HookVirtualByFunc(void* pClass, void* pFunc, DataType returnType, const plg::vector<DataType>& arguments, int varIndex) {
-		return g_polyHookPlugin.hookVirtual(pClass, pFunc, returnType, arguments.span(), static_cast<uint8_t>(varIndex));
+		return g_polyHookPlugin.hookVirtual(pClass, pFunc, returnType, arguments, static_cast<uint8_t>(varIndex));
 	}
 
 	PLUGIN_API bool UnhookDetour(void* pFunc) {
