@@ -46,7 +46,7 @@ namespace PLH {
 	private:
 		std::shared_ptr<asmjit::JitRuntime> m_jitRuntime;
 		struct VHook {
-			std::unique_ptr<VTableSwapHook> vtable;
+			std::unique_ptr<IHook> vtable;
 			std::unordered_map<int, std::unique_ptr<Callback>> callbacks;
 			VFuncMap redirectMap;
 			VFuncMap origVFuncs;
