@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.2](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.0.1...v2.0.2) (2025-09-27)
+
+
+### Bug Fixes
+
+* linux build ([ab7ccb7](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/ab7ccb746925f62d2d085a912da7b47e0fb83a6d))
+
 ## [2.0.1](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.0.0...v2.0.1) (2025-09-27)
 
 
