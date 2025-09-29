@@ -17,3 +17,4 @@ CMakeUserPresets.json
 /vcpkg_installed
 /vcpkg.json
 /vcpkg-configuration.json
+/out
