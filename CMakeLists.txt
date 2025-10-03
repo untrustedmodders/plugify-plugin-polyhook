@@ -66,6 +66,7 @@ endif()
 
 if(MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE /Zc:preprocessor $<$<CONFIG:Release>:/Zi>) # /W4 /WX 
+    target_link_options(${PROJECT_NAME} PRIVATE $<$<CONFIG:Release>:/DEBUG /OPT:REF /OPT:ICF>)
 else()
     target_compile_options(${PROJECT_NAME} PRIVATE $<$<CONFIG:Release>:-g1>) # -Wextra -Wshadow -Wconversion -Wpedantic -Werror
 endif()
@@ -83,8 +84,8 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_BINARY_DIR}/exports)
 if(LINUX)
     target_compile_definitions(${PROJECT_NAME} PRIVATE _GLIBCXX_USE_CXX11_ABI=1)
     target_link_libraries(${PROJECT_NAME} PRIVATE -static-libstdc++ -static-libgcc)
-    #target_compile_options(${PROJECT_NAME} PRIVATE $<$<CONFIG:Debug>: -fsanitize=address -fno-omit-frame-pointer -fsanitize=undefined>)
-    #target_link_libraries(${PROJECT_NAME} PRIVATE $<$<CONFIG:Debug>: -fsanitize=address -fno-omit-frame-pointer -fsanitize=undefined>)
+    #target_compile_options(${PROJECT_NAME} PRIVATE $<$<CONFIG:Debug>: -fsanitize=address -fsanitize=leak -fsanitize=undefined>)
+    #target_link_libraries(${PROJECT_NAME} PRIVATE $<$<CONFIG:Debug>: -fsanitize=address -fsanitize=leak -fsanitize=undefined>)
 endif()
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
