@@ -54,7 +54,6 @@ add_library(${PROJECT_NAME} SHARED ${PLUGIN_SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/external/plugify/include")
 
 target_link_libraries(${PROJECT_NAME} PRIVATE PolyHook_2)
-target_include_directories(${PROJECT_NAME} PRIVATE ${PolyHook_2_SOURCE_DIR})
 
 if(MSVC)
     target_compile_options(asmjit PUBLIC /wd5054)
