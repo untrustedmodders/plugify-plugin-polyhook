@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.0.3](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.0.2...v2.0.3) (2025-10-05)
+
+
+### Bug Fixes
+
+* add `out` folder to .gitignore ([2b23ff0](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/2b23ff0077f65d057c3ee1c42a0f77a486e1dc94))
+* improve san and debug symbols on windows ([d7c62fd](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/d7c62fdba0be824fe0aff743f47ee3fcb7b11687))
+* rework fetch ([b36bb03](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/b36bb03bbced6fdf3cbb7ef82b882861ee3e25e5))
+
 ## [2.0.2](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.0.1...v2.0.2) (2025-09-27)
 
 
