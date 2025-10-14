@@ -413,26 +413,44 @@ extern "C" {
 	}
 
 	PLUGIN_API bool AddCallback(Callback* callback, CallbackType type, Callback::CallbackHandler handler) {
+		if (callback == nullptr) {
+			return false;
+		}
 		return callback->addCallback(type, handler);
 	}
 
 	PLUGIN_API bool RemoveCallback(Callback* callback, CallbackType type, Callback::CallbackHandler handler) {
+		if (callback == nullptr) {
+			return false;
+		}
 		return callback->removeCallback(type, handler);
 	}
 
 	PLUGIN_API bool IsCallbackRegistered(Callback* callback, CallbackType type, Callback::CallbackHandler handler) {
+		if (callback == nullptr) {
+			return false;
+		}
 		return callback->isCallbackRegistered(type, handler);
 	}
 
 	PLUGIN_API bool AreCallbacksRegistered(Callback* callback) {
+		if (callback == nullptr) {
+			return false;
+		}
 		return callback->areCallbacksRegistered();
 	}
 
 	PLUGIN_API void* GetFunctionAddr(Callback* callback) {
+		if (callback == nullptr) {
+			return nullptr;
+		}
 		return (void*) *callback->getFunctionHolder();
 	}
 
 	PLUGIN_API void* GetOriginalAddr(Callback* callback) {
+		if (callback == nullptr) {
+			return nullptr;
+		}
 		return (void*) *callback->getTrampolineHolder();
 	}
 
