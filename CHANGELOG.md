@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.1.0](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.0.3...v2.1.0) (2025-10-14)
+
+
+### Features
+
+* add vfunc hook and change api for vtable hook ([99b74db](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/99b74db7eff76d46e925f914744a6ec2fbc16752))
+
+
+### Bug Fixes
+
+* add some nullptr checks ([2634513](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/2634513464b174e29b32216677064b27cdb4ded6))
+* error to stderr stream before terminate ([b032373](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/b0323735649c272d7b2a91c5f9b5be0a504ddfcb))
+
 ## [2.0.3](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.0.2...v2.0.3) (2025-10-05)
 
 
