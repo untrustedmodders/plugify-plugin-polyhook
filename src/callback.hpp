@@ -123,7 +123,7 @@ namespace PLH {
 
 	private:
 		static asmjit::TypeId getTypeId(DataType type) noexcept;
-		static bool hasHiArgSlot(const asmjit::x86::Compiler& compiler, const asmjit::TypeId typeId) noexcept;
+		static bool hasHiArgSlot(const asmjit::x86::Compiler& compiler, asmjit::TypeId typeId) noexcept;
 
 		std::weak_ptr<asmjit::JitRuntime> m_rt;
 		std::array<std::vector<CallbackHandler>, 2> m_callbacks;

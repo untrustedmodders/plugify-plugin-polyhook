@@ -123,10 +123,10 @@
       }
     },
     {
-      "name": "HookVirtual",
+      "name": "HookVirtualTable",
       "group": "Core",
-      "description": "Sets a virtual hook",
-      "funcName": "HookVirtual",
+      "description": "Sets a virtual table hook",
+      "funcName": "HookVirtualTable",
       "paramTypes": [
         {
           "type": "ptr64",
@@ -167,10 +167,10 @@
       }
     },
     {
-      "name": "HookVirtualByFunc",
+      "name": "HookVirtualTable2",
       "group": "Core",
-      "description": "Sets a virtual hook by pointer",
-      "funcName": "HookVirtualByFunc",
+      "description": "Sets a virtual table hook by pointer",
+      "funcName": "HookVirtualTable2",
       "paramTypes": [
         {
           "type": "ptr64",
@@ -210,6 +210,95 @@
         "description": "Returns hook pointer"
       }
     },
+
+    {
+      "name": "HookVirtualFunc",
+      "group": "Core",
+      "description": "Sets a virtual function hook",
+      "funcName": "HookVirtualFunc",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "pClass",
+          "description": "Object pointer"
+        },
+        {
+          "type": "int32",
+          "name": "index",
+          "description": "Vtable offset"
+        },
+        {
+          "type": "uint8",
+          "name": "returnType",
+          "description": "Return type",
+          "enum": {
+            "name": "DataType"
+          }
+        },
+        {
+          "type": "uint8[]",
+          "name": "arguments",
+          "description": "Arguments type array",
+          "enum": {
+            "name": "DataType"
+          }
+        },
+        {
+          "type": "int32",
+          "name": "varIndex",
+          "description": "Index of a first variadic argument or -1",
+          "default": -1
+        }
+      ],
+      "retType": {
+        "type": "ptr64",
+        "description": "Returns hook pointer"
+      }
+    },
+    {
+      "name": "HookVirtualFunc2",
+      "group": "Core",
+      "description": "Sets a virtual function hook by pointer",
+      "funcName": "HookVirtualFunc2",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "pClass",
+          "description": "Object pointer"
+        },
+        {
+          "type": "ptr64",
+          "name": "pFunc",
+          "description": "Vtable member function address"
+        },
+        {
+          "type": "uint8",
+          "name": "returnType",
+          "description": "Return type",
+          "enum": {
+            "name": "DataType"
+          }
+        },
+        {
+          "type": "uint8[]",
+          "name": "arguments",
+          "description": "Arguments type array",
+          "enum": {
+            "name": "DataType"
+          }
+        },
+        {
+          "type": "int32",
+          "name": "varIndex",
+          "description": "Index of a first variadic argument or -1",
+          "default": -1
+        }
+      ],
+      "retType": {
+        "type": "ptr64",
+        "description": "Returns hook pointer"
+      }
+    },
     {
       "name": "UnhookDetour",
       "group": "Core",
@@ -228,10 +317,10 @@
       }
     },
     {
-      "name": "UnhookVirtual",
+      "name": "UnhookVirtualTable",
       "group": "Core",
-      "description": "Removes a virtual hook",
-      "funcName": "UnhookVirtual",
+      "description": "Removes a virtual hook table",
+      "funcName": "UnhookVirtualTable",
       "paramTypes": [
         {
           "type": "ptr64",
@@ -250,10 +339,54 @@
       }
     },
     {
-      "name": "UnhookVirtualByFunc",
+      "name": "UnhookVirtualTable2",
       "group": "Core",
-      "description": "Removes a virtual hook by pointer",
-      "funcName": "UnhookVirtualByFunc",
+      "description": "Removes a virtual table hook by pointer",
+      "funcName": "UnhookVirtualTable2",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "pClass",
+          "description": "Object pointer"
+        },
+        {
+          "type": "ptr64",
+          "name": "pFunc",
+          "description": "Vtable member function address"
+        }
+      ],
+      "retType": {
+        "type": "bool",
+        "description": "Returns true on success, false otherwise"
+      }
+    },
+    {
+      "name": "UnhookVirtualFunc",
+      "group": "Core",
+      "description": "Removes a virtual function table",
+      "funcName": "UnhookVirtualFunc",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "pClass",
+          "description": "Object pointer"
+        },
+        {
+          "type": "int32",
+          "name": "index",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "bool",
+        "description": "Returns true on success, false otherwise"
+      }
+    },
+    {
+      "name": "UnhookVirtualFunc2",
+      "group": "Core",
+      "description": "Removes a virtual function hook by pointer",
+      "funcName": "UnhookVirtualFunc2",
       "paramTypes": [
         {
           "type": "ptr64",
@@ -311,10 +444,10 @@
       }
     },
     {
-      "name": "FindVirtualByFunc",
+      "name": "FindVirtual2",
       "group": "Lookup",
       "description": "Attempts to find existing detour hook by pointer",
-      "funcName": "FindVirtualByFunc",
+      "funcName": "FindVirtual2",
       "paramTypes": [
         {
           "type": "ptr64",
@@ -333,10 +466,10 @@
       }
     },
     {
-      "name": "GetVTableIndex",
+      "name": "GetVirtualIndex",
       "group": "Lookup",
       "description": "Attempts to find virtual table index of virtual function",
-      "funcName": "GetVTableIndex",
+      "funcName": "GetVirtualIndex",
       "paramTypes": [
         {
           "type": "ptr64",

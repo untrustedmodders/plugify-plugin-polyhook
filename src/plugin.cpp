@@ -84,6 +84,7 @@ Callback* PolyHookPlugin::hookDetour(void* pFunc, DataType returnType, std::span
 	return m_detours.emplace(pFunc, DHook{std::move(detour), std::move(callback)}).first->second.callback.get();
 }
 
+template<typename T>
 Callback* PolyHookPlugin::hookVirtual(void* pClass, int index, DataType returnType, std::span<const DataType> arguments, uint8_t varIndex) {
 	if (!pClass || index == -1)
 		return nullptr;
@@ -115,7 +116,7 @@ Callback* PolyHookPlugin::hookVirtual(void* pClass, int index, DataType returnTy
 
 	redirectMap[index] = JIT;
 
-	vtable = std::make_unique<VTableSwapHook>((uint64_t) pClass, redirectMap, &origVFuncs);
+	vtable = std::make_unique<T>((uint64_t) pClass, redirectMap, &origVFuncs);
 	if (!vtable->hook()) {
 		for (auto& [_, cb] : callbacks) {
 			m_removals.push({std::move(cb), Clock::now() + 1s});
@@ -130,8 +131,9 @@ Callback* PolyHookPlugin::hookVirtual(void* pClass, int index, DataType returnTy
 	return callback.get();
 }
 
+template<typename T>
 Callback* PolyHookPlugin::hookVirtual(void* pClass, void* pFunc, DataType returnType, std::span<const DataType> arguments, uint8_t varIndex) {
-	return hookVirtual(pClass, getVirtualTableIndex(pFunc), returnType, arguments, varIndex);
+	return hookVirtual<T>(pClass, getVirtualIndex(pFunc), returnType, arguments, varIndex);
 }
 
 bool PolyHookPlugin::unhookDetour(void* pFunc) {
@@ -152,6 +154,7 @@ bool PolyHookPlugin::unhookDetour(void* pFunc) {
 	return false;
 }
 
+template<typename T>
 bool PolyHookPlugin::unhookVirtual(void* pClass, int index) {
 	if (!pClass || index == -1)
 		return false;
@@ -175,7 +178,7 @@ bool PolyHookPlugin::unhookVirtual(void* pClass, int index) {
 			return true;
 		}
 
-		vtable = std::make_unique<VTableSwapHook>((uint64_t) pClass, redirectMap, &origVFuncs);
+		vtable = std::make_unique<T>((uint64_t) pClass, redirectMap, &origVFuncs);
 		if (!vtable->hook()) {
 			for (auto& [_, cb] : callbacks) {
 				m_removals.push({std::move(cb), Clock::now() + 1s});
@@ -191,8 +194,9 @@ bool PolyHookPlugin::unhookVirtual(void* pClass, int index) {
 	return false;
 }
 
+template<typename T>
 bool PolyHookPlugin::unhookVirtual(void* pClass, void* pFunc) {
-	return unhookVirtual(pClass, getVirtualTableIndex(pFunc));
+	return unhookVirtual<T>(pClass, getVirtualIndex(pFunc));
 }
 
 Callback* PolyHookPlugin::findDetour(void* pFunc) const {
@@ -216,7 +220,7 @@ Callback* PolyHookPlugin::findVirtual(void* pClass, int index) const {
 }
 
 Callback* PolyHookPlugin::findVirtual(void* pClass, void* pFunc) const {
-	return findVirtual(pClass, getVirtualTableIndex(pFunc));
+	return findVirtual(pClass, getVirtualIndex(pFunc));
 }
 
 void PolyHookPlugin::unhookAll() {
@@ -235,7 +239,7 @@ void PolyHookPlugin::unhookAllVirtual(void* pClass) {
 	}
 }
 
-int PolyHookPlugin::getVirtualTableIndex(void* pFunc, ProtFlag flag) const {
+int PolyHookPlugin::getVirtualIndex(void* pFunc, ProtFlag flag) const {
 	constexpr size_t size = 12;
 
 	MemoryProtector protector((uint64_t)pFunc, size, flag, *(MemAccessor*)this);
@@ -348,28 +352,40 @@ PLUGIFY_WARN_IGNORE(4190)
 #endif
 
 extern "C" {
+	// Detour
 	PLUGIN_API Callback* HookDetour(void* pFunc, DataType returnType, const plg::vector<DataType>& arguments, int varIndex) {
 		return g_polyHookPlugin.hookDetour(pFunc, returnType, arguments, static_cast<uint8_t>(varIndex));
 	}
-
-	PLUGIN_API Callback* HookVirtual(void* pClass, int index, DataType returnType, const plg::vector<DataType>& arguments, int varIndex) {
-		return g_polyHookPlugin.hookVirtual(pClass, index, returnType, arguments, static_cast<uint8_t>(varIndex));
-	}
-
-	PLUGIN_API Callback* HookVirtualByFunc(void* pClass, void* pFunc, DataType returnType, const plg::vector<DataType>& arguments, int varIndex) {
-		return g_polyHookPlugin.hookVirtual(pClass, pFunc, returnType, arguments, static_cast<uint8_t>(varIndex));
-	}
-
 	PLUGIN_API bool UnhookDetour(void* pFunc) {
 		return g_polyHookPlugin.unhookDetour(pFunc);
 	}
 
-	PLUGIN_API bool UnhookVirtual(void* pClass, int index) {
-		return g_polyHookPlugin.unhookVirtual(pClass, index);
+	// Virtual (VTableSwapHook)
+	PLUGIN_API Callback* HookVirtualTable(void* pClass, int index, DataType returnType, const plg::vector<DataType>& arguments, int varIndex) {
+		return g_polyHookPlugin.hookVirtual<VTableSwapHook>(pClass, index, returnType, arguments, static_cast<uint8_t>(varIndex));
+	}
+	PLUGIN_API Callback* HookVirtualTable2(void* pClass, void* pFunc, DataType returnType, const plg::vector<DataType>& arguments, int varIndex) {
+		return g_polyHookPlugin.hookVirtual<VTableSwapHook>(pClass, pFunc, returnType, arguments, static_cast<uint8_t>(varIndex));
+	}
+	PLUGIN_API bool UnhookVirtualTable(void* pClass, int index) {
+		return g_polyHookPlugin.unhookVirtual<VTableSwapHook>(pClass, index);
+	}
+	PLUGIN_API bool UnhookVirtualTable2(void* pClass, void* pFunc) {
+		return g_polyHookPlugin.unhookVirtual<VTableSwapHook>(pClass, pFunc);
 	}
 
-	PLUGIN_API bool UnhookVirtualByFunc(void* pClass, void* pFunc) {
-		return g_polyHookPlugin.unhookVirtual(pClass, pFunc);
+	// Virtual (VFuncSwapHook)
+	PLUGIN_API Callback* HookVirtualFunc(void* pClass, int index, DataType returnType, const plg::vector<DataType>& arguments, int varIndex) {
+		return g_polyHookPlugin.hookVirtual<VFuncSwapHook>(pClass, index, returnType, arguments, static_cast<uint8_t>(varIndex));
+	}
+	PLUGIN_API Callback* HookVirtualFunc2(void* pClass, void* pFunc, DataType returnType, const plg::vector<DataType>& arguments, int varIndex) {
+		return g_polyHookPlugin.hookVirtual<VFuncSwapHook>(pClass, pFunc, returnType, arguments, static_cast<uint8_t>(varIndex));
+	}
+	PLUGIN_API bool UnhookVirtualFunc(void* pClass, int index) {
+		return g_polyHookPlugin.unhookVirtual<VFuncSwapHook>(pClass, index);
+	}
+	PLUGIN_API bool UnhookVirtualFunc2(void* pClass, void* pFunc) {
+		return g_polyHookPlugin.unhookVirtual<VFuncSwapHook>(pClass, pFunc);
 	}
 
 	PLUGIN_API Callback* FindDetour(void* pFunc) {
@@ -380,12 +396,12 @@ extern "C" {
 		return g_polyHookPlugin.findVirtual(pClass, index);
 	}
 
-	PLUGIN_API Callback* FindVirtualByFunc(void* pClass, void* pFunc) {
+	PLUGIN_API Callback* FindVirtual2(void* pClass, void* pFunc) {
 		return g_polyHookPlugin.findVirtual(pClass, pFunc);
 	}
 
-	PLUGIN_API int GetVTableIndex(void* pFunc) {
-		return g_polyHookPlugin.getVirtualTableIndex(pFunc);
+	PLUGIN_API int GetVirtualIndex(void* pFunc) {
+		return g_polyHookPlugin.getVirtualIndex(pFunc);
 	}
 
 	PLUGIN_API void UnhookAll() {

@@ -2,15 +2,19 @@
     global:
         Plugify_*;
         HookDetour;
-        HookVirtual;
-        HookVirtualByFunc;
+        HookVirtualTable;
+        HookVirtualTable2;
+        HookVirtualFunc;
+        HookVirtualFunc2;
         UnhookDetour;
-        UnhookVirtual;
-        UnhookVirtualByFunc;
+        UnhookVirtualTable;
+        UnhookVirtualTable2;
+        UnhookVirtualFunc;
+        UnhookVirtualFunc2;
         FindDetour;
         FindVirtual;
-        FindVirtualByFunc;
-        GetVTableIndex;
+        FindVirtual2;
+        GetVirtualIndex;
         UnhookAll;
         UnhookAllVirtual;
         AddCallback;

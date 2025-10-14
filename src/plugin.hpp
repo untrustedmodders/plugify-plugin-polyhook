@@ -22,16 +22,20 @@
 namespace PLH {
 	class PolyHookPlugin final : public plg::IPluginEntry, public MemAccessor {
 	public:
-		void OnPluginStart() final;
-		void OnPluginUpdate(std::chrono::milliseconds dt) final;
-		void OnPluginEnd() final;
+		void OnPluginStart() override;
+		void OnPluginUpdate(std::chrono::milliseconds dt) override;
+		void OnPluginEnd() override;
 
 		Callback* hookDetour(void* pFunc, DataType returnType, std::span<const DataType> arguments, uint8_t vaIndex);
+		template<typename T>
 		Callback* hookVirtual(void* pClass, int index, DataType returnType, std::span<const DataType> arguments, uint8_t vaIndex);
+		template<typename T>
 		Callback* hookVirtual(void* pClass, void* pFunc, DataType returnType, std::span<const DataType> arguments, uint8_t vaIndex);
 
 		bool unhookDetour(void* pFunc);
+		template<typename T>
 		bool unhookVirtual(void* pClass, int index);
+		template<typename T>
 		bool unhookVirtual(void* pClass, void* pFunc);
 
 		Callback* findDetour(void* pFunc) const;
@@ -41,7 +45,7 @@ namespace PLH {
 		void unhookAll();
 		void unhookAllVirtual(void* pClass);
 
-		int getVirtualTableIndex(void* pFunc, ProtFlag flag = RWX) const;
+		int getVirtualIndex(void* pFunc, ProtFlag flag = RWX) const;
 
 	private:
 		std::shared_ptr<asmjit::JitRuntime> m_jitRuntime;
