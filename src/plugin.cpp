@@ -73,7 +73,7 @@ Callback* PolyHookPlugin::hookDetour(void* pFunc, DataType returnType, std::span
 
 	auto error = callback->getError();
 	if (!error.empty()) {
-		std::puts(error.data());
+		std::fputs(error.data(), stderr);
 		std::terminate();
 	}
 
@@ -110,7 +110,7 @@ Callback* PolyHookPlugin::hookVirtual(void* pClass, int index, DataType returnTy
 
 	auto error = callback->getError();
 	if (!error.empty()) {
-		std::puts(error.data());
+		std::fputs(error.data(), stderr);
 		std::terminate();
 	}
 
