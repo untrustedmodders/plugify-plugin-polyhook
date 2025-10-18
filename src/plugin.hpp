@@ -1,7 +1,6 @@
 #pragma once
 
 #include "callback.hpp"
-#include "hash.hpp"
 
 #include <plg/plugin.hpp>
 #include <plugin_export.h>
@@ -48,7 +47,6 @@ namespace PLH {
 		int getVirtualIndex(void* pFunc, ProtFlag flag = RWX) const;
 
 	private:
-		std::shared_ptr<asmjit::JitRuntime> m_jitRuntime;
 		struct VHook {
 			std::unique_ptr<IHook> vtable;
 			std::unordered_map<int, std::unique_ptr<Callback>> callbacks;
@@ -70,6 +68,6 @@ namespace PLH {
 			bool operator<(const DelayedRemoval& t) const { return when > t.when; }
 		};
 		std::priority_queue<DelayedRemoval> m_removals;
-		std::mutex m_mutex;
+		mutable std::shared_mutex m_mutex;
 	};
 }

@@ -8,14 +8,11 @@ using enum CallbackType;
 using namespace std::chrono_literals;
 
 static void PreCallback(Callback* callback, const Callback::Parameters* params, size_t count, const Callback::Return* ret, ReturnFlag* flag) {
-	callback->cleanup();
-
-	auto [callbacks, lock] = callback->getCallbacks(Pre);
-
 	ReturnAction returnAction = ReturnAction::Ignored;
 
-	for (const auto& cb : callbacks) {
-		ReturnAction result = cb(callback, params, static_cast<int32_t>(count), ret, Pre);
+	auto callbacks = callback->getCallbacks(Pre);
+	for (const auto& func : callbacks) {
+		ReturnAction result = func(callback, params, static_cast<int32_t>(count), ret, Pre);
 		if (result > returnAction)
 			returnAction = result;
 	}
@@ -29,15 +26,14 @@ static void PreCallback(Callback* callback, const Callback::Parameters* params, 
 }
 
 static void PostCallback(Callback* callback, const Callback::Parameters* params, size_t count, const Callback::Return* ret, ReturnFlag*) {
-	auto [callbacks, lock] = callback->getCallbacks(Post);
+	auto callbacks = callback->getCallbacks(Post);
 
-	for (const auto& cb : callbacks) {
-		cb(callback, params, static_cast<int32_t>(count), ret, Post);
+	for (const auto& func : callbacks) {
+		func(callback, params, static_cast<int32_t>(count), ret, Post);
 	}
 }
 
 void PolyHookPlugin::OnPluginStart() {
-	m_jitRuntime = std::make_unique<asmjit::JitRuntime>();
 }
 
 void PolyHookPlugin::OnPluginUpdate([[maybe_unused]] std::chrono::milliseconds dt) {
@@ -52,22 +48,20 @@ void PolyHookPlugin::OnPluginEnd() {
 	while (!m_removals.empty()) {
 		m_removals.pop();
 	}
-
-	m_jitRuntime.reset();
 }
 
 Callback* PolyHookPlugin::hookDetour(void* pFunc, DataType returnType, std::span<const DataType> arguments, uint8_t varIndex) {
 	if (!pFunc)
 		return nullptr;
 
-	std::lock_guard lock(m_mutex);
+	std::unique_lock lock(m_mutex);
 
 	auto it = m_detours.find(pFunc);
 	if (it != m_detours.end()) {
 		return it->second.callback.get();
 	}
 
-	auto callback = std::make_unique<Callback>(m_jitRuntime);
+	auto callback = std::make_unique<Callback>(returnType, arguments);
 
 	uint64_t JIT = callback->getJitFunc(returnType, arguments, &PreCallback, &PostCallback, varIndex);
 
@@ -89,7 +83,7 @@ Callback* PolyHookPlugin::hookVirtual(void* pClass, int index, DataType returnTy
 	if (!pClass || index == -1)
 		return nullptr;
 
-	std::lock_guard lock(m_mutex);
+	std::unique_lock lock(m_mutex);
 
 	auto it = m_vhooks.find(pClass);
 	if (it != m_vhooks.end()) {
@@ -105,7 +99,7 @@ Callback* PolyHookPlugin::hookVirtual(void* pClass, int index, DataType returnTy
 
 	auto& [vtable, callbacks, redirectMap, origVFuncs] = it->second;
 
-	auto& callback = callbacks.emplace(index, std::make_unique<Callback>(m_jitRuntime)).first->second;
+	auto& callback = callbacks.emplace(index, std::make_unique<Callback>(returnType, arguments)).first->second;
 	uint64_t JIT = callback->getJitFunc(returnType, arguments, &PreCallback, &PostCallback, varIndex);
 
 	auto error = callback->getError();
@@ -140,7 +134,7 @@ bool PolyHookPlugin::unhookDetour(void* pFunc) {
 	if (!pFunc)
 		return false;
 
-	std::lock_guard lock(m_mutex);
+	std::unique_lock lock(m_mutex);
 
 	auto it = m_detours.find(pFunc);
 	if (it != m_detours.end()) {
@@ -159,7 +153,7 @@ bool PolyHookPlugin::unhookVirtual(void* pClass, int index) {
 	if (!pClass || index == -1)
 		return false;
 
-	std::lock_guard lock(m_mutex);
+	std::unique_lock lock(m_mutex);
 
 	auto it = m_vhooks.find(pClass);
 	if (it != m_vhooks.end()) {
@@ -200,6 +194,7 @@ bool PolyHookPlugin::unhookVirtual(void* pClass, void* pFunc) {
 }
 
 Callback* PolyHookPlugin::findDetour(void* pFunc) const {
+	std::shared_lock lock(m_mutex);
 	auto it = m_detours.find(pFunc);
 	if (it != m_detours.end()) {
 		return it->second.callback.get();
@@ -208,6 +203,7 @@ Callback* PolyHookPlugin::findDetour(void* pFunc) const {
 }
 
 Callback* PolyHookPlugin::findVirtual(void* pClass, int index) const {
+	std::shared_lock lock(m_mutex);
 	auto it = m_vhooks.find(pClass);
 	if (it != m_vhooks.end()) {
 		auto it2 = it->second.callbacks.find(index);
@@ -224,14 +220,14 @@ Callback* PolyHookPlugin::findVirtual(void* pClass, void* pFunc) const {
 }
 
 void PolyHookPlugin::unhookAll() {
-	std::lock_guard lock(m_mutex);
+	std::unique_lock lock(m_mutex);
 
 	m_detours.clear();
 	m_vhooks.clear();
 }
 
 void PolyHookPlugin::unhookAllVirtual(void* pClass) {
-	std::lock_guard lock(m_mutex);
+	std::unique_lock lock(m_mutex);
 
 	auto it = m_vhooks.find(pClass);
 	if (it != m_vhooks.end()) {
@@ -343,6 +339,44 @@ int PolyHookPlugin::getVirtualIndex(void* pFunc, ProtFlag flag) const {
 #endif
 }
 
+template<class T>
+constexpr bool is_vector_type_v =
+		std::is_same_v<T, plg::vector<bool>> ||
+		std::is_same_v<T, plg::vector<char>> ||
+		std::is_same_v<T, plg::vector<char16_t>> ||
+		std::is_same_v<T, plg::vector<int8_t>> ||
+		std::is_same_v<T, plg::vector<int16_t>> ||
+		std::is_same_v<T, plg::vector<int32_t>> ||
+		std::is_same_v<T, plg::vector<int64_t>> ||
+		std::is_same_v<T, plg::vector<uint8_t>> ||
+		std::is_same_v<T, plg::vector<uint16_t>> ||
+		std::is_same_v<T, plg::vector<uint32_t>> ||
+		std::is_same_v<T, plg::vector<uint64_t>> ||
+		std::is_same_v<T, plg::vector<void*>> ||
+		std::is_same_v<T, plg::vector<float>> ||
+		std::is_same_v<T, plg::vector<double>> ||
+		//std::is_same_v<T, plg::vector<plg::string>> ||
+		std::is_same_v<T, plg::vector<plg::variant<plg::none>>> ||
+		std::is_same_v<T, plg::vector<plg::vec2>> ||
+		std::is_same_v<T, plg::vector<plg::vec3>> ||
+		std::is_same_v<T, plg::vector<plg::vec4>> ||
+		std::is_same_v<T, plg::vector<plg::mat4x4>>;
+
+template<class T>
+constexpr bool is_math_type_v =
+		std::is_same_v<T, plg::vec2> ||
+		std::is_same_v<T, plg::vec3> ||
+		std::is_same_v<T, plg::vec4> ||
+		std::is_same_v<T, plg::mat4x4>;
+
+template<class T>
+constexpr bool is_none_type_v =
+		std::is_same_v<T, plg::invalid> ||
+		std::is_same_v<T, plg::none> ||
+		std::is_same_v<T, plg::variant<plg::none>> ||
+		std::is_same_v<T, plg::function> ||
+		std::is_same_v<T, plg::any>;
+
 PLUGIFY_WARN_PUSH()
 
 #if defined(__clang)
@@ -419,6 +453,13 @@ extern "C" {
 		return callback->addCallback(type, handler);
 	}
 
+	PLUGIN_API bool AddCallback2(Callback* callback, CallbackType type, Callback::CallbackHandler handler, int priority) {
+		if (callback == nullptr) {
+			return false;
+		}
+		return callback->addCallback(type, handler, priority);
+	}
+
 	PLUGIN_API bool RemoveCallback(Callback* callback, CallbackType type, Callback::CallbackHandler handler) {
 		if (callback == nullptr) {
 			return false;
@@ -473,6 +514,45 @@ extern "C" {
 		else
 			return str;
 	}
+	PLUGIN_API plg::any GetArgument(Callback* callback, const Callback::Parameters* params, size_t index) {
+		switch (callback->getReturnType()) {
+			case DataType::Void:
+				return {};
+			case DataType::Bool:
+				return params->getArg<bool>(index);
+			case DataType::Int8:
+				return params->getArg<int8_t>(index);
+			case DataType::UInt8:
+				return params->getArg<uint8_t>(index);
+			case DataType::Int16:
+				return params->getArg<int16_t>(index);
+			case DataType::UInt16:
+				return params->getArg<uint16_t>(index);
+			case DataType::Int32:
+				return params->getArg<int32_t>(index);
+			case DataType::UInt32:
+				return params->getArg<uint32_t>(index);
+			case DataType::Int64:
+				return params->getArg<int64_t>(index);
+			case DataType::UInt64:
+				return params->getArg<uint64_t>(index);
+			case DataType::Float:
+				return params->getArg<float>(index);
+			case DataType::Double:
+				return params->getArg<double>(index);
+			case DataType::Pointer:
+				return params->getArg<void*>(index);
+			case DataType::String: {
+				const char* str = params->getArg<const char*>(index);
+				if (str == nullptr)
+					return {};
+				else
+					return str;
+			}
+			default:
+				return {};
+		}
+	}
 
 	PLUGIN_API void SetArgumentBool(const Callback::Parameters* params, size_t index, bool value) { params->setArg(index, value); }
 	PLUGIN_API void SetArgumentInt8(const Callback::Parameters* params, size_t index, int8_t value) { params->setArg(index, value); }
@@ -487,7 +567,27 @@ extern "C" {
 	PLUGIN_API void SetArgumentDouble(const Callback::Parameters* params, size_t index, double value) { params->setArg(index, value); }
 	PLUGIN_API void SetArgumentPointer(const Callback::Parameters* params, size_t index, void* value) { params->setArg(index, value); }
 	PLUGIN_API void SetArgumentString(Callback* callback, const Callback::Parameters* params, size_t index, const plg::string& value) {
-		params->setArg(index, callback->store(value).c_str());
+		params->setArg(index, plg::get<plg::string>(callback->setStorage(index, value)).c_str());
+	}
+
+	PLUGIN_API void SetArgument(Callback* callback, const Callback::Parameters* params, size_t index, const plg::any& value) {
+		plg::visit([&](const auto& v) {
+			using T = std::decay_t<decltype(v)>;
+			if constexpr (is_none_type_v<T>) {
+				params->setArg(index, nullptr);
+			} else if constexpr (std::is_arithmetic_v<T> || std::is_pointer_v<T>) {
+				params->setArg(index, v);
+			} else if constexpr (is_math_type_v<T>) {
+				params->setArg(index, &plg::get<T>(callback->setStorage(index, value)).data);
+			} else if constexpr (is_vector_type_v<T>) {
+				params->setArg(index, plg::get<T>(callback->setStorage(index, value)).data());
+			} else if constexpr (std::is_same_v<T, plg::string>) {
+				params->setArg(index, plg::get<T>(callback->setStorage(index, value)).c_str());
+			} else {
+				std::fputs("Type not supported", stderr);
+				std::terminate();
+			}
+		}, value);
 	}
 
 	PLUGIN_API bool GetReturnBool(const Callback::Return* ret) { return ret->getRet<bool>(); }
@@ -510,6 +610,46 @@ extern "C" {
 			return str;
 	}
 
+	PLUGIN_API plg::any GetReturn(Callback* callback, const Callback::Return* ret) {
+		switch (callback->getReturnType()) {
+		case DataType::Void:
+			return {};
+		case DataType::Bool:
+			return ret->getRet<bool>();
+		case DataType::Int8:
+			return ret->getRet<int8_t>();
+		case DataType::UInt8:
+			return ret->getRet<uint8_t>();
+		case DataType::Int16:
+			return ret->getRet<int16_t>();
+		case DataType::UInt16:
+			return ret->getRet<uint16_t>();
+		case DataType::Int32:
+			return ret->getRet<int32_t>();
+		case DataType::UInt32:
+			return ret->getRet<uint32_t>();
+		case DataType::Int64:
+			return ret->getRet<int64_t>();
+		case DataType::UInt64:
+			return ret->getRet<uint64_t>();
+		case DataType::Float:
+			return ret->getRet<float>();
+		case DataType::Double:
+			return ret->getRet<double>();
+		case DataType::Pointer:
+			return ret->getRet<void*>();
+		case DataType::String: {
+			const char* str = ret->getRet<const char*>();
+			if (str == nullptr)
+				return {};
+			else
+				return str;
+		}
+		default:
+			return {};
+		}
+	}
+
 	PLUGIN_API void SetReturnBool(const Callback::Return* ret, bool value) { ret->setRet(value); }
 	PLUGIN_API void SetReturnInt8(const Callback::Return* ret, int8_t value) { ret->setRet(value); }
 	PLUGIN_API void SetReturnUInt8(const Callback::Return* ret, uint8_t value) { ret->setRet(value); }
@@ -523,7 +663,27 @@ extern "C" {
 	PLUGIN_API void SetReturnDouble(const Callback::Return* ret, double value) { ret->setRet(value); }
 	PLUGIN_API void SetReturnPointer(const Callback::Return* ret, void* value) { ret->setRet(value); }
 	PLUGIN_API void SetReturnString(Callback* callback, const Callback::Return* ret, const plg::string& value) {
-		ret->setRet(callback->store(value).c_str());
+		ret->setRet(plg::get<plg::string>(callback->setStorage(-1, value)).c_str());
+	}
+
+	PLUGIN_API void SetReturn(Callback* callback, const Callback::Return* ret, const plg::any& value) {
+		plg::visit([&](const auto& v) {
+			using T = std::decay_t<decltype(v)>;
+			if constexpr (is_none_type_v<T>) {
+				ret->setRet(nullptr);
+			} else if constexpr (std::is_arithmetic_v<T> || std::is_pointer_v<T>) {
+				ret->setRet(v);
+			} else if constexpr (is_math_type_v<T>) {
+				ret->setRet(&plg::get<T>(callback->setStorage(-1, value)));
+			} else if constexpr (is_vector_type_v<T>) {
+				ret->setRet(plg::get<T>(callback->setStorage(-1, value)).data());
+			} else if constexpr (std::is_same_v<T, plg::string>) {
+				ret->setRet(plg::get<T>(callback->setStorage(-1, value)).c_str());
+			} else {
+				std::fputs("Type not supported", stderr);
+				std::terminate();
+			}
+		}, value);
 	}
 }
 

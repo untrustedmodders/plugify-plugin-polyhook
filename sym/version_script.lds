@@ -18,6 +18,7 @@
         UnhookAll;
         UnhookAllVirtual;
         AddCallback;
+        AddCallback2;
         RemoveCallback;
         IsCallbackRegistered;
         AreCallbacksRegistered;
@@ -36,7 +37,7 @@
         GetArgumentDouble;
         GetArgumentPointer;
         GetArgumentString;
-        GetArgumentWString;
+        GetArgument;
         SetArgumentBool;
         SetArgumentInt8;
         SetArgumentUInt8;
@@ -50,7 +51,7 @@
         SetArgumentDouble;
         SetArgumentPointer;
         SetArgumentString;
-        SetArgumentWString;
+        SetArgument;
         GetReturnBool;
         GetReturnInt8;
         GetReturnUInt8;
@@ -64,7 +65,7 @@
         GetReturnDouble;
         GetReturnPointer;
         GetReturnString;
-        GetReturnWString;
+        GetReturn;
         SetReturnBool;
         SetReturnInt8;
         SetReturnUInt8;
@@ -78,7 +79,7 @@
         SetReturnDouble;
         SetReturnPointer;
         SetReturnString;
-        SetReturnWString;
+        SetReturn;
 
     local: *;
 };

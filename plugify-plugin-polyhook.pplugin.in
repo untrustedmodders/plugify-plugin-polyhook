@@ -631,6 +631,132 @@
       }
     },
     {
+      "name": "AddCallback2",
+      "group": "Core",
+      "description": "Adds a callback to existing hook",
+      "funcName": "AddCallback2",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "hook",
+          "description": "Hook pointer"
+        },
+        {
+          "type": "uint8",
+          "name": "type",
+          "description": "Whether the hook was in post mode (after processing) or pre mode (before processing).",
+          "enum": {
+            "name": "CallbackType",
+            "description": "Enum representing the type of callback.",
+            "values": [
+              {
+                "name": "Pre",
+                "description": "Callback will be executed before the original function",
+                "value": 0
+              },
+              {
+                "name": "Post",
+                "description": "Callback will be executed after the original function",
+                "value": 1
+              }
+            ]
+          }
+        },
+        {
+          "type": "function",
+          "name": "handler",
+          "description": "Callback function which trigger by hook.",
+          "prototype": {
+            "name": "CallbackHandler",
+            "funcName": "CallbackHandler",
+			"description": "Callback function",
+            "paramTypes": [
+              {
+                "type": "ptr64",
+                "name": "hook",
+                "description": "Hook pointer"
+              },
+              {
+                "type": "ptr64",
+                "name": "params",
+                "description": "Pointer to params structure"
+              },
+              {
+                "type": "int32",
+                "name": "count",
+                "description": "Parameter count"
+              },
+              {
+                "type": "ptr64",
+                "name": "ret",
+                "description": "Pointer to return structure"
+              },
+              {
+                "type": "uint8",
+                "name": "type",
+                "description": "Whether the hook was in post mode (after processing) or pre mode (before processing).",
+                "enum": {
+                  "name": "CallbackType",
+                  "description": "Enum representing the type of callback.",
+                  "values": [
+                    {
+                      "name": "Pre",
+                      "description": "Callback will be executed before the original function",
+                      "value": 0
+                    },
+                    {
+                      "name": "Post",
+                      "description": "Callback will be executed after the original function",
+                      "value": 1
+                    }
+                  ]
+                }
+              }
+            ],
+            "retType": {
+              "type": "int32",
+              "description": "Ignored for post hooks.",
+			  "enum": {
+				"name": "ResultType",
+				"description": "Enum representing the possible results of an operation.",
+				"values": [
+			      {
+				    "value": 0,
+                    "name": "Ignored",
+                    "description": "Handler didn't take any action."
+                  },
+				  {
+				    "value": 1,
+                    "name": "Handled",
+                    "description": "We did something, but real function should still be called."
+                  },
+				  {
+				    "value": 2,
+                    "name": "Override",
+                    "description": "Call real function, but use my return value."
+                  },
+				  {
+				    "value": 3,
+                    "name": "Supercede",
+                    "description": "Skip real function; use my return value."
+                  }
+			    ]
+			  }
+            }
+          }
+        },
+        {
+          "type": "int32",
+          "name": "priority",
+          "description": "Priority of callback among others"
+        }
+      ],
+      "retType": {
+        "type": "bool",
+        "description": "Returns true on success, false otherwise"
+      }
+    },
+    {
       "name": "RemoveCallback",
       "group": "Core",
       "description": "Removes a callback from existing hook",
@@ -1197,6 +1323,27 @@
       }
     },
     {
+      "name": "GetArgument",
+      "group": "Getters",
+      "description": "Get argument value",
+      "funcName": "GetArgument",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "params",
+          "description": "Pointer to params structure"
+        },
+        {
+          "type": "uint64",
+          "name": "index",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "any"
+      }
+    },
+    {
       "name": "SetArgumentBool",
       "group": "Setters",
       "description": "Set argument value",
@@ -1540,6 +1687,37 @@
       }
     },
     {
+      "name": "SetArgument",
+      "group": "Setters",
+      "description": "Set argument value",
+      "funcName": "SetArgument",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "hook",
+          "description": "Hook pointer"
+        },
+        {
+          "type": "ptr64",
+          "name": "params",
+          "description": "Pointer to params structure"
+        },
+        {
+          "type": "uint64",
+          "name": "index",
+          "description": "Value to set"
+        },
+        {
+          "type": "any",
+          "name": "value",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
       "name": "GetReturnBool",
       "group": "Getters",
       "description": "Get return value",
@@ -1745,6 +1923,22 @@
       ],
       "retType": {
         "type": "string"
+      }
+    },
+    {
+      "name": "GetReturn",
+      "group": "Getters",
+      "description": "Get return value",
+      "funcName": "GetReturn",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "ret",
+          "description": "Pointer to return structure"
+        }
+      ],
+      "retType": {
+        "type": "any"
       }
     },
     {
@@ -2017,6 +2211,32 @@
         },
         {
           "type": "string",
+          "name": "value",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    }
+    {
+      "name": "SetReturn",
+      "group": "Setters",
+      "description": "Set return value",
+      "funcName": "SetReturn",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "hook",
+          "description": "Hook pointer"
+        },
+        {
+          "type": "ptr64",
+          "name": "ret",
+          "description": "Pointer to return structure"
+        },
+        {
+          "type": "any",
           "name": "value",
           "description": "Value to set"
         }

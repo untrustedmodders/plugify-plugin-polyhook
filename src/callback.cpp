@@ -5,6 +5,8 @@
 
 using namespace asmjit;
 
+static JitRuntime rt;
+
 struct SimpleErrorHandler : ErrorHandler {
 	Error error{kErrorOk};
 	const char* code{};
@@ -85,15 +87,9 @@ uint64_t PLH::Callback::getJitFunc(const FuncSignature& sig, const CallbackEntry
 		return m_functionPtr;
 	}
 
-	auto rt = m_rt.lock();
-	if (!rt) {
-		m_errorCode = "JitRuntime invalid";
-		return 0;
-	}
-
 	SimpleErrorHandler eh;
 	CodeHolder code;
-	code.init(rt->environment(), rt->cpuFeatures());
+	code.init(rt.environment(), rt.cpuFeatures());
 	code.setErrorHandler(&eh);
 
 	// initialize function
@@ -112,7 +108,7 @@ uint64_t PLH::Callback::getJitFunc(const FuncSignature& sig, const CallbackEntry
 
 #if PLUGIFY_IS_RELEASE
 	// too small to really need it
-	func->frame().resetPreservedFP();
+	//func->frame().resetPreservedFP();
 #endif
 
 	// Create labels
@@ -368,7 +364,7 @@ uint64_t PLH::Callback::getJitFunc(const FuncSignature& sig, const CallbackEntry
 
 	cc.finalize();
 
-	rt->add(&m_functionPtr, &code);
+	rt.add(&m_functionPtr, &code);
 
 	if (eh.error) {
 		m_functionPtr = 0;
@@ -391,21 +387,26 @@ uint64_t PLH::Callback::getJitFunc(const DataType retType, std::span<const DataT
 	return getJitFunc(sig, pre, post);
 }
 
-bool PLH::Callback::addCallback(const CallbackType type, const CallbackHandler callback) {
+bool PLH::Callback::addCallback(const CallbackType type, const CallbackHandler callback, int priority) {
 	if (!callback)
 		return false;
 
-	std::unique_lock lock(m_mutex);
+	std::scoped_lock lock(m_mutex);
 
-	std::vector<CallbackHandler>& callbacks = m_callbacks[static_cast<size_t>(type)];
+	auto& callbacks = m_callbacks[static_cast<size_t>(type)];
 
-	for (const CallbackHandler c : callbacks) {
-		if (c == callback) {
-			return false;
-		}
+	if (std::any_of(callbacks.begin(), callbacks.end(),
+		[&](auto& x){ return x.first == callback; }))
+		return false;
+
+	auto& used = m_used[static_cast<size_t>(type)];
+	if (used.load(std::memory_order_relaxed) == 0) {
+		callbacks.emplace_back(callback, priority);
+	} else {
+		auto& appends = m_appends[static_cast<size_t>(type)];
+		appends.emplace_back(callback, priority);
 	}
 
-	callbacks.emplace_back(callback);
 	return true;
 }
 
@@ -413,32 +414,32 @@ bool PLH::Callback::removeCallback(const CallbackType type, const CallbackHandle
 	if (!callback)
 		return false;
 
-	std::unique_lock lock(m_mutex);
+	std::scoped_lock lock(m_mutex);
 
-	std::vector<CallbackHandler>& callbacks = m_callbacks[static_cast<size_t>(type)];
+	auto& callbacks = m_callbacks[static_cast<size_t>(type)];
 
-	for (size_t i = 0; i < callbacks.size(); i++) {
-		if (callbacks[i] == callback) {
-			callbacks.erase(callbacks.begin() + static_cast<ptrdiff_t>(i));
-			return true;
-		}
+	auto it = std::find_if(callbacks.begin(), callbacks.end(),
+		[&](auto& x){ return x.first == callback; });
+	if (it == callbacks.end())
+		return false;
+
+	auto& used = m_used[static_cast<size_t>(type)];
+	if (used.load(std::memory_order_relaxed) == 0) {
+		callbacks.erase(it);
+	} else {
+		auto& removals = m_removals[static_cast<size_t>(type)];
+		removals.emplace_back(callback, -1);
 	}
 
-	return false;
+	return true;
 }
 
 bool PLH::Callback::isCallbackRegistered(const CallbackType type, const CallbackHandler callback) const noexcept {
 	if (!callback)
 		return false;
 
-	const std::vector<CallbackHandler>& callbacks = m_callbacks[static_cast<size_t>(type)];
-
-	for (const CallbackHandler c : callbacks) {
-		if (c == callback)
-			return true;
-	}
-
-	return false;
+	auto& callbacks = m_callbacks[static_cast<size_t>(type)];
+	return std::any_of(callbacks.begin(), callbacks.end(), [&](auto& x){ return x.first == callback; });
 }
 
 bool PLH::Callback::areCallbacksRegistered(const CallbackType type) const noexcept {
@@ -449,8 +450,8 @@ bool PLH::Callback::areCallbacksRegistered() const noexcept {
 	return areCallbacksRegistered(CallbackType::Pre) || areCallbacksRegistered(CallbackType::Post);
 }
 
-PLH::Callback::Callbacks PLH::Callback::getCallbacks(const CallbackType type) noexcept {
-	return { m_callbacks[static_cast<size_t>(type)], std::shared_lock(m_mutex) };
+PLH::Callback::View PLH::Callback::getCallbacks(const CallbackType type) noexcept {
+	return { *this, type };
 }
 
 uint64_t* PLH::Callback::getTrampolineHolder() noexcept {
@@ -465,28 +466,69 @@ std::string_view PLH::Callback::getError() const noexcept {
 	return !m_functionPtr && m_errorCode ? m_errorCode : "";
 }
 
-const std::string& PLH::Callback::store(std::string_view str) {
-	std::unique_lock lock(m_mutex);
-	if (!m_storage) {
-		m_storage = std::make_unique<std::unordered_map<std::thread::id, std::deque<std::string>>>();
-	}
-	return (*m_storage)[std::this_thread::get_id()].emplace_back(str);
+plg::any& PLH::Callback::createStorage(const size_t idx, const plg::any& any) {
+	std::scoped_lock lock(m_mutex);
+	return m_storage[std::this_thread::get_id()][idx] = any;
 }
 
-void PLH::Callback::cleanup() {
-	if (m_storage) {
-		std::unique_lock lock(m_mutex);
-		(*m_storage)[std::this_thread::get_id()].clear();
-	}
+plg::any& PLH::Callback::getStorage(const size_t idx) {
+	return m_storage[std::this_thread::get_id()][idx];
 }
 
-PLH::Callback::Callback(std::weak_ptr<JitRuntime> rt) : m_rt(std::move(rt)) {
+PLH::DataType PLH::Callback::getReturnType() const {
+	return m_returnType;
+}
+
+PLH::DataType PLH::Callback::getArgumentType(size_t idx) const {
+	return m_arguments[idx];
+}
+
+void PLH::Callback::cleanupStorage() {
+	if (m_storage.empty()) {
+		return;
+	}
+
+	std::scoped_lock lock(m_mutex);
+	m_storage.erase(std::this_thread::get_id());
+}
+
+void PLH::Callback::processDelayed(CallbackType type) {
+	auto& removals = m_appends[static_cast<size_t>(type)];
+	auto& appends = m_appends[static_cast<size_t>(type)];
+	if (removals.empty() && appends.empty()) {
+		return;
+	}
+
+	std::scoped_lock lock(m_mutex);
+
+	auto& callbacks = m_callbacks[static_cast<size_t>(type)];
+
+	for (const auto& [callback, priority] : appends) {
+		if (std::any_of(callbacks.begin(), callbacks.end(),
+			[&](auto& x){ return x.first == callback; })) {
+			continue;
+		}
+		callbacks.emplace_back(callback, priority);
+	}
+
+	for (const auto& [callback, priority] : removals) {
+		auto it = std::find_if(callbacks.begin(), callbacks.end(),
+			[&](auto& x){ return x.first == callback; });
+		if (it == callbacks.end()) {
+			continue;
+		}
+		callbacks.erase(it);
+	}
+
+	appends.clear();
+	removals.clear();
+}
+
+PLH::Callback::Callback(DataType returnType, std::span<const DataType> arguments) : m_returnType(returnType), m_arguments(arguments.begin(), arguments.end()) {
 }
 
 PLH::Callback::~Callback() {
-	if (auto rt = m_rt.lock()) {
-		if (m_functionPtr) {
-			rt->release(m_functionPtr);
-		}
+	if (m_functionPtr) {
+		rt.release(m_functionPtr);
 	}
 }

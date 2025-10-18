@@ -19,6 +19,7 @@ _GetVirtualIndex
 _UnhookAll
 _UnhookAllVirtual
 _AddCallback
+_AddCallback2
 _RemoveCallback
 _IsCallbackRegistered
 _AreCallbacksRegistered
@@ -37,7 +38,7 @@ _GetArgumentFloat
 _GetArgumentDouble
 _GetArgumentPointer
 _GetArgumentString
-_GetArgumentWString
+_GetArgument
 _SetArgumentBool
 _SetArgumentInt8
 _SetArgumentUInt8
@@ -51,7 +52,7 @@ _SetArgumentFloat
 _SetArgumentDouble
 _SetArgumentPointer
 _SetArgumentString
-_SetArgumentWString
+_SetArgument
 _GetReturnBool
 _GetReturnInt8
 _GetReturnUInt8
@@ -65,7 +66,7 @@ _GetReturnFloat
 _GetReturnDouble
 _GetReturnPointer
 _GetReturnString
-_GetReturnWString
+_GetReturn
 _SetReturnBool
 _SetReturnInt8
 _SetReturnUInt8
@@ -79,4 +80,4 @@ _SetReturnFloat
 _SetReturnDouble
 _SetReturnPointer
 _SetReturnString
-_SetReturnWString
+_SetReturn
