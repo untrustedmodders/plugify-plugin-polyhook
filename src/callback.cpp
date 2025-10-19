@@ -18,7 +18,7 @@ struct SimpleErrorHandler : ErrorHandler {
 using namespace PLH;
 
 static JitRuntime rt;
-static thread_local std::map<const Callback*, std::array<plg::any, Globals::kMaxFuncArgs>> storage;
+static thread_local std::map<const Callback*, std::array<plg::any, Globals::kMaxFuncArgs + 1>> storage;
 
 struct ArgRegSlot {
 	explicit ArgRegSlot(uint32_t idx) {
@@ -475,18 +475,13 @@ std::string_view Callback::getError() const noexcept {
 }
 
 plg::any& Callback::setStorage(size_t idx, const plg::any& any) const {
-	if (idx == -1) {
-		idx = 32;
-	}
-	storage[this][idx] = any;
-	return storage[this][idx];
+	auto& var = storage[this][++idx];
+	var = any;
+	return var;
 }
 
 plg::any& Callback::getStorage(size_t idx) const {
-	if (idx == -1) {
-		idx = 32;
-	}
-	return storage[this][idx];
+	return storage[this][++idx];
 }
 
 DataType Callback::getReturnType() const {
@@ -494,7 +489,7 @@ DataType Callback::getReturnType() const {
 }
 
 DataType Callback::getArgumentType(size_t idx) const {
-	return m_arguments[idx];
+	return m_arguments[++idx];
 }
 
 Callback::Callback(DataType returnType, std::span<const DataType> arguments) : m_returnType(returnType), m_arguments(arguments.begin(), arguments.end()) {
