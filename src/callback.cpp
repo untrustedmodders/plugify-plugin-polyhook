@@ -5,8 +5,6 @@
 
 using namespace asmjit;
 
-static JitRuntime rt;
-
 struct SimpleErrorHandler : ErrorHandler {
 	Error error{kErrorOk};
 	const char* code{};
@@ -16,6 +14,11 @@ struct SimpleErrorHandler : ErrorHandler {
 		code = message;
 	}
 };
+
+using namespace PLH;
+
+static JitRuntime rt;
+static thread_local std::map<const Callback*, std::array<plg::any, Globals::kMaxFuncArgs>> storage;
 
 struct ArgRegSlot {
 	explicit ArgRegSlot(uint32_t idx) {
@@ -29,7 +32,7 @@ struct ArgRegSlot {
 	bool useHighReg;
 };
 
-bool PLH::Callback::hasHiArgSlot(const x86::Compiler& compiler, const TypeId typeId) noexcept {
+bool Callback::hasHiArgSlot(const x86::Compiler& compiler, const TypeId typeId) noexcept {
 	// 64bit width regs can fit wider args
 	if (compiler.is64Bit()) {
 		return false;
@@ -49,7 +52,7 @@ constexpr TypeId getTypeIdx() noexcept {
 	return static_cast<TypeId>(TypeUtils::TypeIdOfT<T>::kTypeId);
 }
 
-TypeId PLH::Callback::getTypeId(const DataType type) noexcept {
+TypeId Callback::getTypeId(const DataType type) noexcept {
 	switch (type) {
 		case DataType::Void:
 			return getTypeIdx<void>();
@@ -82,7 +85,7 @@ TypeId PLH::Callback::getTypeId(const DataType type) noexcept {
 	return TypeId::kVoid;
 }
 
-uint64_t PLH::Callback::getJitFunc(const FuncSignature& sig, const CallbackEntry pre, const CallbackEntry post) {
+uint64_t Callback::getJitFunc(const FuncSignature& sig, const CallbackEntry pre, const CallbackEntry post) {
 	if (m_functionPtr) {
 		return m_functionPtr;
 	}
@@ -116,8 +119,7 @@ uint64_t PLH::Callback::getJitFunc(const FuncSignature& sig, const CallbackEntry
 	Label noPost = cc.newLabel();
 
 	// map argument slots to registers, following abi.
-	std::vector<ArgRegSlot> argRegSlots;
-	argRegSlots.reserve(sig.argCount());
+	std::inplace_vector<ArgRegSlot, Globals::kMaxFuncArgs> argRegSlots;
 
 	for (uint32_t argIdx = 0; argIdx < sig.argCount(); ++argIdx) {
 		const auto& argType = sig.args()[argIdx];
@@ -143,7 +145,7 @@ uint64_t PLH::Callback::getJitFunc(const FuncSignature& sig, const CallbackEntry
 			func->setArg(argSlot.argIdx, 1, argSlot.high);
 		}
 
-		argRegSlots.emplace_back(std::move(argSlot));
+		argRegSlots.push_back(std::move(argSlot));
 	}
 
 	const uint32_t alignment = 16;
@@ -379,7 +381,7 @@ uint64_t PLH::Callback::getJitFunc(const FuncSignature& sig, const CallbackEntry
 	return m_functionPtr;
 }
 
-uint64_t PLH::Callback::getJitFunc(const DataType retType, std::span<const DataType> paramTypes, const CallbackEntry pre, const CallbackEntry post, uint8_t vaIndex) {
+uint64_t Callback::getJitFunc(const DataType retType, std::span<const DataType> paramTypes, const CallbackEntry pre, const CallbackEntry post, uint8_t vaIndex) {
 	FuncSignature sig(CallConvId::kCDecl, vaIndex, getTypeId(retType));
 	for (const DataType& type : paramTypes) {
 		sig.addArg(getTypeId(type));
@@ -387,148 +389,121 @@ uint64_t PLH::Callback::getJitFunc(const DataType retType, std::span<const DataT
 	return getJitFunc(sig, pre, post);
 }
 
-bool PLH::Callback::addCallback(const CallbackType type, const CallbackHandler callback, int priority) {
-	if (!callback)
+bool Callback::addCallback(const CallbackType type, const CallbackHandler handler, int priority) {
+	if (!handler)
 		return false;
 
-	std::scoped_lock lock(m_mutex);
+	std::unique_lock lock(m_mutex);
 
-	auto& callbacks = m_callbacks[static_cast<size_t>(type)];
+	auto& [handlers, priorities] = m_callbacks[static_cast<size_t>(type)];
 
-	if (std::any_of(callbacks.begin(), callbacks.end(),
-		[&](auto& x){ return x.first == callback; }))
+	if (std::any_of(handlers.begin(), handlers.end(),
+		[&](const auto& h){ return h == handler; }))
 		return false;
 
-	auto& used = m_used[static_cast<size_t>(type)];
-	if (used.load(std::memory_order_relaxed) == 0) {
-		callbacks.emplace_back(callback, priority);
-	} else {
-		auto& appends = m_appends[static_cast<size_t>(type)];
-		appends.emplace_back(callback, priority);
-	}
+	auto it = std::upper_bound(priorities.begin(), priorities.end(), priority,
+		[](int p, int cur){ return p > cur; }); // descending order
+
+	auto index = std::distance(priorities.begin(), it);
+
+	handlers.insert(handlers.begin() + index, handler);
+	priorities.insert(priorities.begin() + index, priority);
 
 	return true;
 }
 
-bool PLH::Callback::removeCallback(const CallbackType type, const CallbackHandler callback) {
-	if (!callback)
+bool Callback::removeCallback(const CallbackType type, const CallbackHandler handler) {
+	if (!handler)
 		return false;
 
-	std::scoped_lock lock(m_mutex);
+	std::unique_lock lock(m_mutex);
 
-	auto& callbacks = m_callbacks[static_cast<size_t>(type)];
+	auto& [handlers, priorities] = m_callbacks[static_cast<size_t>(type)];
 
-	auto it = std::find_if(callbacks.begin(), callbacks.end(),
-		[&](auto& x){ return x.first == callback; });
-	if (it == callbacks.end())
-		return false;
+    auto it = std::find(handlers.begin(), handlers.end(), handler);
+    if (it == handlers.end())
+        return false;
 
-	auto& used = m_used[static_cast<size_t>(type)];
-	if (used.load(std::memory_order_relaxed) == 0) {
-		callbacks.erase(it);
-	} else {
-		auto& removals = m_removals[static_cast<size_t>(type)];
-		removals.emplace_back(callback, -1);
-	}
+    auto index = std::distance(handlers.begin(), it);
+    handlers.erase(handlers.begin() + index);
+    priorities.erase(priorities.begin() + index);
 
 	return true;
 }
 
-bool PLH::Callback::isCallbackRegistered(const CallbackType type, const CallbackHandler callback) const noexcept {
-	if (!callback)
+bool Callback::isCallbackRegistered(const CallbackType type, const CallbackHandler handler) const noexcept {
+	if (!handler)
 		return false;
 
-	auto& callbacks = m_callbacks[static_cast<size_t>(type)];
-	return std::any_of(callbacks.begin(), callbacks.end(), [&](auto& x){ return x.first == callback; });
+	std::shared_lock lock(m_mutex);
+
+	const auto& [handlers, priorities] = m_callbacks[static_cast<size_t>(type)];
+
+	return std::any_of(handlers.begin(), handlers.end(), [&](const auto& x){ return x == handler; });
 }
 
-bool PLH::Callback::areCallbacksRegistered(const CallbackType type) const noexcept {
-	return !m_callbacks[static_cast<size_t>(type)].empty();
+bool Callback::areCallbacksRegistered(const CallbackType type) const noexcept {
+	std::shared_lock lock(m_mutex);
+
+	const auto& [handlers, priorities] = m_callbacks[static_cast<size_t>(type)];
+
+	return !handlers.empty();
 }
 
-bool PLH::Callback::areCallbacksRegistered() const noexcept {
+bool Callback::areCallbacksRegistered() const noexcept {
 	return areCallbacksRegistered(CallbackType::Pre) || areCallbacksRegistered(CallbackType::Post);
 }
 
-PLH::Callback::View PLH::Callback::getCallbacks(const CallbackType type) noexcept {
-	return { *this, type };
+plg::hybrid_vector<Callback::CallbackHandler, Callback::kMaxFuncStack> Callback::getCallbacks(const CallbackType type) noexcept {
+	std::shared_lock lock(m_mutex);
+
+	const auto& [handlers, priorities] = m_callbacks[static_cast<size_t>(type)];
+
+	return handlers;
 }
 
-uint64_t* PLH::Callback::getTrampolineHolder() noexcept {
+uint64_t* Callback::getTrampolineHolder() noexcept {
 	return &m_trampolinePtr;
 }
 
-uint64_t* PLH::Callback::getFunctionHolder() noexcept {
+uint64_t* Callback::getFunctionHolder() noexcept {
 	return &m_functionPtr;
 }
 
-std::string_view PLH::Callback::getError() const noexcept {
+std::string_view Callback::getError() const noexcept {
 	return !m_functionPtr && m_errorCode ? m_errorCode : "";
 }
 
-plg::any& PLH::Callback::createStorage(const size_t idx, const plg::any& any) {
-	std::scoped_lock lock(m_mutex);
-	return m_storage[std::this_thread::get_id()][idx] = any;
+plg::any& Callback::setStorage(size_t idx, const plg::any& any) const {
+	if (idx == -1) {
+		idx = 32;
+	}
+	storage[this][idx] = any;
+	return storage[this][idx];
 }
 
-plg::any& PLH::Callback::getStorage(const size_t idx) {
-	return m_storage[std::this_thread::get_id()][idx];
+plg::any& Callback::getStorage(size_t idx) const {
+	if (idx == -1) {
+		idx = 32;
+	}
+	return storage[this][idx];
 }
 
-PLH::DataType PLH::Callback::getReturnType() const {
+DataType Callback::getReturnType() const {
 	return m_returnType;
 }
 
-PLH::DataType PLH::Callback::getArgumentType(size_t idx) const {
+DataType Callback::getArgumentType(size_t idx) const {
 	return m_arguments[idx];
 }
 
-void PLH::Callback::cleanupStorage() {
-	if (m_storage.empty()) {
-		return;
-	}
-
-	std::scoped_lock lock(m_mutex);
-	m_storage.erase(std::this_thread::get_id());
+Callback::Callback(DataType returnType, std::span<const DataType> arguments) : m_returnType(returnType), m_arguments(arguments.begin(), arguments.end()) {
+	storage[this] = {};
 }
 
-void PLH::Callback::processDelayed(CallbackType type) {
-	auto& removals = m_appends[static_cast<size_t>(type)];
-	auto& appends = m_appends[static_cast<size_t>(type)];
-	if (removals.empty() && appends.empty()) {
-		return;
-	}
-
-	std::scoped_lock lock(m_mutex);
-
-	auto& callbacks = m_callbacks[static_cast<size_t>(type)];
-
-	for (const auto& [callback, priority] : appends) {
-		if (std::any_of(callbacks.begin(), callbacks.end(),
-			[&](auto& x){ return x.first == callback; })) {
-			continue;
-		}
-		callbacks.emplace_back(callback, priority);
-	}
-
-	for (const auto& [callback, priority] : removals) {
-		auto it = std::find_if(callbacks.begin(), callbacks.end(),
-			[&](auto& x){ return x.first == callback; });
-		if (it == callbacks.end()) {
-			continue;
-		}
-		callbacks.erase(it);
-	}
-
-	appends.clear();
-	removals.clear();
-}
-
-PLH::Callback::Callback(DataType returnType, std::span<const DataType> arguments) : m_returnType(returnType), m_arguments(arguments.begin(), arguments.end()) {
-}
-
-PLH::Callback::~Callback() {
+Callback::~Callback() {
 	if (m_functionPtr) {
 		rt.release(m_functionPtr);
 	}
+	storage.erase(this);
 }
