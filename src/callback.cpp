@@ -127,10 +127,10 @@ uint64_t Callback::getJitFunc(const FuncSignature& sig, const CallbackEntry pre,
 		ArgRegSlot argSlot(argIdx);
 
 		if (TypeUtils::isInt(argType)) {
-			argSlot.low = cc.newUIntPtr();
+			argSlot.low = cc.newGpz();
 
 			if (hasHiArgSlot(cc, argType)) {
-				argSlot.high = cc.newUIntPtr();
+				argSlot.high = cc.newGpz();
 				argSlot.useHighReg = true;
 			}
 		} else if (TypeUtils::isFloat(argType)) {
@@ -160,7 +160,7 @@ uint64_t Callback::getJitFunc(const FuncSignature& sig, const CallbackEntry pre,
 	x86::Mem argsStackIdx(argsStack);
 
 	// assigns some register as index reg
-	x86::Gp i = cc.newUIntPtr();
+	x86::Gp i = cc.newGpz();
 
 	// stackIdx <- stack[i].
 	argsStackIdx.setIndex(i);
@@ -185,7 +185,7 @@ uint64_t Callback::getJitFunc(const FuncSignature& sig, const CallbackEntry pre,
 				cc.mov(argsStackIdx, argSlot.high.as<x86::Gp>());
 			}
 		} else if(TypeUtils::isFloat(argType)) {
-			cc.movq(argsStackIdx, argSlot.low.as<x86::Xmm>());
+			cc.movq(argsStackIdx, argSlot.low.as<x86::Vec>());
 		} else {
 			m_errorCode = "Parameters wider than 64bits not supported";
 			return 0;
@@ -199,25 +199,25 @@ uint64_t Callback::getJitFunc(const FuncSignature& sig, const CallbackEntry pre,
 	auto callbackSig = FuncSignature::build<void, Callback*, Parameters*, size_t, Return*, ReturnFlag*>();
 
 	// get pointer to callback and pass it to the user callback
-	x86::Gp argCallback = cc.newUIntPtr("argCallback");
+	x86::Gp argCallback = cc.newGpz("argCallback");
 	cc.mov(argCallback, this);
 
 	// get pointer to stack structure and pass it to the user callback
-	x86::Gp argStruct = cc.newUIntPtr("argStruct");
+	x86::Gp argStruct = cc.newGpz("argStruct");
 	cc.lea(argStruct, argsStack);
 
 	// fill reg to pass struct arg count to callback
-	x86::Gp argCountParam = cc.newUIntPtr("argCountParam");
+	x86::Gp argCountParam = cc.newGpz("argCountParam");
 	cc.mov(argCountParam, sig.argCount());
 
 	// create buffer for return struct
 	x86::Mem retStack = cc.newStack(sizeof(uint64_t), alignment);
-	x86::Gp retStruct = cc.newUIntPtr("retStruct");
+	x86::Gp retStruct = cc.newGpz("retStruct");
 	cc.lea(retStruct, retStack);
 
 	// create buffer for flag value
 	x86::Mem flagStack = cc.newStack(sizeof(ReturnFlag), alignment);
-	x86::Gp flagStruct = cc.newUIntPtr("flagStruct");
+	x86::Gp flagStruct = cc.newGpz("flagStruct");
 	cc.lea(flagStruct, flagStack);
 	x86::Mem flagStackIdx(flagStack);
 	flagStackIdx.setSize(sizeof(ReturnFlag));
@@ -255,7 +255,7 @@ uint64_t Callback::getJitFunc(const FuncSignature& sig, const CallbackEntry pre,
 				cc.mov(argSlot.high.as<x86::Gp>(), argsStackIdx);
 			}
 		} else if (TypeUtils::isFloat(argType)) {
-			cc.movq(argSlot.low.as<x86::Xmm>(), argsStackIdx);
+			cc.movq(argSlot.low.as<x86::Vec>(), argsStackIdx);
 		} else {
 			m_errorCode = "Parameters wider than 64bits not supported";
 			return 0;
@@ -283,7 +283,7 @@ uint64_t Callback::getJitFunc(const FuncSignature& sig, const CallbackEntry pre,
 	if (sig.hasRet()) {
 		x86::Reg ret;
 		if (TypeUtils::isInt(sig.ret())) {
-			ret = cc.newUIntPtr();
+			ret = cc.newGpz();
 		} else {
 			ret = cc.newXmm();
 		}
@@ -294,7 +294,7 @@ uint64_t Callback::getJitFunc(const FuncSignature& sig, const CallbackEntry pre,
 		if (TypeUtils::isInt(sig.ret())) {
 			cc.mov(retStackIdx, ret.as<x86::Gp>());
 		} else {
-			cc.movq(retStackIdx, ret.as<x86::Xmm>());
+			cc.movq(retStackIdx, ret.as<x86::Vec>());
 		}
 	}
 
@@ -333,7 +333,7 @@ uint64_t Callback::getJitFunc(const FuncSignature& sig, const CallbackEntry pre,
 				cc.mov(argSlot.high.as<x86::Gp>(), argsStackIdx);
 			}
 		} else if (TypeUtils::isFloat(argType)) {
-			cc.movq(argSlot.low.as<x86::Xmm>(), argsStackIdx);
+			cc.movq(argSlot.low.as<x86::Vec>(), argsStackIdx);
 		} else {
 			m_errorCode = "Parameters wider than 64bits not supported";
 			return 0;
@@ -350,11 +350,11 @@ uint64_t Callback::getJitFunc(const FuncSignature& sig, const CallbackEntry pre,
 		x86::Mem retStackIdx(retStack);
 		retStackIdx.setSize(sizeof(uint64_t));
 		if (TypeUtils::isInt(sig.ret())) {
-			x86::Gp tmp = cc.newUIntPtr();
+			x86::Gp tmp = cc.newGpz();
 			cc.mov(tmp, retStackIdx);
 			cc.ret(tmp);
 		} else {
-			x86::Xmm tmp = cc.newXmm();
+			x86::Vec tmp = cc.newXmm();
 			cc.movq(tmp, retStackIdx);
 			cc.ret(tmp);
 		}
@@ -475,9 +475,7 @@ std::string_view Callback::getError() const noexcept {
 }
 
 plg::any& Callback::setStorage(size_t idx, const plg::any& any) const {
-	auto& var = storage[this][++idx];
-	var = any;
-	return var;
+	return storage[this][++idx] = any;
 }
 
 plg::any& Callback::getStorage(size_t idx) const {
