@@ -129,11 +129,6 @@ namespace PLH {
 	private:
 		static asmjit::TypeId getTypeId(DataType type) noexcept;
 		static bool hasHiArgSlot(const asmjit::x86::Compiler& compiler, asmjit::TypeId typeId) noexcept;
-		struct CallbackObject {
-			plg::hybrid_vector<CallbackHandler, kMaxFuncStack> callbacks;
-			plg::hybrid_vector<int, kMaxFuncStack> priorities;
-		};
-		std::array<CallbackObject, static_cast<size_t>(CallbackType::Count)> m_callbacks;
 		uint64_t m_functionPtr = 0;
 		union {
 			uint64_t m_trampolinePtr = 0;
@@ -142,6 +137,12 @@ namespace PLH {
 		mutable std::shared_mutex m_mutex;
 		std::inplace_vector<DataType, asmjit::Globals::kMaxFuncArgs> m_arguments;
 		DataType m_returnType;
+		struct CallbackObject {
+			alignas(std::hardware_destructive_interference_size)
+			plg::hybrid_vector<CallbackHandler, kMaxFuncStack> callbacks;
+			plg::hybrid_vector<int, kMaxFuncStack> priorities;
+		};
+		std::array<CallbackObject, static_cast<size_t>(CallbackType::Count)> m_callbacks;
 	};
 }
 
