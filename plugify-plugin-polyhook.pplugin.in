@@ -2218,7 +2218,7 @@
       "retType": {
         "type": "void"
       }
-    }
+    },
     {
       "name": "SetReturn",
       "group": "Setters",
