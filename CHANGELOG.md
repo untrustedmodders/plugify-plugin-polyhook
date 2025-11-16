@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.1.1](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.1.0...v2.1.1) (2025-11-16)
+
+
+### Bug Fixes
+
+* improve cache efficiency of callbacks for memcpy ([9c676d5](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/9c676d5b741684105642417cd0c535f3be625a20))
+* remove deprecated ([a624ce1](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/a624ce123dec6d31d08d4062f7689de4a57818cc))
+* typo in manifest ([5c8932d](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/5c8932dfb4deaa3a822bea147723075927a6fab1))
+* update notify ([9e57a40](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/9e57a409979abc76c552fb2bf6beac16d095dfcc))
+
 ## [2.1.0](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.0.3...v2.1.0) (2025-10-19)
 
 
