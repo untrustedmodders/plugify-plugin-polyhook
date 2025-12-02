@@ -2245,5 +2245,443 @@
         "type": "void"
       }
     }
+  ],
+  "classes": [
+    {
+      "name": "Callback",
+      "group": "Classes",
+      "description": "RAII wrapper for Callback pointer from hook operations.",
+      "handleType": "ptr64",
+      "invalidValue": "0",
+      "bindings": [
+        {
+          "name": "AddCallback",
+          "method": "AddCallback",
+          "bindSelf": true
+        },
+        {
+          "name": "AddCallback2",
+          "method": "AddCallback2",
+          "bindSelf": true
+        },
+        {
+          "name": "RemoveCallback",
+          "method": "RemoveCallback",
+          "bindSelf": true
+        },
+        {
+          "name": "IsCallbackRegistered",
+          "method": "IsCallbackRegistered",
+          "bindSelf": true
+        },
+        {
+          "name": "AreCallbacksRegistered",
+          "method": "AreCallbacksRegistered",
+          "bindSelf": true
+        },
+        {
+          "name": "GetFunctionAddr",
+          "method": "GetFunctionAddr",
+          "bindSelf": true
+        },
+        {
+          "name": "GetOriginalAddr",
+          "method": "GetOriginalAddr",
+          "bindSelf": true
+        }
+      ]
+    },
+    {
+      "name": "Parameters",
+      "group": "Classes",
+      "description": "RAII wrapper for Callback::Parameters pointer used in callback handlers.",
+      "handleType": "ptr64",
+      "invalidValue": "0",
+      "constructors": [],
+      "destructor": null,
+      "bindings": [
+        {
+          "name": "GetBool",
+          "method": "GetArgumentBool",
+          "bindSelf": true
+        },
+        {
+          "name": "GetInt8",
+          "method": "GetArgumentInt8",
+          "bindSelf": true
+        },
+        {
+          "name": "GetUInt8",
+          "method": "GetArgumentUInt8",
+          "bindSelf": true
+        },
+        {
+          "name": "GetInt16",
+          "method": "GetArgumentInt16",
+          "bindSelf": true
+        },
+        {
+          "name": "GetUInt16",
+          "method": "GetArgumentUInt16",
+          "bindSelf": true
+        },
+        {
+          "name": "GetInt32",
+          "method": "GetArgumentInt32",
+          "bindSelf": true
+        },
+        {
+          "name": "GetUInt32",
+          "method": "GetArgumentUInt32",
+          "bindSelf": true
+        },
+        {
+          "name": "GetInt64",
+          "method": "GetArgumentInt64",
+          "bindSelf": true
+        },
+        {
+          "name": "GetUInt64",
+          "method": "GetArgumentUInt64",
+          "bindSelf": true
+        },
+        {
+          "name": "GetFloat",
+          "method": "GetArgumentFloat",
+          "bindSelf": true
+        },
+        {
+          "name": "GetDouble",
+          "method": "GetArgumentDouble",
+          "bindSelf": true
+        },
+        {
+          "name": "GetPointer",
+          "method": "GetArgumentPointer",
+          "bindSelf": true
+        },
+        {
+          "name": "GetString",
+          "method": "GetArgumentString",
+          "bindSelf": true
+        },
+        {
+          "name": "SetBool",
+          "method": "SetArgumentBool",
+          "bindSelf": true
+        },
+        {
+          "name": "SetInt8",
+          "method": "SetArgumentInt8",
+          "bindSelf": true
+        },
+        {
+          "name": "SetUInt8",
+          "method": "SetArgumentUInt8",
+          "bindSelf": true
+        },
+        {
+          "name": "SetInt16",
+          "method": "SetArgumentInt16",
+          "bindSelf": true
+        },
+        {
+          "name": "SetUInt16",
+          "method": "SetArgumentUInt16",
+          "bindSelf": true
+        },
+        {
+          "name": "SetInt32",
+          "method": "SetArgumentInt32",
+          "bindSelf": true
+        },
+        {
+          "name": "SetUInt32",
+          "method": "SetArgumentUInt32",
+          "bindSelf": true
+        },
+        {
+          "name": "SetInt64",
+          "method": "SetArgumentInt64",
+          "bindSelf": true
+        },
+        {
+          "name": "SetUInt64",
+          "method": "SetArgumentUInt64",
+          "bindSelf": true
+        },
+        {
+          "name": "SetFloat",
+          "method": "SetArgumentFloat",
+          "bindSelf": true
+        },
+        {
+          "name": "SetDouble",
+          "method": "SetArgumentDouble",
+          "bindSelf": true
+        },
+        {
+          "name": "SetPointer",
+          "method": "SetArgumentPointer",
+          "bindSelf": true
+        }
+      ]
+    },
+    {
+      "name": "Return",
+      "group": "Classes",
+      "description": "RAII wrapper for Callback::Return pointer used in callback handlers.",
+      "handleType": "ptr64",
+      "invalidValue": "0",
+      "constructors": [],
+      "destructor": null,
+      "bindings": [
+        {
+          "name": "GetBool",
+          "method": "GetReturnBool",
+          "bindSelf": true
+        },
+        {
+          "name": "GetInt8",
+          "method": "GetReturnInt8",
+          "bindSelf": true
+        },
+        {
+          "name": "GetUInt8",
+          "method": "GetReturnUInt8",
+          "bindSelf": true
+        },
+        {
+          "name": "GetInt16",
+          "method": "GetReturnInt16",
+          "bindSelf": true
+        },
+        {
+          "name": "GetUInt16",
+          "method": "GetReturnUInt16",
+          "bindSelf": true
+        },
+        {
+          "name": "GetInt32",
+          "method": "GetReturnInt32",
+          "bindSelf": true
+        },
+        {
+          "name": "GetUInt32",
+          "method": "GetReturnUInt32",
+          "bindSelf": true
+        },
+        {
+          "name": "GetInt64",
+          "method": "GetReturnInt64",
+          "bindSelf": true
+        },
+        {
+          "name": "GetUInt64",
+          "method": "GetReturnUInt64",
+          "bindSelf": true
+        },
+        {
+          "name": "GetFloat",
+          "method": "GetReturnFloat",
+          "bindSelf": true
+        },
+        {
+          "name": "GetDouble",
+          "method": "GetReturnDouble",
+          "bindSelf": true
+        },
+        {
+          "name": "GetPointer",
+          "method": "GetReturnPointer",
+          "bindSelf": true
+        },
+        {
+          "name": "GetString",
+          "method": "GetReturnString",
+          "bindSelf": true
+        },
+        {
+          "name": "SetBool",
+          "method": "SetReturnBool",
+          "bindSelf": true
+        },
+        {
+          "name": "SetInt8",
+          "method": "SetReturnInt8",
+          "bindSelf": true
+        },
+        {
+          "name": "SetUInt8",
+          "method": "SetReturnUInt8",
+          "bindSelf": true
+        },
+        {
+          "name": "SetInt16",
+          "method": "SetReturnInt16",
+          "bindSelf": true
+        },
+        {
+          "name": "SetUInt16",
+          "method": "SetReturnUInt16",
+          "bindSelf": true
+        },
+        {
+          "name": "SetInt32",
+          "method": "SetReturnInt32",
+          "bindSelf": true
+        },
+        {
+          "name": "SetUInt32",
+          "method": "SetReturnUInt32",
+          "bindSelf": true
+        },
+        {
+          "name": "SetInt64",
+          "method": "SetReturnInt64",
+          "bindSelf": true
+        },
+        {
+          "name": "SetUInt64",
+          "method": "SetReturnUInt64",
+          "bindSelf": true
+        },
+        {
+          "name": "SetFloat",
+          "method": "SetReturnFloat",
+          "bindSelf": true
+        },
+        {
+          "name": "SetDouble",
+          "method": "SetReturnDouble",
+          "bindSelf": true
+        },
+        {
+          "name": "SetPointer",
+          "method": "SetReturnPointer",
+          "bindSelf": true
+        }
+      ]
+    },
+    {
+      "name": "PolyHook",
+      "group": "Classes",
+      "description": "Global hooking functions for PolyHook plugin.",
+      "handleType": "void",
+      "bindings": [
+        {
+          "name": "HookDetour",
+          "method": "HookDetour",
+          "bindSelf": false,
+          "retAlias": {
+            "name": "Callback",
+            "owner": false
+          }
+        },
+        {
+          "name": "UnhookDetour",
+          "method": "UnhookDetour",
+          "bindSelf": false
+        },
+        {
+          "name": "HookVirtualTable",
+          "method": "HookVirtualTable",
+          "bindSelf": false,
+          "retAlias": {
+            "name": "Callback",
+            "owner": false
+          }
+        },
+        {
+          "name": "HookVirtualTableByFunc",
+          "method": "HookVirtualTable2",
+          "bindSelf": false,
+          "retAlias": {
+            "name": "Callback",
+            "owner": false
+          }
+        },
+        {
+          "name": "UnhookVirtualTable",
+          "method": "UnhookVirtualTable",
+          "bindSelf": false
+        },
+        {
+          "name": "UnhookVirtualTableByFunc",
+          "method": "UnhookVirtualTable2",
+          "bindSelf": false
+        },
+        {
+          "name": "HookVirtualFunc",
+          "method": "HookVirtualFunc",
+          "bindSelf": false,
+          "retAlias": {
+            "name": "Callback",
+            "owner": false
+          }
+        },
+        {
+          "name": "HookVirtualFuncByFunc",
+          "method": "HookVirtualFunc2",
+          "bindSelf": false,
+          "retAlias": {
+            "name": "Callback",
+            "owner": false
+          }
+        },
+        {
+          "name": "UnhookVirtualFunc",
+          "method": "UnhookVirtualFunc",
+          "bindSelf": false
+        },
+        {
+          "name": "UnhookVirtualFuncByFunc",
+          "method": "UnhookVirtualFunc2",
+          "bindSelf": false
+        },
+        {
+          "name": "FindDetour",
+          "method": "FindDetour",
+          "bindSelf": false,
+          "retAlias": {
+            "name": "Callback",
+            "owner": false
+          }
+        },
+        {
+          "name": "FindVirtual",
+          "method": "FindVirtual",
+          "bindSelf": false,
+          "retAlias": {
+            "name": "Callback",
+            "owner": false
+          }
+        },
+        {
+          "name": "FindVirtualByFunc",
+          "method": "FindVirtual2",
+          "bindSelf": false,
+          "retAlias": {
+            "name": "Callback",
+            "owner": false
+          }
+        },
+        {
+          "name": "GetVirtualIndex",
+          "method": "GetVirtualIndex",
+          "bindSelf": false
+        },
+        {
+          "name": "UnhookAll",
+          "method": "UnhookAll",
+          "bindSelf": false
+        },
+        {
+          "name": "UnhookAllVirtual",
+          "method": "UnhookAllVirtual",
+          "bindSelf": false
+        }
+      ]
+    }
   ]
 }
