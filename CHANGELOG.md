@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.2](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.1.1...v2.1.2) (2025-12-02)
+
+
+### Bug Fixes
+
+* add class wrappers ([5fe003d](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/5fe003d7db92c606ad2b6b7eaf98c4e483240e09))
+
 ## [2.1.1](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.1.0...v2.1.1) (2025-11-16)
 
 
