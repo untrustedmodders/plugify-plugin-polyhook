@@ -44,7 +44,7 @@ namespace PLH {
 		void unhookAll();
 		void unhookAllVirtual(void* pClass);
 
-		int getVirtualIndex(void* pFunc, ProtFlag flag = RWX) const;
+		int getVirtualIndex(void* pFunc, ProtFlag flag = ProtFlag::RWX) const;
 
 	private:
 		struct VHook {

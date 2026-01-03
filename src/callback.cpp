@@ -266,13 +266,10 @@ uint64_t Callback::getJitFunc(const FuncSignature& sig, const CallbackEntry pre,
 		offsetNextSlot = sizeof(uint64_t);
 	}
 
-	// deref the trampoline ptr (holder must live longer, must be concrete reg since push later)
-	x86::Gp origPtr = cc.zbx();
-	cc.mov(origPtr, (uint64_t) getTrampolineHolder());
-	cc.mov(origPtr, ptr(origPtr));
+	cc.mov(i, x86::ptr((uint64_t)getTrampolineHolder()));
 
 	InvokeNode* origInvokeNode;
-	cc.invoke(&origInvokeNode, origPtr, sig);
+	cc.invoke(&origInvokeNode, i, sig);
 	for (const auto& argSlot : argRegSlots) {
 		origInvokeNode->setArg(argSlot.argIdx, 0, argSlot.low);
 		if (argSlot.useHighReg) {
@@ -359,8 +356,6 @@ uint64_t Callback::getJitFunc(const FuncSignature& sig, const CallbackEntry pre,
 			cc.ret(tmp);
 		}
 	}
-
-	cc.func()->frame().addDirtyRegs(origPtr);
 
 	cc.endFunc();
 
