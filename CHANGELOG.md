@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.0](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.1.3...v2.2.0) (2026-01-03)
+
+
+### Features
+
+* critical bug on function generation with many parameters ([4293542](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/42935423cff4e47d4c388520851e6a67ce681144))
+
 ## [2.1.3](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.1.2...v2.1.3) (2025-12-13)
 
 
