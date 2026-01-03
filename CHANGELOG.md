@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.1](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.2.0...v2.2.1) (2026-01-03)
+
+
+### Bug Fixes
+
+* add build type to configure step ([25d4f29](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/25d4f294408410104f389676255398f9ff9e8c48))
+
 ## [2.2.0](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.1.3...v2.2.0) (2026-01-03)
 
 
