@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.2](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.2.1...v2.2.2) (2026-01-04)
+
+
+### Bug Fixes
+
+* revert polyhook update ([00f7fd0](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/00f7fd055987a7f72852cb94a694cb9ae1bb61a5))
+
 ## [2.2.1](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.2.0...v2.2.1) (2026-01-03)
 
 
