@@ -2,6 +2,7 @@
     global:
         Plugify_*;
         HookDetour;
+        HookDetour2;
         HookVirtualTable;
         HookVirtualTable2;
         HookVirtualFunc;

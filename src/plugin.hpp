@@ -26,6 +26,7 @@ namespace PLH {
 		void OnPluginEnd() override;
 
 		Callback* hookDetour(void* pFunc, DataType returnType, std::span<const DataType> arguments, uint8_t vaIndex);
+		Callback* hookDetour(void* pFunc);
 		template<typename T>
 		Callback* hookVirtual(void* pClass, int index, DataType returnType, std::span<const DataType> arguments, uint8_t vaIndex);
 		template<typename T>

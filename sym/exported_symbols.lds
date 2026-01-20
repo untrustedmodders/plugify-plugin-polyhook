@@ -3,6 +3,7 @@ _Plugify_PluginUpdate
 _Plugify_PluginEnd
 _Plugify_PluginContext
 _HookDetour
+_HookDetour2
 _HookVirtualTable
 _HookVirtualTable2
 _HookVirtualFunc

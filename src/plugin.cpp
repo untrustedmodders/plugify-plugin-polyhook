@@ -10,8 +10,8 @@ using namespace std::chrono_literals;
 static void PreCallback(Callback* callback, const Callback::Parameters* params, size_t count, const Callback::Return* ret, ReturnFlag* flag) {
 	ReturnAction returnAction = ReturnAction::Ignored;
 
-	auto callbacks = callback->getCallbacks(Pre);
-	for (const auto& func : callbacks) {
+	for (auto callbacks = callback->getCallbacks(Pre);
+		const auto& func : callbacks) {
 		ReturnAction result = func(callback, params, static_cast<int32_t>(count), ret, Pre);
 		if (result > returnAction)
 			returnAction = result;
@@ -26,10 +26,16 @@ static void PreCallback(Callback* callback, const Callback::Parameters* params, 
 }
 
 static void PostCallback(Callback* callback, const Callback::Parameters* params, size_t count, const Callback::Return* ret, ReturnFlag*) {
-	auto callbacks = callback->getCallbacks(Post);
-
-	for (const auto& func : callbacks) {
+	for (auto callbacks = callback->getCallbacks(Post);
+		const auto& func : callbacks) {
 		func(callback, params, static_cast<int32_t>(count), ret, Post);
+	}
+}
+
+static void MidCallback(Callback* callback, const Callback::Return* retAddr, const Callback::Parameters* stackPtr) {
+	for (auto callbacks = callback->getCallbacks(Mid);
+		const auto& func : callbacks) {
+		func(callback, stackPtr, 32, retAddr, Mid);
 	}
 }
 
@@ -67,8 +73,34 @@ Callback* PolyHookPlugin::hookDetour(void* pFunc, DataType returnType, std::span
 
 	auto error = callback->getError();
 	if (!error.empty()) {
-		std::fputs(error.data(), stderr);
-		std::terminate();
+		POLYHOOK2_FATAL(error.data());
+	}
+
+	auto detour = std::make_unique<NatDetour>((uint64_t) pFunc, JIT, callback->getTrampolineHolder());
+	if (!detour->hook())
+		return nullptr;
+
+	return m_detours.emplace(pFunc, DHook{std::move(detour), std::move(callback)}).first->second.callback.get();
+}
+
+Callback* PolyHookPlugin::hookDetour(void* pFunc) {
+	if (!pFunc)
+		return nullptr;
+
+	std::unique_lock lock(m_mutex);
+
+	auto it = m_detours.find(pFunc);
+	if (it != m_detours.end()) {
+		return it->second.callback.get();
+	}
+
+	auto callback = std::make_unique<Callback>();
+
+	uint64_t JIT = callback->getJitFunc(&MidCallback);
+
+	auto error = callback->getError();
+	if (!error.empty()) {
+		POLYHOOK2_FATAL(error.data());
 	}
 
 	auto detour = std::make_unique<NatDetour>((uint64_t) pFunc, JIT, callback->getTrampolineHolder());
@@ -104,8 +136,7 @@ Callback* PolyHookPlugin::hookVirtual(void* pClass, int index, DataType returnTy
 
 	auto error = callback->getError();
 	if (!error.empty()) {
-		std::fputs(error.data(), stderr);
-		std::terminate();
+		POLYHOOK2_FATAL(error.data());
 	}
 
 	redirectMap[index] = JIT;
@@ -390,6 +421,9 @@ extern "C" {
 	PLUGIN_API Callback* HookDetour(void* pFunc, DataType returnType, const plg::vector<DataType>& arguments, int varIndex) {
 		return g_polyHookPlugin.hookDetour(pFunc, returnType, arguments, static_cast<uint8_t>(varIndex));
 	}
+	PLUGIN_API Callback* HookDetour2(void* pFunc) {
+		return g_polyHookPlugin.hookDetour(pFunc);
+	}
 	PLUGIN_API bool UnhookDetour(void* pFunc) {
 		return g_polyHookPlugin.unhookDetour(pFunc);
 	}
@@ -584,8 +618,7 @@ extern "C" {
 			} else if constexpr (std::is_same_v<T, plg::string>) {
 				params->setArg(index, plg::get<T>(callback->setStorage(index, value)).c_str());
 			} else {
-				std::fputs("Type not supported", stderr);
-				std::terminate();
+				POLYHOOK2_FATAL("Type not supported\n");
 			}
 		}, value);
 	}
@@ -680,8 +713,7 @@ extern "C" {
 			} else if constexpr (std::is_same_v<T, plg::string>) {
 				ret->setRet(plg::get<T>(callback->setStorage(-1, value)).c_str());
 			} else {
-				std::fputs("Type not supported", stderr);
-				std::terminate();
+				POLYHOOK2_FATAL("Type not supported\n");
 			}
 		}, value);
 	}

@@ -20,6 +20,10 @@
 #include <plg/inplace_vector.hpp>
 #include <plg/hybrid_vector.hpp>
 
+#define POLYHOOK2_FATAL(str, ...) \
+	std::fputs(str, stderr); \
+	std::terminate();
+
 namespace PLH {
 	enum class DataType : uint8_t {
 		Void,
@@ -48,8 +52,9 @@ namespace PLH {
 
 	enum class CallbackType : uint8_t {
 		Pre,  ///< Callback will be executed before the original function
-		Post,  ///< Callback will be executed after the original function
-		Count
+		Post, ///< Callback will be executed after the original function
+		Count,
+		Mid = Pre,
 	};
 
 	enum class ReturnFlag : uint8_t {
@@ -101,13 +106,16 @@ namespace PLH {
 		static constexpr size_t kMaxFuncStack = 62; // for 512 byte object
 
 		using CallbackEntry = void (*)(Callback* callback, const Parameters* params, size_t count, const Return* ret, ReturnFlag* flag);
+		using CallbackEntry2 = void (*)(Callback* callback, const Return* retAddr, const Parameters* stackPtr);
 		using CallbackHandler = ReturnAction (*)(Callback* callback, const Parameters* params, int32_t count, const Return* ret, CallbackType type);
 
+		Callback();
 		Callback(DataType returnType, std::span<const DataType> arguments);
 		~Callback();
 
 		uint64_t getJitFunc(const asmjit::FuncSignature& sig, CallbackEntry pre, CallbackEntry post);
 		uint64_t getJitFunc(DataType retType, std::span<const DataType> paramTypes, CallbackEntry pre, CallbackEntry post, uint8_t vaIndex);
+		uint64_t getJitFunc(CallbackEntry2 entry); // for mid hook
 
 		uint64_t* getTrampolineHolder() noexcept;
 		uint64_t* getFunctionHolder() noexcept;
@@ -127,6 +135,8 @@ namespace PLH {
 		bool areCallbacksRegistered() const noexcept;
 
 	private:
+		static int32_t saveRegisters(asmjit::x86::Assembler& assembler);
+		static void restoreRegisters(asmjit::x86::Assembler& assembler);
 		static asmjit::TypeId getTypeId(DataType type) noexcept;
 		static bool hasHiArgSlot(const asmjit::x86::Compiler& compiler, asmjit::TypeId typeId) noexcept;
 		uint64_t m_functionPtr = 0;
