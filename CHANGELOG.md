@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.1](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.3.0...v2.3.1) (2026-01-25)
+
+
+### Bug Fixes
+
+* enable logging ([4b01efc](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/4b01efc92e8020d9e00cd1d1ab7c4ea50e32de1d))
+
 ## [2.3.0](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.2.2...v2.3.0) (2026-01-25)
 
 
