@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.3.0](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.2.2...v2.3.0) (2026-01-25)
+
+
+### Features
+
+* add mid hook ([001469d](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/001469d76b47a985c20ec74210efda4223051336))
+
+
+### Bug Fixes
+
+* add register getters and setter and more mid hook improvements ([7f81f1e](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/7f81f1eb8fbd609a183cfeb1df6181e54a2b7dd9))
+* remove unused ([022ef62](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/022ef6295c03c8485d31bfb8f6bc5519c795851a))
+
 ## [2.2.2](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.2.1...v2.2.2) (2026-01-04)
 
 
