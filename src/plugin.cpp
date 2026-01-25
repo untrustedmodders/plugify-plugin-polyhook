@@ -6,6 +6,7 @@ EXPOSE_PLUGIN(PLUGIN_API, PLH::PolyHookPlugin, &g_polyHookPlugin)
 using namespace PLH;
 using enum CallbackType;
 using namespace std::chrono_literals;
+using namespace std::string_literals;
 
 constexpr size_t XMM = 16 / sizeof(void*);
 
@@ -103,6 +104,9 @@ static void MidCallback(Callback* callback, uintptr_t* p) {
 }
 
 void PolyHookPlugin::OnPluginStart() {
+	auto logger = std::make_shared<ErrorLog>();
+	logger->setLogLevel(ErrorLevel::SEV);
+	Log::registerLogger(logger);
 }
 
 void PolyHookPlugin::OnPluginUpdate([[maybe_unused]] std::chrono::milliseconds dt) {
@@ -120,8 +124,10 @@ void PolyHookPlugin::OnPluginEnd() {
 }
 
 Callback* PolyHookPlugin::hookDetour(void* pFunc, DataType returnType, std::span<const DataType> arguments, uint8_t varIndex) {
-	if (!pFunc)
+	if (!pFunc) {
+		Log::log("hookDetour: Invalid func pointer", ErrorLevel::SEV);
 		return nullptr;
+	}
 
 	std::unique_lock lock(m_mutex);
 
@@ -134,9 +140,9 @@ Callback* PolyHookPlugin::hookDetour(void* pFunc, DataType returnType, std::span
 
 	uint64_t JIT = callback->getJitFunc(returnType, arguments, &PreCallback, &PostCallback, varIndex);
 
-	auto error = callback->getError();
-	if (!error.empty()) {
-		POLYHOOK2_FATAL(error.data());
+	if (auto error = callback->getError(); !error.empty()) {
+		Log::log(std::format("hookDetour: {}", error), ErrorLevel::SEV);
+		return nullptr;
 	}
 
 	auto detour = std::make_unique<NatDetour>((uint64_t) pFunc, JIT, callback->getTrampolineHolder());
@@ -147,8 +153,10 @@ Callback* PolyHookPlugin::hookDetour(void* pFunc, DataType returnType, std::span
 }
 
 Callback* PolyHookPlugin::hookDetour(void* pFunc) {
-	if (!pFunc)
+	if (!pFunc) {
+		Log::log("hookDetour2: Invalid func pointer", ErrorLevel::SEV);
 		return nullptr;
+	}
 
 	std::unique_lock lock(m_mutex);
 
@@ -161,9 +169,9 @@ Callback* PolyHookPlugin::hookDetour(void* pFunc) {
 
 	uint64_t JIT = callback->getJitFunc(&MidCallback);
 
-	auto error = callback->getError();
-	if (!error.empty()) {
-		POLYHOOK2_FATAL(error.data());
+	if (auto error = callback->getError(); !error.empty()) {
+		Log::log(std::format("hookDetour2: {}", error), ErrorLevel::SEV);
+		return nullptr;
 	}
 
 	auto detour = std::make_unique<NatDetour>((uint64_t) pFunc, JIT, callback->getTrampolineHolder());
@@ -175,8 +183,10 @@ Callback* PolyHookPlugin::hookDetour(void* pFunc) {
 
 template<typename T>
 Callback* PolyHookPlugin::hookVirtual(void* pClass, int index, DataType returnType, std::span<const DataType> arguments, uint8_t varIndex) {
-	if (!pClass || index == -1)
+	if (!pClass || index == -1) {
+		Log::log("hookVirtual: Invalid class or vfunc index", ErrorLevel::SEV);
 		return nullptr;
+	}
 
 	std::unique_lock lock(m_mutex);
 
@@ -197,9 +207,9 @@ Callback* PolyHookPlugin::hookVirtual(void* pClass, int index, DataType returnTy
 	auto& callback = callbacks.emplace(index, std::make_unique<Callback>(returnType, arguments)).first->second;
 	uint64_t JIT = callback->getJitFunc(returnType, arguments, &PreCallback, &PostCallback, varIndex);
 
-	auto error = callback->getError();
-	if (!error.empty()) {
-		POLYHOOK2_FATAL(error.data());
+	if (auto error = callback->getError(); !error.empty()) {
+		Log::log(std::format("hookVirtual: {}", error), ErrorLevel::SEV);
+		return nullptr;
 	}
 
 	redirectMap[index] = JIT;
@@ -681,7 +691,7 @@ extern "C" {
 			} else if constexpr (std::is_same_v<T, plg::string>) {
 				params->set(index, plg::get<T>(callback->setStorage(index, value)).c_str());
 			} else {
-				POLYHOOK2_FATAL("Type not supported\n");
+				Log::log("SetArgument: Type not supported", ErrorLevel::SEV);
 			}
 		}, value);
 	}
@@ -776,7 +786,7 @@ extern "C" {
 			} else if constexpr (std::is_same_v<T, plg::string>) {
 				ret->set(plg::get<T>(callback->setStorage(-1, value)).c_str());
 			} else {
-				POLYHOOK2_FATAL("Type not supported\n");
+				Log::log("SetReturn: Type not supported", ErrorLevel::SEV);
 			}
 		}, value);
 	}
@@ -870,7 +880,7 @@ extern "C" {
 			} else if constexpr (std::is_same_v<T, plg::string>) {
 				params->set(reg, plg::get<T>(callback->setStorage(reg, value)).c_str());
 			} else {
-				POLYHOOK2_FATAL("Type not supported\n");
+				Log::log("SetRegister: Type not supported", ErrorLevel::SEV);
 			}
 		}, value);
 	}

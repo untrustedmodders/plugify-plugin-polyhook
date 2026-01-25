@@ -17,12 +17,9 @@
 #include <thread>
 
 #include <plg/any.hpp>
+#include <plg/format.hpp>
 #include <plg/inplace_vector.hpp>
 #include <plg/hybrid_vector.hpp>
-
-#define POLYHOOK2_FATAL(str, ...) \
-	std::fputs(str, stderr); \
-	std::terminate();
 
 namespace PLH {
 	enum class DataType : uint8_t {

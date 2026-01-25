@@ -17,6 +17,7 @@
 #include <mutex>
 #include <queue>
 #include <chrono>
+#include <print>
 
 namespace PLH {
 	class PolyHookPlugin final : public plg::IPluginEntry, public MemAccessor {
