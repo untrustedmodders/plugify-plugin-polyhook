@@ -197,7 +197,7 @@ uint64_t Callback::getJitFunc(const FuncSignature& sig, CallbackEntry pre, Callb
 		offsetNextSlot = sizeof(uint64_t);
 	}
 
-	auto callbackSig = FuncSignature::build<void, Callback*, Parameters*, size_t, Return*, ReturnFlag*>();
+	auto callbackSig = FuncSignature::build<void, Callback*, uint64_t*, size_t, void*, ReturnFlag*>();
 
 	// get pointer to callback and pass it to the user callback
 	Gp argCallback = cc.newGpz("argCallback");
@@ -409,12 +409,11 @@ uint64_t Callback::getJitFunc(CallbackEntry2 entry) {
 #endif
 
 	// save scratch registers that are used by setReturnAddress
-	int32_t pushed = saveRegisters(a);
+	saveRegisters(a);
 
 #ifdef POLYHOOK2_ARCH_X64
 #ifdef POLYHOOK2_OS_WINDOWS
-	a.lea(r8, qword_ptr(rsp, pushed));
-	a.mov(rdx, qword_ptr(rsp, pushed));
+	a.lea(rdx, ptr(rsp));
 	a.mov(rcx, this);
 	a.mov(rbx, rsp);
 	a.and_(rsp, -16);
@@ -422,8 +421,7 @@ uint64_t Callback::getJitFunc(CallbackEntry2 entry) {
 	a.call(entry);
 	a.mov(rsp, rbx);
 #else // __systemV__
-	a.lea(rdx, qword_ptr(rsp, pushed));
-	a.mov(rsi, qword_ptr(rsp, pushed));
+	a.lea(rsi, ptr(rsp));
 	a.mov(rdi, this);
 	a.mov(rbx, rsp);
 	a.and_(rsp, -16);
@@ -432,12 +430,10 @@ uint64_t Callback::getJitFunc(CallbackEntry2 entry) {
 	a.mov(rsp, rbx);
 #endif
 #else
-	a.lea(eax, dword_ptr(esp, pushed));
-	a.mov(ecx, dword_ptr(esp, pushed));
+	a.lea(eax, ptr(esp));
 	a.mov(ebx, esp);
 	a.and_(esp, -16);
 	a.push(eax);
-	a.push(ecx);
 	a.push(this);
 	a.call(entry);
 	a.mov(esp, ebx);
@@ -448,11 +444,11 @@ uint64_t Callback::getJitFunc(CallbackEntry2 entry) {
 #ifdef POLYHOOK2_ARCH_X64
 	a.push(rax);
 	a.mov(rax, ptr((uint64_t)getTrampolineHolder()));
-	a.xchg(qword_ptr(rsp), rax);
+	a.xchg(ptr(rsp), rax);
 #else
 	a.push(eax);
 	a.mov(eax, ptr((uint64_t)getTrampolineHolder()));
-	a.xchg(dword_ptr(esp), eax);
+	a.xchg(ptr(esp), eax);
 #endif
 
 	a.ret();
@@ -590,7 +586,7 @@ Callback::~Callback() {
 	storage.erase(this);
 }
 
-int32_t Callback::saveRegisters(Assembler& a) {
+void Callback::saveRegisters(Assembler& a) {
 #ifdef POLYHOOK2_ARCH_X64
 	constexpr int n = 16;
 
@@ -602,11 +598,9 @@ int32_t Callback::saveRegisters(Assembler& a) {
 	}
 
 	a.sub(rsp, 16 * n);
-	for (int i = 0; i < n; ++i) {
+	for (int i = n - 1; i >= 0; --i) {
 		a.movdqu(xmmword_ptr(rsp, 16 * i), xmm(i));
 	}
-
-	return (n * 8) + (n * 16);
 #else
 	constexpr int n = 8;
 
@@ -618,14 +612,12 @@ int32_t Callback::saveRegisters(Assembler& a) {
 	}
 
 	a.sub(esp, 16 * n);
-	for (int i = 0; i < n; ++i) {
+	for (int i = n - 1; i >= 0; --i) {
 		a.movdqu(xmmword_ptr(esp, 16 * i), xmm(i));
 	}
 
-	a.sub(esp, 16);
-	a.fstp(tword_ptr(esp));
-
-	return (n * 4) + (n * 16) + 16;
+	//a.sub(esp, 16);
+	//a.fstp(tword_ptr(esp));
 #endif
 }
 
@@ -633,7 +625,7 @@ void Callback::restoreRegisters(Assembler& a) {
 #ifdef POLYHOOK2_ARCH_X64
 	constexpr int n = 16;
 
-	for (int i = n - 1; i >= 0; --i) {
+	for (int i = 0; i < n; ++i) {
 		a.movdqu(xmm(i), xmmword_ptr(rsp, 16 * i));
 	}
 	a.add(rsp, 16 * n);
@@ -642,14 +634,16 @@ void Callback::restoreRegisters(Assembler& a) {
 		if (i == Gp::kIdSp) continue;
 		a.pop(gpq(i));
 	}
+
 	a.popfq();
+
 #else
 	constexpr int n = 8;
 
-	a.fld(tword_ptr(esp));
-	a.add(esp, 16);
+	//a.fld(tword_ptr(esp));
+	//a.add(esp, 16);
 
-	for (int i = n - 1; i >= 0; --i) {
+	for (int i = 0; i < n; ++i) {
 		a.movdqu(xmm(i), xmmword_ptr(esp, 16 * i));
 	}
 	a.add(esp, 16 * n);
@@ -658,6 +652,8 @@ void Callback::restoreRegisters(Assembler& a) {
 		if (i == Gp::kIdSp) continue;
 		a.pop(gpd(i));
 	}
+
 	a.popfd();
+
 #endif
 }

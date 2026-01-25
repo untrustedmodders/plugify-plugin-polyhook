@@ -7,14 +7,68 @@ using namespace PLH;
 using enum CallbackType;
 using namespace std::chrono_literals;
 
-static void PreCallback(Callback* callback, const Callback::Parameters* params, size_t count, const Callback::Return* ret, ReturnFlag* flag) {
-	ReturnAction returnAction = ReturnAction::Ignored;
+constexpr size_t XMM = 16 / sizeof(void*);
 
-	for (auto callbacks = callback->getCallbacks(Pre);
+enum RegisterType : size_t {
+	XMM0 = 0 * XMM,
+	XMM1 = 1 * XMM,
+	XMM2 = 2 * XMM,
+	XMM3 = 3 * XMM,
+	XMM4 = 4 * XMM,
+	XMM5 = 5 * XMM,
+	XMM6 = 6 * XMM,
+	XMM7 = 7 * XMM,
+#ifdef POLYHOOK2_ARCH_X64
+	XMM8 = 8 * XMM,
+	XMM9 = 9 * XMM,
+	XMM10 = 10 * XMM,
+	XMM11 = 11 * XMM,
+	XMM12 = 12 * XMM,
+	XMM13 = 13 * XMM,
+	XMM14 = 14 * XMM,
+	XMM15 = 15 * XMM,
+	R15 = 16 * XMM,
+	R14,
+	R13,
+	R12,
+	R11,
+	R10,
+	R9,
+	R8,
+	RDI,
+	RSI,
+	RBP,
+	RBX,
+	RDX,
+	RCX,
+	RAX,
+	RFLAGS,
+#else
+	EDI = 8 * XMM,
+	ESI,
+	EBP,
+	EBX,
+	EDX,
+	ECX,
+	EAX,
+	EFLAGS,
+#endif
+	COUNT
+};
+
+static void PreCallback(Callback* callback, uint64_t* p, size_t count, void* r, ReturnFlag* flag) {
+	ParametersSpan params(p, count);
+	ReturnSlot ret(r, SizeOf(callback->getReturnType()));
+
+	ReturnAction returnAction = ReturnAction::Ignored;
+	
+	if (callback->areCallbacksRegistered(Pre)) {
+		for (auto callbacks = callback->getCallbacks(Pre);
 		const auto& func : callbacks) {
-		ReturnAction result = func(callback, params, static_cast<int32_t>(count), ret, Pre);
+		ReturnAction result = func(callback, &params, static_cast<int32_t>(count), &ret, Pre);
 		if (result > returnAction)
 			returnAction = result;
+		}
 	}
 
 	if (!callback->areCallbacksRegistered(Post)) {
@@ -25,17 +79,26 @@ static void PreCallback(Callback* callback, const Callback::Parameters* params, 
 	}
 }
 
-static void PostCallback(Callback* callback, const Callback::Parameters* params, size_t count, const Callback::Return* ret, ReturnFlag*) {
+static void PostCallback(Callback* callback, uint64_t* p, size_t count, void* r, ReturnFlag*) {
+	ParametersSpan params(p, count);
+	ReturnSlot ret(r, SizeOf(callback->getReturnType()));
+
 	for (auto callbacks = callback->getCallbacks(Post);
 		const auto& func : callbacks) {
-		func(callback, params, static_cast<int32_t>(count), ret, Post);
+		func(callback, &params, static_cast<int32_t>(count), &ret, Post);
 	}
 }
 
-static void MidCallback(Callback* callback, const Callback::Return* retAddr, const Callback::Parameters* stackPtr) {
-	for (auto callbacks = callback->getCallbacks(Mid);
-		const auto& func : callbacks) {
-		func(callback, stackPtr, 32, retAddr, Mid);
+static void MidCallback(Callback* callback, uintptr_t* p) {
+	ParametersSpan params(p, COUNT);
+
+	for (constexpr std::array types = { Pre, Post }; const auto& type : types) {
+		if (callback->areCallbacksRegistered(type)) {
+			for (auto callbacks = callback->getCallbacks(type);
+			const auto& func : callbacks) {
+				func(callback, &params, COUNT, nullptr, type);
+			}
+		}
 	}
 }
 
@@ -529,55 +592,55 @@ extern "C" {
 		return (void*) *callback->getTrampolineHolder();
 	}
 
-	PLUGIN_API bool GetArgumentBool(const Callback::Parameters* params, size_t index) { return params->getArg<bool>(index); }
-	PLUGIN_API int8_t GetArgumentInt8(const Callback::Parameters* params, size_t index) { return params->getArg<int8_t>(index); }
-	PLUGIN_API uint8_t GetArgumentUInt8(const Callback::Parameters* params, size_t index) { return params->getArg<uint8_t>(index); }
-	PLUGIN_API int16_t GetArgumentInt16(const Callback::Parameters* params, size_t index) { return params->getArg<int16_t>(index); }
-	PLUGIN_API uint16_t GetArgumentUInt16(const Callback::Parameters* params, size_t index) { return params->getArg<uint16_t>(index); }
-	PLUGIN_API int32_t GetArgumentInt32(const Callback::Parameters* params, size_t index) { return params->getArg<int32_t>(index); }
-	PLUGIN_API uint32_t GetArgumentUInt32(const Callback::Parameters* params, size_t index) { return params->getArg<uint32_t>(index); }
-	PLUGIN_API int64_t GetArgumentInt64(const Callback::Parameters* params, size_t index) { return params->getArg<int64_t>(index); }
-	PLUGIN_API uint64_t GetArgumentUInt64(const Callback::Parameters* params, size_t index) { return params->getArg<uint64_t>(index); }
-	PLUGIN_API float GetArgumentFloat(const Callback::Parameters* params, size_t index) { return params->getArg<float>(index); }
-	PLUGIN_API double GetArgumentDouble(const Callback::Parameters* params, size_t index) { return params->getArg<double>(index); }
-	PLUGIN_API void* GetArgumentPointer(const Callback::Parameters* params, size_t index) { return params->getArg<void*>(index); }
-	PLUGIN_API plg::string GetArgumentString(const Callback::Parameters* params, size_t index) {
-		const char* str = params->getArg<const char*>(index);
+	PLUGIN_API bool GetArgumentBool(ParametersSpan<uint64_t>* params, size_t index) { return params->get<bool>(index); }
+	PLUGIN_API int8_t GetArgumentInt8(ParametersSpan<uint64_t>* params, size_t index) { return params->get<int8_t>(index); }
+	PLUGIN_API uint8_t GetArgumentUInt8(ParametersSpan<uint64_t>* params, size_t index) { return params->get<uint8_t>(index); }
+	PLUGIN_API int16_t GetArgumentInt16(ParametersSpan<uint64_t>* params, size_t index) { return params->get<int16_t>(index); }
+	PLUGIN_API uint16_t GetArgumentUInt16(ParametersSpan<uint64_t>* params, size_t index) { return params->get<uint16_t>(index); }
+	PLUGIN_API int32_t GetArgumentInt32(ParametersSpan<uint64_t>* params, size_t index) { return params->get<int32_t>(index); }
+	PLUGIN_API uint32_t GetArgumentUInt32(ParametersSpan<uint64_t>* params, size_t index) { return params->get<uint32_t>(index); }
+	PLUGIN_API int64_t GetArgumentInt64(ParametersSpan<uint64_t>* params, size_t index) { return params->get<int64_t>(index); }
+	PLUGIN_API uint64_t GetArgumentUInt64(ParametersSpan<uint64_t>* params, size_t index) { return params->get<uint64_t>(index); }
+	PLUGIN_API float GetArgumentFloat(ParametersSpan<uint64_t>* params, size_t index) { return params->get<float>(index); }
+	PLUGIN_API double GetArgumentDouble(ParametersSpan<uint64_t>* params, size_t index) { return params->get<double>(index); }
+	PLUGIN_API void* GetArgumentPointer(ParametersSpan<uint64_t>* params, size_t index) { return params->get<void*>(index); }
+	PLUGIN_API plg::string GetArgumentString(ParametersSpan<uint64_t>* params, size_t index) {
+		const char* str = params->get<const char*>(index);
 		if (str == nullptr)
 			return {};
 		else
 			return str;
 	}
-	PLUGIN_API plg::any GetArgument(Callback* callback, const Callback::Parameters* params, size_t index) {
+	PLUGIN_API plg::any GetArgument(Callback* callback, ParametersSpan<uint64_t>* params, size_t index) {
 		switch (callback->getReturnType()) {
 			case DataType::Void:
 				return {};
 			case DataType::Bool:
-				return params->getArg<bool>(index);
+				return params->get<bool>(index);
 			case DataType::Int8:
-				return params->getArg<int8_t>(index);
+				return params->get<int8_t>(index);
 			case DataType::UInt8:
-				return params->getArg<uint8_t>(index);
+				return params->get<uint8_t>(index);
 			case DataType::Int16:
-				return params->getArg<int16_t>(index);
+				return params->get<int16_t>(index);
 			case DataType::UInt16:
-				return params->getArg<uint16_t>(index);
+				return params->get<uint16_t>(index);
 			case DataType::Int32:
-				return params->getArg<int32_t>(index);
+				return params->get<int32_t>(index);
 			case DataType::UInt32:
-				return params->getArg<uint32_t>(index);
+				return params->get<uint32_t>(index);
 			case DataType::Int64:
-				return params->getArg<int64_t>(index);
+				return params->get<int64_t>(index);
 			case DataType::UInt64:
-				return params->getArg<uint64_t>(index);
+				return params->get<uint64_t>(index);
 			case DataType::Float:
-				return params->getArg<float>(index);
+				return params->get<float>(index);
 			case DataType::Double:
-				return params->getArg<double>(index);
+				return params->get<double>(index);
 			case DataType::Pointer:
-				return params->getArg<void*>(index);
+				return params->get<void*>(index);
 			case DataType::String: {
-				const char* str = params->getArg<const char*>(index);
+				const char* str = params->get<const char*>(index);
 				if (str == nullptr)
 					return {};
 				else
@@ -588,91 +651,91 @@ extern "C" {
 		}
 	}
 
-	PLUGIN_API void SetArgumentBool(const Callback::Parameters* params, size_t index, bool value) { params->setArg(index, value); }
-	PLUGIN_API void SetArgumentInt8(const Callback::Parameters* params, size_t index, int8_t value) { params->setArg(index, value); }
-	PLUGIN_API void SetArgumentUInt8(const Callback::Parameters* params, size_t index, uint8_t value) { params->setArg(index, value); }
-	PLUGIN_API void SetArgumentInt16(const Callback::Parameters* params, size_t index, int16_t value) { params->setArg(index, value); }
-	PLUGIN_API void SetArgumentUInt16(const Callback::Parameters* params, size_t index, uint16_t value) { params->setArg(index, value); }
-	PLUGIN_API void SetArgumentInt32(const Callback::Parameters* params, size_t index, int32_t value) { params->setArg(index, value); }
-	PLUGIN_API void SetArgumentUInt32(const Callback::Parameters* params, size_t index, uint32_t value) { params->setArg(index, value); }
-	PLUGIN_API void SetArgumentInt64(const Callback::Parameters* params, size_t index, int64_t value) { params->setArg(index, value); }
-	PLUGIN_API void SetArgumentUInt64(const Callback::Parameters* params, size_t index, uint64_t value) { params->setArg(index, value); }
-	PLUGIN_API void SetArgumentFloat(const Callback::Parameters* params, size_t index, float value) { params->setArg(index, value); }
-	PLUGIN_API void SetArgumentDouble(const Callback::Parameters* params, size_t index, double value) { params->setArg(index, value); }
-	PLUGIN_API void SetArgumentPointer(const Callback::Parameters* params, size_t index, void* value) { params->setArg(index, value); }
-	PLUGIN_API void SetArgumentString(Callback* callback, const Callback::Parameters* params, size_t index, const plg::string& value) {
-		params->setArg(index, plg::get<plg::string>(callback->setStorage(index, value)).c_str());
+	PLUGIN_API void SetArgumentBool(ParametersSpan<uint64_t>* params, size_t index, bool value) { params->set(index, value); }
+	PLUGIN_API void SetArgumentInt8(ParametersSpan<uint64_t>* params, size_t index, int8_t value) { params->set(index, value); }
+	PLUGIN_API void SetArgumentUInt8(ParametersSpan<uint64_t>* params, size_t index, uint8_t value) { params->set(index, value); }
+	PLUGIN_API void SetArgumentInt16(ParametersSpan<uint64_t>* params, size_t index, int16_t value) { params->set(index, value); }
+	PLUGIN_API void SetArgumentUInt16(ParametersSpan<uint64_t>* params, size_t index, uint16_t value) { params->set(index, value); }
+	PLUGIN_API void SetArgumentInt32(ParametersSpan<uint64_t>* params, size_t index, int32_t value) { params->set(index, value); }
+	PLUGIN_API void SetArgumentUInt32(ParametersSpan<uint64_t>* params, size_t index, uint32_t value) { params->set(index, value); }
+	PLUGIN_API void SetArgumentInt64(ParametersSpan<uint64_t>* params, size_t index, int64_t value) { params->set(index, value); }
+	PLUGIN_API void SetArgumentUInt64(ParametersSpan<uint64_t>* params, size_t index, uint64_t value) { params->set(index, value); }
+	PLUGIN_API void SetArgumentFloat(ParametersSpan<uint64_t>* params, size_t index, float value) { params->set(index, value); }
+	PLUGIN_API void SetArgumentDouble(ParametersSpan<uint64_t>* params, size_t index, double value) { params->set(index, value); }
+	PLUGIN_API void SetArgumentPointer(ParametersSpan<uint64_t>* params, size_t index, void* value) { params->set(index, value); }
+	PLUGIN_API void SetArgumentString(Callback* callback, ParametersSpan<uint64_t>* params, size_t index, const plg::string& value) {
+		params->set(index, plg::get<plg::string>(callback->setStorage(index, value)).c_str());
 	}
 
-	PLUGIN_API void SetArgument(Callback* callback, const Callback::Parameters* params, size_t index, const plg::any& value) {
+	PLUGIN_API void SetArgument(Callback* callback, ParametersSpan<uint64_t>* params, size_t index, const plg::any& value) {
 		plg::visit([&](const auto& v) {
 			using T = std::decay_t<decltype(v)>;
 			if constexpr (is_none_type_v<T>) {
-				params->setArg(index, nullptr);
+				params->set(index, nullptr);
 			} else if constexpr (std::is_arithmetic_v<T> || std::is_pointer_v<T>) {
-				params->setArg(index, v);
+				params->set(index, v);
 			} else if constexpr (is_math_type_v<T>) {
-				params->setArg(index, &plg::get<T>(callback->setStorage(index, value)).data);
+				params->set(index, &plg::get<T>(callback->setStorage(index, value)).data);
 			} else if constexpr (is_vector_type_v<T>) {
-				params->setArg(index, plg::get<T>(callback->setStorage(index, value)).data());
+				params->set(index, plg::get<T>(callback->setStorage(index, value)).data());
 			} else if constexpr (std::is_same_v<T, plg::string>) {
-				params->setArg(index, plg::get<T>(callback->setStorage(index, value)).c_str());
+				params->set(index, plg::get<T>(callback->setStorage(index, value)).c_str());
 			} else {
 				POLYHOOK2_FATAL("Type not supported\n");
 			}
 		}, value);
 	}
 
-	PLUGIN_API bool GetReturnBool(const Callback::Return* ret) { return ret->getRet<bool>(); }
-	PLUGIN_API int8_t GetReturnInt8(const Callback::Return* ret) { return ret->getRet<int8_t>(); }
-	PLUGIN_API uint8_t GetReturnUInt8(const Callback::Return* ret) { return ret->getRet<uint8_t>(); }
-	PLUGIN_API int16_t GetReturnInt16(const Callback::Return* ret) { return ret->getRet<int16_t>(); }
-	PLUGIN_API uint16_t GetReturnUInt16(const Callback::Return* ret) { return ret->getRet<uint16_t>(); }
-	PLUGIN_API int32_t GetReturnInt32(const Callback::Return* ret) { return ret->getRet<int32_t>(); }
-	PLUGIN_API uint32_t GetReturnUInt32(const Callback::Return* ret) { return ret->getRet<uint32_t>(); }
-	PLUGIN_API int64_t GetReturnInt64(const Callback::Return* ret) { return ret->getRet<int64_t>(); }
-	PLUGIN_API uint64_t GetReturnUInt64(const Callback::Return* ret) { return ret->getRet<uint64_t>(); }
-	PLUGIN_API float GetReturnFloat(const Callback::Return* ret) { return ret->getRet<float>(); }
-	PLUGIN_API double GetReturnDouble(const Callback::Return* ret) { return ret->getRet<double>(); }
-	PLUGIN_API void* GetReturnPointer(const Callback::Return* ret) { return ret->getRet<void*>(); }
-	PLUGIN_API plg::string GetReturnString(const Callback::Return* ret) {
-		const char* str = ret->getRet<const char*>();
+	PLUGIN_API bool GetReturnBool(ReturnSlot* ret) { return ret->get<bool>(); }
+	PLUGIN_API int8_t GetReturnInt8(ReturnSlot* ret) { return ret->get<int8_t>(); }
+	PLUGIN_API uint8_t GetReturnUInt8(ReturnSlot* ret) { return ret->get<uint8_t>(); }
+	PLUGIN_API int16_t GetReturnInt16(ReturnSlot* ret) { return ret->get<int16_t>(); }
+	PLUGIN_API uint16_t GetReturnUInt16(ReturnSlot* ret) { return ret->get<uint16_t>(); }
+	PLUGIN_API int32_t GetReturnInt32(ReturnSlot* ret) { return ret->get<int32_t>(); }
+	PLUGIN_API uint32_t GetReturnUInt32(ReturnSlot* ret) { return ret->get<uint32_t>(); }
+	PLUGIN_API int64_t GetReturnInt64(ReturnSlot* ret) { return ret->get<int64_t>(); }
+	PLUGIN_API uint64_t GetReturnUInt64(ReturnSlot* ret) { return ret->get<uint64_t>(); }
+	PLUGIN_API float GetReturnFloat(ReturnSlot* ret) { return ret->get<float>(); }
+	PLUGIN_API double GetReturnDouble(ReturnSlot* ret) { return ret->get<double>(); }
+	PLUGIN_API void* GetReturnPointer(ReturnSlot* ret) { return ret->get<void*>(); }
+	PLUGIN_API plg::string GetReturnString(ReturnSlot* ret) {
+		const char* str = ret->get<const char*>();
 		if (str == nullptr)
 			return {};
 		else
 			return str;
 	}
 
-	PLUGIN_API plg::any GetReturn(Callback* callback, const Callback::Return* ret) {
+	PLUGIN_API plg::any GetReturn(Callback* callback, ReturnSlot* ret) {
 		switch (callback->getReturnType()) {
 		case DataType::Void:
 			return {};
 		case DataType::Bool:
-			return ret->getRet<bool>();
+			return ret->get<bool>();
 		case DataType::Int8:
-			return ret->getRet<int8_t>();
+			return ret->get<int8_t>();
 		case DataType::UInt8:
-			return ret->getRet<uint8_t>();
+			return ret->get<uint8_t>();
 		case DataType::Int16:
-			return ret->getRet<int16_t>();
+			return ret->get<int16_t>();
 		case DataType::UInt16:
-			return ret->getRet<uint16_t>();
+			return ret->get<uint16_t>();
 		case DataType::Int32:
-			return ret->getRet<int32_t>();
+			return ret->get<int32_t>();
 		case DataType::UInt32:
-			return ret->getRet<uint32_t>();
+			return ret->get<uint32_t>();
 		case DataType::Int64:
-			return ret->getRet<int64_t>();
+			return ret->get<int64_t>();
 		case DataType::UInt64:
-			return ret->getRet<uint64_t>();
+			return ret->get<uint64_t>();
 		case DataType::Float:
-			return ret->getRet<float>();
+			return ret->get<float>();
 		case DataType::Double:
-			return ret->getRet<double>();
+			return ret->get<double>();
 		case DataType::Pointer:
-			return ret->getRet<void*>();
+			return ret->get<void*>();
 		case DataType::String: {
-			const char* str = ret->getRet<const char*>();
+			const char* str = ret->get<const char*>();
 			if (str == nullptr)
 				return {};
 			else
@@ -683,35 +746,129 @@ extern "C" {
 		}
 	}
 
-	PLUGIN_API void SetReturnBool(const Callback::Return* ret, bool value) { ret->setRet(value); }
-	PLUGIN_API void SetReturnInt8(const Callback::Return* ret, int8_t value) { ret->setRet(value); }
-	PLUGIN_API void SetReturnUInt8(const Callback::Return* ret, uint8_t value) { ret->setRet(value); }
-	PLUGIN_API void SetReturnInt16(const Callback::Return* ret, int16_t value) { ret->setRet(value); }
-	PLUGIN_API void SetReturnUInt16(const Callback::Return* ret, uint16_t value) { ret->setRet(value); }
-	PLUGIN_API void SetReturnInt32(const Callback::Return* ret, int32_t value) { ret->setRet(value); }
-	PLUGIN_API void SetReturnUInt32(const Callback::Return* ret, uint32_t value) { ret->setRet(value); }
-	PLUGIN_API void SetReturnInt64(const Callback::Return* ret, int64_t value) { ret->setRet(value); }
-	PLUGIN_API void SetReturnUInt64(const Callback::Return* ret, uint64_t value) { ret->setRet(value); }
-	PLUGIN_API void SetReturnFloat(const Callback::Return* ret, float value) { ret->setRet(value); }
-	PLUGIN_API void SetReturnDouble(const Callback::Return* ret, double value) { ret->setRet(value); }
-	PLUGIN_API void SetReturnPointer(const Callback::Return* ret, void* value) { ret->setRet(value); }
-	PLUGIN_API void SetReturnString(Callback* callback, const Callback::Return* ret, const plg::string& value) {
-		ret->setRet(plg::get<plg::string>(callback->setStorage(-1, value)).c_str());
+	PLUGIN_API void SetReturnBool(ReturnSlot* ret, bool value) { ret->set(value); }
+	PLUGIN_API void SetReturnInt8(ReturnSlot* ret, int8_t value) { ret->set(value); }
+	PLUGIN_API void SetReturnUInt8(ReturnSlot* ret, uint8_t value) { ret->set(value); }
+	PLUGIN_API void SetReturnInt16(ReturnSlot* ret, int16_t value) { ret->set(value); }
+	PLUGIN_API void SetReturnUInt16(ReturnSlot* ret, uint16_t value) { ret->set(value); }
+	PLUGIN_API void SetReturnInt32(ReturnSlot* ret, int32_t value) { ret->set(value); }
+	PLUGIN_API void SetReturnUInt32(ReturnSlot* ret, uint32_t value) { ret->set(value); }
+	PLUGIN_API void SetReturnInt64(ReturnSlot* ret, int64_t value) { ret->set(value); }
+	PLUGIN_API void SetReturnUInt64(ReturnSlot* ret, uint64_t value) { ret->set(value); }
+	PLUGIN_API void SetReturnFloat(ReturnSlot* ret, float value) { ret->set(value); }
+	PLUGIN_API void SetReturnDouble(ReturnSlot* ret, double value) { ret->set(value); }
+	PLUGIN_API void SetReturnPointer(ReturnSlot* ret, void* value) { ret->set(value); }
+	PLUGIN_API void SetReturnString(Callback* callback, ReturnSlot* ret, const plg::string& value) {
+		ret->set(plg::get<plg::string>(callback->setStorage(-1, value)).c_str());
 	}
 
-	PLUGIN_API void SetReturn(Callback* callback, const Callback::Return* ret, const plg::any& value) {
+	PLUGIN_API void SetReturn(Callback* callback, ReturnSlot* ret, const plg::any& value) {
 		plg::visit([&](const auto& v) {
 			using T = std::decay_t<decltype(v)>;
 			if constexpr (is_none_type_v<T>) {
-				ret->setRet(nullptr);
+				ret->set(nullptr);
 			} else if constexpr (std::is_arithmetic_v<T> || std::is_pointer_v<T>) {
-				ret->setRet(v);
+				ret->set(v);
 			} else if constexpr (is_math_type_v<T>) {
-				ret->setRet(&plg::get<T>(callback->setStorage(-1, value)));
+				ret->set(&plg::get<T>(callback->setStorage(-1, value)));
 			} else if constexpr (is_vector_type_v<T>) {
-				ret->setRet(plg::get<T>(callback->setStorage(-1, value)).data());
+				ret->set(plg::get<T>(callback->setStorage(-1, value)).data());
 			} else if constexpr (std::is_same_v<T, plg::string>) {
-				ret->setRet(plg::get<T>(callback->setStorage(-1, value)).c_str());
+				ret->set(plg::get<T>(callback->setStorage(-1, value)).c_str());
+			} else {
+				POLYHOOK2_FATAL("Type not supported\n");
+			}
+		}, value);
+	}
+
+	PLUGIN_API bool GetRegisterBool(ParametersSpan<uintptr_t>* params, RegisterType reg) { return params->get<bool>(reg); }
+	PLUGIN_API int8_t GetRegisterInt8(ParametersSpan<uintptr_t>* params, RegisterType reg) { return params->get<int8_t>(reg); }
+	PLUGIN_API uint8_t GetRegisterUInt8(ParametersSpan<uintptr_t>* params, RegisterType reg) { return params->get<uint8_t>(reg); }
+	PLUGIN_API int16_t GetRegisterInt16(ParametersSpan<uintptr_t>* params, RegisterType reg) { return params->get<int16_t>(reg); }
+	PLUGIN_API uint16_t GetRegisterUInt16(ParametersSpan<uintptr_t>* params, RegisterType reg) { return params->get<uint16_t>(reg); }
+	PLUGIN_API int32_t GetRegisterInt32(ParametersSpan<uintptr_t>* params, RegisterType reg) { return params->get<int32_t>(reg); }
+	PLUGIN_API uint32_t GetRegisterUInt32(ParametersSpan<uintptr_t>* params, RegisterType reg) { return params->get<uint32_t>(reg); }
+	PLUGIN_API int64_t GetRegisterInt64(ParametersSpan<uintptr_t>* params, RegisterType reg) { return params->get<int64_t>(reg); }
+	PLUGIN_API uint64_t GetRegisterUInt64(ParametersSpan<uintptr_t>* params, RegisterType reg) { return params->get<uint64_t>(reg); }
+	PLUGIN_API float GetRegisterFloat(ParametersSpan<uintptr_t>* params, RegisterType reg) { return params->get<float>(reg); }
+	PLUGIN_API double GetRegisterDouble(ParametersSpan<uintptr_t>* params, RegisterType reg) { return params->get<double>(reg); }
+	PLUGIN_API void* GetRegisterPointer(ParametersSpan<uintptr_t>* params, RegisterType reg) { return params->get<void*>(reg); }
+	PLUGIN_API plg::string GetRegisterString(ParametersSpan<uintptr_t>* params, RegisterType reg) {
+		const char* str = params->get<const char*>(reg);
+		if (str == nullptr)
+			return {};
+		else
+			return str;
+	}
+	PLUGIN_API plg::any GetRegister(Callback* callback, ParametersSpan<uintptr_t>* params, RegisterType reg) {
+		switch (callback->getReturnType()) {
+			case DataType::Void:
+				return {};
+			case DataType::Bool:
+				return params->get<bool>(reg);
+			case DataType::Int8:
+				return params->get<int8_t>(reg);
+			case DataType::UInt8:
+				return params->get<uint8_t>(reg);
+			case DataType::Int16:
+				return params->get<int16_t>(reg);
+			case DataType::UInt16:
+				return params->get<uint16_t>(reg);
+			case DataType::Int32:
+				return params->get<int32_t>(reg);
+			case DataType::UInt32:
+				return params->get<uint32_t>(reg);
+			case DataType::Int64:
+				return params->get<int64_t>(reg);
+			case DataType::UInt64:
+				return params->get<uint64_t>(reg);
+			case DataType::Float:
+				return params->get<float>(reg);
+			case DataType::Double:
+				return params->get<double>(reg);
+			case DataType::Pointer:
+				return params->get<void*>(reg);
+			case DataType::String: {
+				const char* str = params->get<const char*>(reg);
+				if (str == nullptr)
+					return {};
+				else
+					return str;
+			}
+			default:
+				return {};
+		}
+	}
+
+	PLUGIN_API void SetRegisterBool(ParametersSpan<uintptr_t>* params, RegisterType reg, bool value) { params->set(reg, value); }
+	PLUGIN_API void SetRegisterInt8(ParametersSpan<uintptr_t>* params, RegisterType reg, int8_t value) { params->set(reg, value); }
+	PLUGIN_API void SetRegisterUInt8(ParametersSpan<uintptr_t>* params, RegisterType reg, uint8_t value) { params->set(reg, value); }
+	PLUGIN_API void SetRegisterInt16(ParametersSpan<uintptr_t>* params, RegisterType reg, int16_t value) { params->set(reg, value); }
+	PLUGIN_API void SetRegisterUInt16(ParametersSpan<uintptr_t>* params, RegisterType reg, uint16_t value) { params->set(reg, value); }
+	PLUGIN_API void SetRegisterInt32(ParametersSpan<uintptr_t>* params, RegisterType reg, int32_t value) { params->set(reg, value); }
+	PLUGIN_API void SetRegisterUInt32(ParametersSpan<uintptr_t>* params, RegisterType reg, uint32_t value) { params->set(reg, value); }
+	PLUGIN_API void SetRegisterInt64(ParametersSpan<uintptr_t>* params, RegisterType reg, int64_t value) { params->set(reg, value); }
+	PLUGIN_API void SetRegisterUInt64(ParametersSpan<uintptr_t>* params, RegisterType reg, uint64_t value) { params->set(reg, value); }
+	PLUGIN_API void SetRegisterFloat(ParametersSpan<uintptr_t>* params, RegisterType reg, float value) { params->set(reg, value); }
+	PLUGIN_API void SetRegisterDouble(ParametersSpan<uintptr_t>* params, RegisterType reg, double value) { params->set(reg, value); }
+	PLUGIN_API void SetRegisterPointer(ParametersSpan<uintptr_t>* params, RegisterType reg, void* value) { params->set(reg, value); }
+	PLUGIN_API void SetRegisterString(Callback* callback, ParametersSpan<uintptr_t>* params, RegisterType reg, const plg::string& value) {
+		params->set(reg, plg::get<plg::string>(callback->setStorage(reg, value)).c_str());
+	}
+
+	PLUGIN_API void SetRegister(Callback* callback, ParametersSpan<uintptr_t>* params, RegisterType reg, const plg::any& value) {
+		plg::visit([&](const auto& v) {
+			using T = std::decay_t<decltype(v)>;
+			if constexpr (is_none_type_v<T>) {
+				params->set(reg, nullptr);
+			} else if constexpr (std::is_arithmetic_v<T> || std::is_pointer_v<T>) {
+				params->set(reg, v);
+			} else if constexpr (is_math_type_v<T>) {
+				params->set(reg, &plg::get<T>(callback->setStorage(reg, value)).data);
+			} else if constexpr (is_vector_type_v<T>) {
+				params->set(reg, plg::get<T>(callback->setStorage(reg, value)).data());
+			} else if constexpr (std::is_same_v<T, plg::string>) {
+				params->set(reg, plg::get<T>(callback->setStorage(reg, value)).c_str());
 			} else {
 				POLYHOOK2_FATAL("Type not supported\n");
 			}

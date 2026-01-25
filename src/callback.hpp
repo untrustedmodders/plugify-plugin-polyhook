@@ -54,7 +54,6 @@ namespace PLH {
 		Pre,  ///< Callback will be executed before the original function
 		Post, ///< Callback will be executed after the original function
 		Count,
-		Mid = Pre,
 	};
 
 	enum class ReturnFlag : uint8_t {
@@ -65,49 +64,11 @@ namespace PLH {
 
 	class Callback {
 	public:
-		struct Parameters {
-			template<typename T>
-			void setArg(const size_t idx, const T val) const {
-				*(T*) getArgPtr(idx) = val;
-			}
-
-			template<typename T>
-			T getArg(const size_t idx) const {
-				return *(T*) getArgPtr(idx);
-			}
-
-			// asm depends on this specific type
-			// we the ILCallback allocates stack space that is set to point here
-			volatile uint64_t m_arguments;
-
-		private:
-			// must be char* for aliasing rules to work when reading back out
-			int8_t* getArgPtr(const size_t idx) const {
-				return (int8_t*) &m_arguments + sizeof(uint64_t) * idx;
-			}
-		};
-
-		struct Return {
-			template<typename T>
-			void setRet(const T val) const {
-				*(T*) getRetPtr() = val;
-			}
-
-			template<typename T>
-			T getRet() const {
-				return *(T*) getRetPtr();
-			}
-			uint8_t* getRetPtr() const {
-				return (uint8_t*) &m_retVal;
-			}
-			volatile uint64_t m_retVal;
-		};
-
 		static constexpr size_t kMaxFuncStack = 62; // for 512 byte object
 
-		using CallbackEntry = void (*)(Callback* callback, const Parameters* params, size_t count, const Return* ret, ReturnFlag* flag);
-		using CallbackEntry2 = void (*)(Callback* callback, const Return* retAddr, const Parameters* stackPtr);
-		using CallbackHandler = ReturnAction (*)(Callback* callback, const Parameters* params, int32_t count, const Return* ret, CallbackType type);
+		using CallbackEntry = void (*)(Callback* callback, uint64_t* params, size_t count, /*uint128_t*/ void* ret, ReturnFlag* flag);
+		using CallbackEntry2 = void (*)(Callback* callback, uintptr_t* params);
+		using CallbackHandler = ReturnAction (*)(Callback* callback, void* params, int32_t count, void* ret, CallbackType type);
 
 		Callback();
 		Callback(DataType returnType, std::span<const DataType> arguments);
@@ -135,7 +96,7 @@ namespace PLH {
 		bool areCallbacksRegistered() const noexcept;
 
 	private:
-		static int32_t saveRegisters(asmjit::x86::Assembler& assembler);
+		static void saveRegisters(asmjit::x86::Assembler& assembler);
 		static void restoreRegisters(asmjit::x86::Assembler& assembler);
 		static asmjit::TypeId getTypeId(DataType type) noexcept;
 		static bool hasHiArgSlot(const asmjit::x86::Compiler& compiler, asmjit::TypeId typeId) noexcept;
@@ -153,6 +114,110 @@ namespace PLH {
 			plg::hybrid_vector<int, kMaxFuncStack> priorities;
 		};
 		std::array<CallbackObject, static_cast<size_t>(CallbackType::Count)> m_callbacks;
+	};
+
+	template <typename T>
+	concept SlotStorable = std::is_trivially_copyable_v<T> && sizeof(T) <= sizeof(uint64_t);
+
+	static constexpr size_t SizeOf(DataType type) noexcept {
+		switch (type) {
+			case DataType::Bool:
+				return sizeof(bool);
+			case DataType::Int8:
+				return sizeof(int8_t);
+			case DataType::Int16:
+				return sizeof(int16_t);
+			case DataType::Int32:
+				return sizeof(int32_t);
+			case DataType::Int64:
+				return sizeof(int64_t);
+			case DataType::UInt8:
+				return sizeof(uint8_t);
+			case DataType::UInt16:
+				return sizeof(uint16_t);
+			case DataType::UInt32:
+				return sizeof(uint32_t);
+			case DataType::UInt64:
+				return sizeof(uint64_t);
+			case DataType::Pointer:
+				return sizeof(void*);
+			case DataType::Float:
+				return sizeof(float);
+			case DataType::Double:
+				return sizeof(double);
+			case DataType::String:
+				return sizeof(const char*);
+			default:
+				return 0;
+		}
+	}
+
+	template <typename S>
+	class ParametersSpan {
+	public:
+		using slot_type = S;
+
+		ParametersSpan(slot_type* data, size_t count) noexcept
+		    : _data(data)
+		    , _count(count) {
+		}
+
+		template <typename T>
+		    requires SlotStorable<T>
+		T get(size_t index) const noexcept {
+			assert(index < _count && "Index out of bounds");
+			T result{};
+			std::memcpy(&result, &_data[index], sizeof(T));
+			return result;
+		}
+
+		template <typename T>
+		    requires SlotStorable<T>
+		void set(size_t index, const T& value) noexcept {
+			assert(index < _count && "Index out of bounds");
+			std::memcpy(&_data[index], &value, sizeof(T));
+		}
+
+	private:
+		slot_type* _data;
+		[[maybe_unused]] size_t _count;
+	};
+
+	class ReturnSlot {
+	public:
+		using type = void;
+
+		explicit ReturnSlot(type* data, size_t size) noexcept
+		    : _data(data)
+		    , _size(size) {
+		}
+
+		template <typename T>
+		    requires std::is_trivially_copyable_v<T>
+		void set(const T& value) noexcept {
+			assert(sizeof(T) <= _size && "Return value too large");
+			std::memcpy(_data, &value, sizeof(T));
+		}
+
+		template <typename T>
+		    requires std::is_trivially_copyable_v<T>
+		T get() const noexcept {
+			assert(sizeof(T) <= _size && "Return type too large");
+			T result{};
+			std::memcpy(&result, _data, sizeof(T));
+			return result;
+		}
+
+		template <typename T, typename... Args>
+			// requires std::is_trivially_destructible_v<T>
+		void construct(Args&&... args) noexcept(noexcept(T(std::forward<Args>(args)...))) {
+			assert(sizeof(T) <= _size && "Type too large");
+			std::construct_at(reinterpret_cast<T*>(_data), std::forward<Args>(args)...);
+		}
+
+	private:
+		type* _data;
+		[[maybe_unused]] size_t _size;
 	};
 }
 

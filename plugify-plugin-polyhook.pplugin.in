@@ -371,7 +371,7 @@
         {
           "type": "int32",
           "name": "index",
-          "description": "Value to set"
+          "description": "Virtual table index"
         }
       ],
       "retType": {
@@ -415,7 +415,7 @@
         {
           "type": "int32",
           "name": "index",
-          "description": "Value to set"
+          "description": "Virtual table index"
         }
       ],
       "retType": {
@@ -480,7 +480,7 @@
         {
           "type": "int32",
           "name": "index",
-          "description": "Value to set"
+          "description": "Virtual table index"
         }
       ],
       "retType": {
@@ -1144,7 +1144,7 @@
         {
           "type": "uint64",
           "name": "index",
-          "description": "Value to set"
+          "description": "Index to get"
         }
       ],
       "retType": {
@@ -1169,7 +1169,7 @@
         {
           "type": "uint64",
           "name": "index",
-          "description": "Value to set"
+          "description": "Index to get"
         }
       ],
       "retType": {
@@ -1194,7 +1194,7 @@
         {
           "type": "uint64",
           "name": "index",
-          "description": "Value to set"
+          "description": "Index to get"
         }
       ],
       "retType": {
@@ -1219,7 +1219,7 @@
         {
           "type": "uint64",
           "name": "index",
-          "description": "Value to set"
+          "description": "Index to get"
         }
       ],
       "retType": {
@@ -1244,7 +1244,7 @@
         {
           "type": "uint64",
           "name": "index",
-          "description": "Value to set"
+          "description": "Index to get"
         }
       ],
       "retType": {
@@ -1269,7 +1269,7 @@
         {
           "type": "uint64",
           "name": "index",
-          "description": "Value to set"
+          "description": "Index to get"
         }
       ],
       "retType": {
@@ -1294,7 +1294,7 @@
         {
           "type": "uint64",
           "name": "index",
-          "description": "Value to set"
+          "description": "Index to get"
         }
       ],
       "retType": {
@@ -1319,7 +1319,7 @@
         {
           "type": "uint64",
           "name": "index",
-          "description": "Value to set"
+          "description": "Index to get"
         }
       ],
       "retType": {
@@ -1344,7 +1344,7 @@
         {
           "type": "uint64",
           "name": "index",
-          "description": "Value to set"
+          "description": "Index to get"
         }
       ],
       "retType": {
@@ -1369,7 +1369,7 @@
         {
           "type": "uint64",
           "name": "index",
-          "description": "Value to set"
+          "description": "Index to get"
         }
       ],
       "retType": {
@@ -1394,7 +1394,7 @@
         {
           "type": "uint64",
           "name": "index",
-          "description": "Value to set"
+          "description": "Index to get"
         }
       ],
       "retType": {
@@ -1419,7 +1419,7 @@
         {
           "type": "uint64",
           "name": "index",
-          "description": "Value to set"
+          "description": "Index to get"
         }
       ],
       "retType": {
@@ -1444,7 +1444,7 @@
         {
           "type": "uint64",
           "name": "index",
-          "description": "Value to set"
+          "description": "Index to get"
         }
       ],
       "retType": {
@@ -1469,7 +1469,7 @@
         {
           "type": "uint64",
           "name": "index",
-          "description": "Value to set"
+          "description": "Index to get"
         }
       ],
       "retType": {
@@ -1494,7 +1494,7 @@
         {
           "type": "uint64",
           "name": "index",
-          "description": "Value to set"
+          "description": "Index to set"
         },
         {
           "type": "bool",
@@ -1524,7 +1524,7 @@
         {
           "type": "uint64",
           "name": "index",
-          "description": "Value to set"
+          "description": "Index to set"
         },
         {
           "type": "int8",
@@ -1554,7 +1554,7 @@
         {
           "type": "uint64",
           "name": "index",
-          "description": "Value to set"
+          "description": "Index to set"
         },
         {
           "type": "uint8",
@@ -1584,7 +1584,7 @@
         {
           "type": "uint64",
           "name": "index",
-          "description": "Value to set"
+          "description": "Index to set"
         },
         {
           "type": "int16",
@@ -1614,7 +1614,7 @@
         {
           "type": "uint64",
           "name": "index",
-          "description": "Value to set"
+          "description": "Index to set"
         },
         {
           "type": "uint16",
@@ -1644,7 +1644,7 @@
         {
           "type": "uint64",
           "name": "index",
-          "description": "Value to set"
+          "description": "Index to set"
         },
         {
           "type": "int32",
@@ -1674,7 +1674,7 @@
         {
           "type": "uint64",
           "name": "index",
-          "description": "Value to set"
+          "description": "Index to set"
         },
         {
           "type": "uint32",
@@ -1704,7 +1704,7 @@
         {
           "type": "uint64",
           "name": "index",
-          "description": "Value to set"
+          "description": "Index to set"
         },
         {
           "type": "int64",
@@ -1734,7 +1734,7 @@
         {
           "type": "uint64",
           "name": "index",
-          "description": "Value to set"
+          "description": "Index to set"
         },
         {
           "type": "uint64",
@@ -1764,7 +1764,7 @@
         {
           "type": "uint64",
           "name": "index",
-          "description": "Value to set"
+          "description": "Index to set"
         },
         {
           "type": "float",
@@ -1794,7 +1794,7 @@
         {
           "type": "uint64",
           "name": "index",
-          "description": "Value to set"
+          "description": "Index to set"
         },
         {
           "type": "double",
@@ -1824,7 +1824,7 @@
         {
           "type": "uint64",
           "name": "index",
-          "description": "Value to set"
+          "description": "Index to set"
         },
         {
           "type": "ptr64",
@@ -1863,7 +1863,7 @@
         {
           "type": "uint64",
           "name": "index",
-          "description": "Value to set"
+          "description": "Index to set"
         },
         {
           "type": "string",
@@ -2561,6 +2561,916 @@
       "retType": {
         "type": "void"
       }
+    },
+    {
+      "name": "GetRegisterBool",
+      "group": "Getters",
+      "description": "Get register value",
+      "funcName": "GetRegisterBool",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "registers",
+          "description": "Pointer to registers structure",
+          "alias": {
+            "name": "RegistersHandle",
+            "description": "Represent array of registers"
+          }
+        },
+        {
+          "type": "uint64",
+          "name": "reg",
+          "description": "Register to get",
+          "enum": {
+            "name": "RegisterType",
+            "description": "Enum representing register storage offsets based on RegisterType layout (x64)",
+            "values": [
+              { "name": "XMM0",  "value": 0,  "description": "XMM register 0." },
+              { "name": "XMM1",  "value": 2,  "description": "XMM register 1." },
+              { "name": "XMM2",  "value": 4,  "description": "XMM register 2." },
+              { "name": "XMM3",  "value": 6,  "description": "XMM register 3." },
+              { "name": "XMM4",  "value": 8,  "description": "XMM register 4." },
+              { "name": "XMM5",  "value": 10, "description": "XMM register 5." },
+              { "name": "XMM6",  "value": 12, "description": "XMM register 6." },
+              { "name": "XMM7",  "value": 14, "description": "XMM register 7." },
+              { "name": "XMM8",  "value": 16, "description": "XMM register 8." },
+              { "name": "XMM9",  "value": 18, "description": "XMM register 9." },
+              { "name": "XMM10", "value": 20, "description": "XMM register 10." },
+              { "name": "XMM11", "value": 22, "description": "XMM register 11." },
+              { "name": "XMM12", "value": 24, "description": "XMM register 12." },
+              { "name": "XMM13", "value": 26, "description": "XMM register 13." },
+              { "name": "XMM14", "value": 28, "description": "XMM register 14." },
+              { "name": "XMM15", "value": 30, "description": "XMM register 15." },
+
+              { "name": "R15",    "value": 32, "description": "General-purpose register R15." },
+              { "name": "R14",    "value": 33, "description": "General-purpose register R14." },
+              { "name": "R13",    "value": 34, "description": "General-purpose register R13." },
+              { "name": "R12",    "value": 35, "description": "General-purpose register R12." },
+              { "name": "R11",    "value": 36, "description": "General-purpose register R11." },
+              { "name": "R10",    "value": 37, "description": "General-purpose register R10." },
+              { "name": "R9",     "value": 38, "description": "General-purpose register R9." },
+              { "name": "R8",     "value": 39, "description": "General-purpose register R8." },
+              { "name": "RDI",    "value": 40, "description": "Destination Index register." },
+              { "name": "RSI",    "value": 41, "description": "Source Index register." },
+              { "name": "RBP",    "value": 42, "description": "Base Pointer register." },
+              { "name": "RBX",    "value": 43, "description": "Base register." },
+              { "name": "RDX",    "value": 44, "description": "Data register." },
+              { "name": "RCX",    "value": 45, "description": "Counter register." },
+              { "name": "RAX",    "value": 46, "description": "Accumulator register." },
+              { "name": "RFLAGS", "value": 47, "description": "CPU flags register." },
+
+              { "name": "COUNT",  "value": 48, "description": "Number of register entries." }
+            ]
+          }
+        }
+      ],
+      "retType": {
+        "type": "bool"
+      }
+    },
+    {
+      "name": "GetRegisterInt8",
+      "group": "Getters",
+      "description": "Get register value",
+      "funcName": "GetRegisterInt8",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "registers",
+          "description": "Pointer to registers structure",
+          "alias": {
+            "name": "RegistersHandle",
+            "description": "Represent array of registers"
+          }
+        },
+        {
+          "type": "uint64",
+          "name": "reg",
+          "description": "Register to get",
+          "enum": {
+            "name": "RegisterType"
+          }
+        }
+      ],
+      "retType": {
+        "type": "int8"
+      }
+    },
+    {
+      "name": "GetRegisterUInt8",
+      "group": "Getters",
+      "description": "Get register value",
+      "funcName": "GetRegisterUInt8",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "registers",
+          "description": "Pointer to registers structure",
+          "alias": {
+            "name": "RegistersHandle",
+            "description": "Represent array of registers"
+          }
+        },
+        {
+          "type": "uint64",
+          "name": "reg",
+          "description": "Register to get",
+          "enum": {
+            "name": "RegisterType"
+          }
+        }
+      ],
+      "retType": {
+        "type": "uint8"
+      }
+    },
+    {
+      "name": "GetRegisterInt16",
+      "group": "Getters",
+      "description": "Get register value",
+      "funcName": "GetRegisterInt16",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "registers",
+          "description": "Pointer to registers structure",
+          "alias": {
+            "name": "RegistersHandle",
+            "description": "Represent array of registers"
+          }
+        },
+        {
+          "type": "uint64",
+          "name": "reg",
+          "description": "Register to get",
+          "enum": {
+            "name": "RegisterType"
+          }
+        }
+      ],
+      "retType": {
+        "type": "int16"
+      }
+    },
+    {
+      "name": "GetRegisterUInt16",
+      "group": "Getters",
+      "description": "Get register value",
+      "funcName": "GetRegisterUInt16",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "registers",
+          "description": "Pointer to registers structure",
+          "alias": {
+            "name": "RegistersHandle",
+            "description": "Represent array of registers"
+          }
+        },
+        {
+          "type": "uint64",
+          "name": "reg",
+          "description": "Register to get",
+          "enum": {
+            "name": "RegisterType"
+          }
+        }
+      ],
+      "retType": {
+        "type": "uint16"
+      }
+    },
+    {
+      "name": "GetRegisterInt32",
+      "group": "Getters",
+      "description": "Get register value",
+      "funcName": "GetRegisterInt32",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "registers",
+          "description": "Pointer to registers structure",
+          "alias": {
+            "name": "RegistersHandle",
+            "description": "Represent array of registers"
+          }
+        },
+        {
+          "type": "uint64",
+          "name": "reg",
+          "description": "Register to get",
+          "enum": {
+            "name": "RegisterType"
+          }
+        }
+      ],
+      "retType": {
+        "type": "int32"
+      }
+    },
+    {
+      "name": "GetRegisterUInt32",
+      "group": "Getters",
+      "description": "Get register value",
+      "funcName": "GetRegisterUInt32",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "registers",
+          "description": "Pointer to registers structure",
+          "alias": {
+            "name": "RegistersHandle",
+            "description": "Represent array of registers"
+          }
+        },
+        {
+          "type": "uint64",
+          "name": "reg",
+          "description": "Register to get",
+          "enum": {
+            "name": "RegisterType"
+          }
+        }
+      ],
+      "retType": {
+        "type": "uint32"
+      }
+    },
+    {
+      "name": "GetRegisterInt64",
+      "group": "Getters",
+      "description": "Get register value",
+      "funcName": "GetRegisterInt64",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "registers",
+          "description": "Pointer to registers structure",
+          "alias": {
+            "name": "RegistersHandle",
+            "description": "Represent array of registers"
+          }
+        },
+        {
+          "type": "uint64",
+          "name": "reg",
+          "description": "Register to get",
+          "enum": {
+            "name": "RegisterType"
+          }
+        }
+      ],
+      "retType": {
+        "type": "int64"
+      }
+    },
+    {
+      "name": "GetRegisterUInt64",
+      "group": "Getters",
+      "description": "Get register value",
+      "funcName": "GetRegisterUInt64",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "registers",
+          "description": "Pointer to registers structure",
+          "alias": {
+            "name": "RegistersHandle",
+            "description": "Represent array of registers"
+          }
+        },
+        {
+          "type": "uint64",
+          "name": "reg",
+          "description": "Register to get",
+          "enum": {
+            "name": "RegisterType"
+          }
+        }
+      ],
+      "retType": {
+        "type": "uint64"
+      }
+    },
+    {
+      "name": "GetRegisterFloat",
+      "group": "Getters",
+      "description": "Get register value",
+      "funcName": "GetRegisterFloat",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "registers",
+          "description": "Pointer to registers structure",
+          "alias": {
+            "name": "RegistersHandle",
+            "description": "Represent array of registers"
+          }
+        },
+        {
+          "type": "uint64",
+          "name": "reg",
+          "description": "Register to get",
+          "enum": {
+            "name": "RegisterType"
+          }
+        }
+      ],
+      "retType": {
+        "type": "float"
+      }
+    },
+    {
+      "name": "GetRegisterDouble",
+      "group": "Getters",
+      "description": "Get register value",
+      "funcName": "GetRegisterDouble",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "registers",
+          "description": "Pointer to registers structure",
+          "alias": {
+            "name": "RegistersHandle",
+            "description": "Represent array of registers"
+          }
+        },
+        {
+          "type": "uint64",
+          "name": "reg",
+          "description": "Register to get",
+          "enum": {
+            "name": "RegisterType"
+          }
+        }
+      ],
+      "retType": {
+        "type": "double"
+      }
+    },
+    {
+      "name": "GetRegisterPointer",
+      "group": "Getters",
+      "description": "Get register value",
+      "funcName": "GetRegisterPointer",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "registers",
+          "description": "Pointer to registers structure",
+          "alias": {
+            "name": "RegistersHandle",
+            "description": "Represent array of registers"
+          }
+        },
+        {
+          "type": "uint64",
+          "name": "reg",
+          "description": "Register to get",
+          "enum": {
+            "name": "RegisterType"
+          }
+        }
+      ],
+      "retType": {
+        "type": "ptr64"
+      }
+    },
+    {
+      "name": "GetRegisterString",
+      "group": "Getters",
+      "description": "Get register value",
+      "funcName": "GetRegisterString",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "registers",
+          "description": "Pointer to registers structure",
+          "alias": {
+            "name": "RegistersHandle",
+            "description": "Represent array of registers"
+          }
+        },
+        {
+          "type": "uint64",
+          "name": "reg",
+          "description": "Register to get",
+          "enum": {
+            "name": "RegisterType"
+          }
+        }
+      ],
+      "retType": {
+        "type": "string"
+      }
+    },
+    {
+      "name": "GetRegister",
+      "group": "Getters",
+      "description": "Get register value",
+      "funcName": "GetRegister",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "registers",
+          "description": "Pointer to registers structure",
+          "alias": {
+            "name": "RegistersHandle",
+            "description": "Represent array of registers"
+          }
+        },
+        {
+          "type": "uint64",
+          "name": "reg",
+          "description": "Register to get",
+          "enum": {
+            "name": "RegisterType"
+          }
+        }
+      ],
+      "retType": {
+        "type": "any"
+      }
+    },
+    {
+      "name": "SetRegisterBool",
+      "group": "Setters",
+      "description": "Set register value",
+      "funcName": "SetRegisterBool",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "registers",
+          "description": "Pointer to registers structure",
+          "alias": {
+            "name": "RegistersHandle",
+            "description": "Represent array of registers"
+          }
+        },
+        {
+          "type": "uint64",
+          "name": "reg",
+          "description": "Register to set",
+          "enum": {
+            "name": "RegisterType"
+          }
+        },
+        {
+          "type": "bool",
+          "name": "value",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "SetRegisterInt8",
+      "group": "Setters",
+      "description": "Set register value",
+      "funcName": "SetRegisterInt8",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "registers",
+          "description": "Pointer to registers structure",
+          "alias": {
+            "name": "RegistersHandle",
+            "description": "Represent array of registers"
+          }
+        },
+        {
+          "type": "uint64",
+          "name": "reg",
+          "description": "Register to set",
+          "enum": {
+            "name": "RegisterType"
+          }
+        },
+        {
+          "type": "int8",
+          "name": "value",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "SetRegisterUInt8",
+      "group": "Setters",
+      "description": "Set register value",
+      "funcName": "SetRegisterUInt8",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "registers",
+          "description": "Pointer to registers structure",
+          "alias": {
+            "name": "RegistersHandle",
+            "description": "Represent array of registers"
+          }
+        },
+        {
+          "type": "uint64",
+          "name": "reg",
+          "description": "Register to set",
+          "enum": {
+            "name": "RegisterType"
+          }
+        },
+        {
+          "type": "uint8",
+          "name": "value",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "SetRegisterInt16",
+      "group": "Setters",
+      "description": "Set register value",
+      "funcName": "SetRegisterInt16",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "registers",
+          "description": "Pointer to registers structure",
+          "alias": {
+            "name": "RegistersHandle",
+            "description": "Represent array of registers"
+          }
+        },
+        {
+          "type": "uint64",
+          "name": "reg",
+          "description": "Register to set",
+          "enum": {
+            "name": "RegisterType"
+          }
+        },
+        {
+          "type": "int16",
+          "name": "value",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "SetRegisterUInt16",
+      "group": "Setters",
+      "description": "Set register value",
+      "funcName": "SetRegisterUInt16",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "registers",
+          "description": "Pointer to registers structure",
+          "alias": {
+            "name": "RegistersHandle",
+            "description": "Represent array of registers"
+          }
+        },
+        {
+          "type": "uint64",
+          "name": "reg",
+          "description": "Register to set",
+          "enum": {
+            "name": "RegisterType"
+          }
+        },
+        {
+          "type": "uint16",
+          "name": "value",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "SetRegisterInt32",
+      "group": "Setters",
+      "description": "Set register value",
+      "funcName": "SetRegisterInt32",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "registers",
+          "description": "Pointer to registers structure",
+          "alias": {
+            "name": "RegistersHandle",
+            "description": "Represent array of registers"
+          }
+        },
+        {
+          "type": "uint64",
+          "name": "reg",
+          "description": "Register to set",
+          "enum": {
+            "name": "RegisterType"
+          }
+        },
+        {
+          "type": "int32",
+          "name": "value",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "SetRegisterUInt32",
+      "group": "Setters",
+      "description": "Set register value",
+      "funcName": "SetRegisterUInt32",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "registers",
+          "description": "Pointer to registers structure",
+          "alias": {
+            "name": "RegistersHandle",
+            "description": "Represent array of registers"
+          }
+        },
+        {
+          "type": "uint64",
+          "name": "reg",
+          "description": "Register to set",
+          "enum": {
+            "name": "RegisterType"
+          }
+        },
+        {
+          "type": "uint32",
+          "name": "value",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "SetRegisterInt64",
+      "group": "Setters",
+      "description": "Set register value",
+      "funcName": "SetRegisterInt64",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "registers",
+          "description": "Pointer to registers structure",
+          "alias": {
+            "name": "RegistersHandle",
+            "description": "Represent array of registers"
+          }
+        },
+        {
+          "type": "uint64",
+          "name": "reg",
+          "description": "Register to set",
+          "enum": {
+            "name": "RegisterType"
+          }
+        },
+        {
+          "type": "int64",
+          "name": "value",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "SetRegisterUInt64",
+      "group": "Setters",
+      "description": "Set register value",
+      "funcName": "SetRegisterUInt64",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "registers",
+          "description": "Pointer to registers structure",
+          "alias": {
+            "name": "RegistersHandle",
+            "description": "Represent array of registers"
+          }
+        },
+        {
+          "type": "uint64",
+          "name": "reg",
+          "description": "Register to set",
+          "enum": {
+            "name": "RegisterType"
+          }
+        },
+        {
+          "type": "uint64",
+          "name": "value",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "SetRegisterFloat",
+      "group": "Setters",
+      "description": "Set register value",
+      "funcName": "SetRegisterFloat",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "registers",
+          "description": "Pointer to registers structure",
+          "alias": {
+            "name": "RegistersHandle",
+            "description": "Represent array of registers"
+          }
+        },
+        {
+          "type": "uint64",
+          "name": "reg",
+          "description": "Register to set",
+          "enum": {
+            "name": "RegisterType"
+          }
+        },
+        {
+          "type": "float",
+          "name": "value",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "SetRegisterDouble",
+      "group": "Setters",
+      "description": "Set register value",
+      "funcName": "SetRegisterDouble",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "registers",
+          "description": "Pointer to registers structure",
+          "alias": {
+            "name": "RegistersHandle",
+            "description": "Represent array of registers"
+          }
+        },
+        {
+          "type": "uint64",
+          "name": "reg",
+          "description": "Register to set",
+          "enum": {
+            "name": "RegisterType"
+          }
+        },
+        {
+          "type": "double",
+          "name": "value",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "SetRegisterPointer",
+      "group": "Setters",
+      "description": "Set register value",
+      "funcName": "SetRegisterPointer",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "registers",
+          "description": "Pointer to registers structure",
+          "alias": {
+            "name": "RegistersHandle",
+            "description": "Represent array of registers"
+          }
+        },
+        {
+          "type": "uint64",
+          "name": "reg",
+          "description": "Register to set",
+          "enum": {
+            "name": "RegisterType"
+          }
+        },
+        {
+          "type": "ptr64",
+          "name": "value",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "SetRegisterString",
+      "group": "Setters",
+      "description": "Set register value",
+      "funcName": "SetRegisterString",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "hook",
+          "description": "Hook pointer",
+          "alias": {
+            "name": "HookHandle",
+            "description": "Handle generated by Hook functions"
+          }
+        },
+        {
+          "type": "ptr64",
+          "name": "registers",
+          "description": "Pointer to registers structure",
+          "alias": {
+            "name": "RegistersHandle",
+            "description": "Represent array of registers"
+          }
+        },
+        {
+          "type": "uint64",
+          "name": "reg",
+          "description": "Register to set",
+          "enum": {
+            "name": "RegisterType"
+          }
+        },
+        {
+          "type": "string",
+          "name": "value",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "SetRegister",
+      "group": "Setters",
+      "description": "Set register value",
+      "funcName": "SetRegister",
+      "paramTypes": [
+        {
+          "type": "ptr64",
+          "name": "hook",
+          "description": "Hook pointer",
+          "alias": {
+            "name": "HookHandle",
+            "description": "Handle generated by Hook functions"
+          }
+        },
+        {
+          "type": "ptr64",
+          "name": "registers",
+          "description": "Pointer to registers structure",
+          "alias": {
+            "name": "RegistersHandle",
+            "description": "Represent array of registers"
+          }
+        },
+        {
+          "type": "uint64",
+          "name": "reg",
+          "description": "Register to set",
+          "enum": {
+            "name": "RegisterType"
+          }
+        },
+        {
+          "type": "any",
+          "name": "value",
+          "description": "Value to set"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
     }
   ],
   "classes": [
@@ -2876,6 +3786,142 @@
         {
           "name": "SetPointer",
           "method": "SetReturnPointer",
+          "bindSelf": true
+        }
+      ]
+    },
+    {
+      "name": "Registers",
+      "group": "Classes",
+      "description": "RAII wrapper for Callback::Registers pointer used in callback handlers.",
+      "handleType": "ptr64",
+      "invalidValue": "0",
+      "constructors": [],
+      "destructor": null,
+      "bindings": [
+        {
+          "name": "GetBool",
+          "method": "GetRegisterBool",
+          "bindSelf": true
+        },
+        {
+          "name": "GetInt8",
+          "method": "GetRegisterInt8",
+          "bindSelf": true
+        },
+        {
+          "name": "GetUInt8",
+          "method": "GetRegisterUInt8",
+          "bindSelf": true
+        },
+        {
+          "name": "GetInt16",
+          "method": "GetRegisterInt16",
+          "bindSelf": true
+        },
+        {
+          "name": "GetUInt16",
+          "method": "GetRegisterUInt16",
+          "bindSelf": true
+        },
+        {
+          "name": "GetInt32",
+          "method": "GetRegisterInt32",
+          "bindSelf": true
+        },
+        {
+          "name": "GetUInt32",
+          "method": "GetRegisterUInt32",
+          "bindSelf": true
+        },
+        {
+          "name": "GetInt64",
+          "method": "GetRegisterInt64",
+          "bindSelf": true
+        },
+        {
+          "name": "GetUInt64",
+          "method": "GetRegisterUInt64",
+          "bindSelf": true
+        },
+        {
+          "name": "GetFloat",
+          "method": "GetRegisterFloat",
+          "bindSelf": true
+        },
+        {
+          "name": "GetDouble",
+          "method": "GetRegisterDouble",
+          "bindSelf": true
+        },
+        {
+          "name": "GetPointer",
+          "method": "GetRegisterPointer",
+          "bindSelf": true
+        },
+        {
+          "name": "GetString",
+          "method": "GetRegisterString",
+          "bindSelf": true
+        },
+        {
+          "name": "SetBool",
+          "method": "SetRegisterBool",
+          "bindSelf": true
+        },
+        {
+          "name": "SetInt8",
+          "method": "SetRegisterInt8",
+          "bindSelf": true
+        },
+        {
+          "name": "SetUInt8",
+          "method": "SetRegisterUInt8",
+          "bindSelf": true
+        },
+        {
+          "name": "SetInt16",
+          "method": "SetRegisterInt16",
+          "bindSelf": true
+        },
+        {
+          "name": "SetUInt16",
+          "method": "SetRegisterUInt16",
+          "bindSelf": true
+        },
+        {
+          "name": "SetInt32",
+          "method": "SetRegisterInt32",
+          "bindSelf": true
+        },
+        {
+          "name": "SetUInt32",
+          "method": "SetRegisterUInt32",
+          "bindSelf": true
+        },
+        {
+          "name": "SetInt64",
+          "method": "SetRegisterInt64",
+          "bindSelf": true
+        },
+        {
+          "name": "SetUInt64",
+          "method": "SetRegisterUInt64",
+          "bindSelf": true
+        },
+        {
+          "name": "SetFloat",
+          "method": "SetRegisterFloat",
+          "bindSelf": true
+        },
+        {
+          "name": "SetDouble",
+          "method": "SetRegisterDouble",
+          "bindSelf": true
+        },
+        {
+          "name": "SetPointer",
+          "method": "SetRegisterPointer",
           "bindSelf": true
         }
       ]
