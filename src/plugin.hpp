@@ -54,6 +54,7 @@ namespace PLH {
 			std::unordered_map<int, std::unique_ptr<Callback>> callbacks;
 			VFuncMap redirectMap;
 			VFuncMap origVFuncs;
+			void* klass{};
 		};
 		std::unordered_map<void*, VHook> m_vhooks;
 		struct DHook {

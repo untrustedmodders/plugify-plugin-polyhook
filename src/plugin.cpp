@@ -202,7 +202,7 @@ Callback* PolyHookPlugin::hookVirtual(void* pClass, int index, DataType returnTy
 		it = m_vhooks.emplace(pClass, VHook{}).first;
 	}
 
-	auto& [vtable, callbacks, redirectMap, origVFuncs] = it->second;
+	auto& [vtable, callbacks, redirectMap, origVFuncs, klass] = it->second;
 
 	auto& callback = callbacks.emplace(index, std::make_unique<Callback>(returnType, arguments)).first->second;
 	uint64_t JIT = callback->getJitFunc(returnType, arguments, &PreCallback, &PostCallback, varIndex);
@@ -214,7 +214,13 @@ Callback* PolyHookPlugin::hookVirtual(void* pClass, int index, DataType returnTy
 
 	redirectMap[index] = JIT;
 
-	vtable = std::make_unique<T>((uint64_t) pClass, redirectMap, &origVFuncs);
+	klass = pClass;
+	if constexpr (std::is_same_v<T, VFuncSwapHook>) {
+		vtable = std::make_unique<T>((uint64_t) &klass, redirectMap, &origVFuncs);
+	} else {
+		vtable = std::make_unique<T>((uint64_t) klass, redirectMap, &origVFuncs);
+	}
+
 	if (!vtable->hook()) {
 		for (auto& [_, cb] : callbacks) {
 			m_removals.push({std::move(cb), Clock::now() + 1s});
@@ -261,7 +267,7 @@ bool PolyHookPlugin::unhookVirtual(void* pClass, int index) {
 
 	auto it = m_vhooks.find(pClass);
 	if (it != m_vhooks.end()) {
-		auto& [vtable, callbacks, redirectMap, origVFuncs] = it->second;
+		auto& [vtable, callbacks, redirectMap, origVFuncs, klass] = it->second;
 
 		vtable->unHook();
 		auto it2 = callbacks.find(index);
@@ -276,7 +282,13 @@ bool PolyHookPlugin::unhookVirtual(void* pClass, int index) {
 			return true;
 		}
 
-		vtable = std::make_unique<T>((uint64_t) pClass, redirectMap, &origVFuncs);
+		klass = pClass;
+		if constexpr (std::is_same_v<T, VFuncSwapHook>) {
+			vtable = std::make_unique<T>((uint64_t) &klass, redirectMap, &origVFuncs);
+		} else {
+			vtable = std::make_unique<T>((uint64_t) klass, redirectMap, &origVFuncs);
+		}
+
 		if (!vtable->hook()) {
 			for (auto& [_, cb] : callbacks) {
 				m_removals.push({std::move(cb), Clock::now() + 1s});
