@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.0](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.3.1...v2.4.0) (2026-02-09)
+
+
+### Features
+
+* rework VFuncSwap hook ([109a0e9](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/109a0e91db38582cf7e7b667fb3c7dc973892b46))
+
 ## [2.3.1](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.3.0...v2.3.1) (2026-01-25)
 
 
