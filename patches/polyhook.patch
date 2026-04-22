@@ -1,0 +1,20 @@
+diff --git a/sources/VFuncSwapHook.cpp b/sources/VFuncSwapHook.cpp
+index 6b742b0..b1ec53d 100644
+--- a/sources/VFuncSwapHook.cpp
++++ b/sources/VFuncSwapHook.cpp
+@@ -28,6 +28,7 @@ bool PLH::VFuncSwapHook::hook() {
+ 			return false;
+ 
+ 		// redirect ptr at VTable[i]
++		MemoryProtector prot3((uint64_t)&m_vtable[p.first], sizeof(uintptr_t), ProtFlag::R | ProtFlag::W, *this);
+ 		(*m_userOrigMap)[p.first] = (uint64_t)m_vtable[p.first];
+ 		m_vtable[p.first] = (uintptr_t)p.second;
+ 	}
+@@ -50,6 +51,7 @@ bool PLH::VFuncSwapHook::unHook() {
+ 		if (p.first >= m_vFuncCount)
+ 			return false;
+ 
++		MemoryProtector prot3((uint64_t)&m_vtable[p.first], sizeof(uintptr_t), ProtFlag::R | ProtFlag::W, *this);
+ 		m_vtable[p.first] = (uintptr_t)p.second;
+ 	}
+ 
