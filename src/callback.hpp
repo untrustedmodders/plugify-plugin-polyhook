@@ -105,8 +105,7 @@ namespace PLH {
 		mutable std::shared_mutex m_mutex;
 		std::inplace_vector<DataType, asmjit::Globals::kMaxFuncArgs> m_arguments;
 		DataType m_returnType;
-		struct CallbackObject {
-			alignas(std::hardware_destructive_interference_size)
+		struct alignas(std::hardware_constructive_interference_size) CallbackObject {
 			plg::hybrid_vector<CallbackHandler, kMaxFuncStack> callbacks;
 			plg::hybrid_vector<int, kMaxFuncStack> priorities;
 		};
