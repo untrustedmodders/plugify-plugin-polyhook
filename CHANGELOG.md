@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.2](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.4.1...v2.4.2) (2026-04-23)
+
+
+### Bug Fixes
+
+* add more unprotection of vtable function hooks ([7e04f24](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/7e04f248b74fb65a0ac8cdacbb7f0312e61205c5))
+
 ## [2.4.1](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.4.0...v2.4.1) (2026-03-10)
 
 
