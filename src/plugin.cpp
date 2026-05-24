@@ -1,7 +1,7 @@
 #include "plugin.hpp"
 
 PLH::PolyHookPlugin g_polyHookPlugin;
-EXPOSE_PLUGIN(PLUGIN_API, PLH::PolyHookPlugin, &g_polyHookPlugin)
+PLUGIFY_PLUGIN(PLUGIN_API, &g_polyHookPlugin)
 
 using namespace PLH;
 using enum CallbackType;
@@ -103,24 +103,27 @@ static void MidCallback(Callback* callback, uintptr_t* p) {
 	}
 }
 
-void PolyHookPlugin::OnPluginStart() {
+plg::PluginResult PolyHookPlugin::OnPluginStart() {
 	auto logger = std::make_shared<ErrorLog>();
 	logger->setLogLevel(ErrorLevel::SEV);
 	Log::registerLogger(logger);
+	return {};
 }
 
-void PolyHookPlugin::OnPluginUpdate([[maybe_unused]] std::chrono::milliseconds dt) {
+plg::PluginResult PolyHookPlugin::OnPluginUpdate([[maybe_unused]] std::chrono::milliseconds dt) {
 	if (!m_removals.empty() && Clock::now() >= m_removals.top().when) {
 		m_removals.pop();
 	}
+	return {};
 }
 
-void PolyHookPlugin::OnPluginEnd() {
+plg::PluginResult PolyHookPlugin::OnPluginEnd() {
 	unhookAll();
 
 	while (!m_removals.empty()) {
 		m_removals.pop();
 	}
+	return {};
 }
 
 Callback* PolyHookPlugin::hookDetour(void* pFunc, DataType returnType, std::span<const DataType> arguments, uint8_t varIndex) {

@@ -20,11 +20,11 @@
 #include <print>
 
 namespace PLH {
-	class PolyHookPlugin final : public plg::IPluginEntry, public MemAccessor {
+	class PolyHookPlugin final : public plg::Plugin, public MemAccessor {
 	public:
-		void OnPluginStart() override;
-		void OnPluginUpdate(std::chrono::milliseconds dt) override;
-		void OnPluginEnd() override;
+		plg::PluginResult OnPluginStart() override;
+		plg::PluginResult OnPluginUpdate(std::chrono::milliseconds dt) override;
+		plg::PluginResult OnPluginEnd() override;
 
 		Callback* hookDetour(void* pFunc, DataType returnType, std::span<const DataType> arguments, uint8_t vaIndex);
 		Callback* hookDetour(void* pFunc);
