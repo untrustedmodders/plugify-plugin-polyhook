@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.3](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.4.2...v2.4.3) (2026-05-24)
+
+
+### Bug Fixes
+
+* update for new plugify ([1acacf9](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/1acacf905591c7cd05c901ca8f7118b73d76487c))
+
 ## [2.4.2](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.4.1...v2.4.2) (2026-04-23)
 
 
