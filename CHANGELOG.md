@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.5.0](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.4.3...v2.5.0) (2026-05-28)
+
+
+### Features
+
+* add profiler zones and new methods ([0d6df27](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/0d6df27e8467f5fe37dea0888af1b72caf428a0b))
+
+
+### Bug Fixes
+
+* add error propagation ([3aba8b5](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/3aba8b52b54511f3f4608ac892c4fc3db9f99f15))
+* add scopes check ([c94f7b4](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/c94f7b485117119c553d4ccd8ed87a852e4e4d2d))
+
 ## [2.4.3](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.4.2...v2.4.3) (2026-05-24)
 
 
