@@ -19,6 +19,7 @@ _FindVirtual2
 _GetVirtualIndex
 _UnhookAll
 _UnhookAllVirtual
+_GetError
 _AddCallback
 _AddCallback2
 _RemoveCallback

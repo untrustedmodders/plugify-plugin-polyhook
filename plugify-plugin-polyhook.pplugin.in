@@ -559,6 +559,17 @@
       }
     },
     {
+      "name": "GetError",
+      "group": "Getters",
+      "description": "Get last error",
+      "funcName": "GetError",
+      "paramTypes": [],
+      "retType": {
+        "type": "string",
+        "description": "Returns last error"
+      }
+    },
+    {
       "name": "AddCallback",
       "group": "Core",
       "description": "Adds a callback to existing hook",

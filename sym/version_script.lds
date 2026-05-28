@@ -18,6 +18,7 @@
         GetVirtualIndex;
         UnhookAll;
         UnhookAllVirtual;
+        GetError;
         AddCallback;
         AddCallback2;
         RemoveCallback;

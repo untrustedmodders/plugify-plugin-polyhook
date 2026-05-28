@@ -47,6 +47,7 @@ namespace PLH {
 		void unhookAllVirtual(void* pClass);
 
 		int getVirtualIndex(void* pFunc, ProtFlag flag = ProtFlag::RWX) const;
+		std::string_view getError() const noexcept;
 
 	private:
 		struct VHook {
@@ -72,5 +73,6 @@ namespace PLH {
 		};
 		std::priority_queue<DelayedRemoval> m_removals;
 		mutable std::shared_mutex m_mutex;
+		std::string m_error;
 	};
 }

@@ -142,7 +142,8 @@ plg::PluginResult PolyHookPlugin::OnPluginEnd() {
 
 Callback* PolyHookPlugin::hookDetour(void* pFunc, DataType returnType, std::span<const DataType> arguments, uint8_t varIndex) {
 	if (!pFunc) {
-		Log::log("hookDetour: Invalid func pointer", ErrorLevel::SEV);
+		m_error = "Invalid func pointer";
+		Log::log("polyhook::hookDetour: " + m_error, ErrorLevel::SEV);
 		return nullptr;
 	}
 
@@ -158,7 +159,8 @@ Callback* PolyHookPlugin::hookDetour(void* pFunc, DataType returnType, std::span
 	uint64_t JIT = callback->getJitFunc(returnType, arguments, &PreCallback, &PostCallback, varIndex);
 
 	if (auto error = callback->getError(); !error.empty()) {
-		Log::log(std::format("hookDetour: {}", error), ErrorLevel::SEV);
+		m_error = error;
+		Log::log("polyhook::hookDetour: " + m_error, ErrorLevel::SEV);
 		return nullptr;
 	}
 
@@ -171,7 +173,8 @@ Callback* PolyHookPlugin::hookDetour(void* pFunc, DataType returnType, std::span
 
 Callback* PolyHookPlugin::hookDetour(void* pFunc) {
 	if (!pFunc) {
-		Log::log("hookDetour2: Invalid func pointer", ErrorLevel::SEV);
+		m_error = "Invalid func pointer";
+		Log::log("polyhook::hookDetour: " + m_error, ErrorLevel::SEV);
 		return nullptr;
 	}
 
@@ -187,7 +190,8 @@ Callback* PolyHookPlugin::hookDetour(void* pFunc) {
 	uint64_t JIT = callback->getJitFunc(&MidCallback);
 
 	if (auto error = callback->getError(); !error.empty()) {
-		Log::log(std::format("hookDetour2: {}", error), ErrorLevel::SEV);
+		m_error = error;
+		Log::log("polyhook::hookDetour: " + m_error, ErrorLevel::SEV);
 		return nullptr;
 	}
 
@@ -201,7 +205,8 @@ Callback* PolyHookPlugin::hookDetour(void* pFunc) {
 template<typename T>
 Callback* PolyHookPlugin::hookVirtual(void* pClass, int index, DataType returnType, std::span<const DataType> arguments, uint8_t varIndex) {
 	if (!pClass || index == -1) {
-		Log::log("hookVirtual: Invalid class or vfunc index", ErrorLevel::SEV);
+		m_error = "Invalid class or vfunc index";
+		Log::log("polyhook::hookVirtual: " + m_error, ErrorLevel::SEV);
 		return nullptr;
 	}
 
@@ -225,7 +230,8 @@ Callback* PolyHookPlugin::hookVirtual(void* pClass, int index, DataType returnTy
 	uint64_t JIT = callback->getJitFunc(returnType, arguments, &PreCallback, &PostCallback, varIndex);
 
 	if (auto error = callback->getError(); !error.empty()) {
-		Log::log(std::format("hookVirtual: {}", error), ErrorLevel::SEV);
+		m_error = error;
+		Log::log("polyhook::hookVirtual: " + m_error, ErrorLevel::SEV);
 		return nullptr;
 	}
 
@@ -472,6 +478,10 @@ int PolyHookPlugin::getVirtualIndex(void* pFunc, ProtFlag flag) const {
 #endif
 }
 
+std::string_view PolyHookPlugin::getError() const noexcept {
+	return m_error;
+}
+
 template<class T>
 constexpr bool is_vector_type_v =
 		std::is_same_v<T, plg::vector<bool>> ||
@@ -582,6 +592,11 @@ extern "C" {
 		g_polyHookPlugin.unhookAllVirtual(pClass);
 	}
 
+	PLUGIN_API plg::string GetError() {
+		return g_polyHookPlugin.getError();
+	}
+
+
 	PLUGIN_API bool AddCallback(Callback* callback, CallbackType type, Callback::CallbackHandler handler) {
 		if (callback == nullptr) {
 			return false;
@@ -645,26 +660,26 @@ extern "C" {
 		return (void*) *callback->getTrampolineHolder();
 	}
 
-	PLUGIN_API bool GetArgumentBool(ParametersSpan<uint64_t>* params, size_t index) { return params->get<bool>(index); }
-	PLUGIN_API int8_t GetArgumentInt8(ParametersSpan<uint64_t>* params, size_t index) { return params->get<int8_t>(index); }
-	PLUGIN_API uint8_t GetArgumentUInt8(ParametersSpan<uint64_t>* params, size_t index) { return params->get<uint8_t>(index); }
-	PLUGIN_API int16_t GetArgumentInt16(ParametersSpan<uint64_t>* params, size_t index) { return params->get<int16_t>(index); }
-	PLUGIN_API uint16_t GetArgumentUInt16(ParametersSpan<uint64_t>* params, size_t index) { return params->get<uint16_t>(index); }
-	PLUGIN_API int32_t GetArgumentInt32(ParametersSpan<uint64_t>* params, size_t index) { return params->get<int32_t>(index); }
-	PLUGIN_API uint32_t GetArgumentUInt32(ParametersSpan<uint64_t>* params, size_t index) { return params->get<uint32_t>(index); }
-	PLUGIN_API int64_t GetArgumentInt64(ParametersSpan<uint64_t>* params, size_t index) { return params->get<int64_t>(index); }
-	PLUGIN_API uint64_t GetArgumentUInt64(ParametersSpan<uint64_t>* params, size_t index) { return params->get<uint64_t>(index); }
-	PLUGIN_API float GetArgumentFloat(ParametersSpan<uint64_t>* params, size_t index) { return params->get<float>(index); }
-	PLUGIN_API double GetArgumentDouble(ParametersSpan<uint64_t>* params, size_t index) { return params->get<double>(index); }
-	PLUGIN_API void* GetArgumentPointer(ParametersSpan<uint64_t>* params, size_t index) { return params->get<void*>(index); }
-	PLUGIN_API plg::string GetArgumentString(ParametersSpan<uint64_t>* params, size_t index) {
+	PLUGIN_API bool GetArgumentBool(Parameters* params, size_t index) { return params->get<bool>(index); }
+	PLUGIN_API int8_t GetArgumentInt8(Parameters* params, size_t index) { return params->get<int8_t>(index); }
+	PLUGIN_API uint8_t GetArgumentUInt8(Parameters* params, size_t index) { return params->get<uint8_t>(index); }
+	PLUGIN_API int16_t GetArgumentInt16(Parameters* params, size_t index) { return params->get<int16_t>(index); }
+	PLUGIN_API uint16_t GetArgumentUInt16(Parameters* params, size_t index) { return params->get<uint16_t>(index); }
+	PLUGIN_API int32_t GetArgumentInt32(Parameters* params, size_t index) { return params->get<int32_t>(index); }
+	PLUGIN_API uint32_t GetArgumentUInt32(Parameters* params, size_t index) { return params->get<uint32_t>(index); }
+	PLUGIN_API int64_t GetArgumentInt64(Parameters* params, size_t index) { return params->get<int64_t>(index); }
+	PLUGIN_API uint64_t GetArgumentUInt64(Parameters* params, size_t index) { return params->get<uint64_t>(index); }
+	PLUGIN_API float GetArgumentFloat(Parameters* params, size_t index) { return params->get<float>(index); }
+	PLUGIN_API double GetArgumentDouble(Parameters* params, size_t index) { return params->get<double>(index); }
+	PLUGIN_API void* GetArgumentPointer(Parameters* params, size_t index) { return params->get<void*>(index); }
+	PLUGIN_API plg::string GetArgumentString(Parameters* params, size_t index) {
 		const char* str = params->get<const char*>(index);
 		if (str == nullptr)
 			return {};
 		else
 			return str;
 	}
-	PLUGIN_API plg::any GetArgument(Callback* callback, ParametersSpan<uint64_t>* params, size_t index) {
+	PLUGIN_API plg::any GetArgument(Callback* callback, Parameters* params, size_t index) {
 		switch (callback->getReturnType()) {
 			case DataType::Void:
 				return {};
@@ -704,23 +719,23 @@ extern "C" {
 		}
 	}
 
-	PLUGIN_API void SetArgumentBool(ParametersSpan<uint64_t>* params, size_t index, bool value) { params->set(index, value); }
-	PLUGIN_API void SetArgumentInt8(ParametersSpan<uint64_t>* params, size_t index, int8_t value) { params->set(index, value); }
-	PLUGIN_API void SetArgumentUInt8(ParametersSpan<uint64_t>* params, size_t index, uint8_t value) { params->set(index, value); }
-	PLUGIN_API void SetArgumentInt16(ParametersSpan<uint64_t>* params, size_t index, int16_t value) { params->set(index, value); }
-	PLUGIN_API void SetArgumentUInt16(ParametersSpan<uint64_t>* params, size_t index, uint16_t value) { params->set(index, value); }
-	PLUGIN_API void SetArgumentInt32(ParametersSpan<uint64_t>* params, size_t index, int32_t value) { params->set(index, value); }
-	PLUGIN_API void SetArgumentUInt32(ParametersSpan<uint64_t>* params, size_t index, uint32_t value) { params->set(index, value); }
-	PLUGIN_API void SetArgumentInt64(ParametersSpan<uint64_t>* params, size_t index, int64_t value) { params->set(index, value); }
-	PLUGIN_API void SetArgumentUInt64(ParametersSpan<uint64_t>* params, size_t index, uint64_t value) { params->set(index, value); }
-	PLUGIN_API void SetArgumentFloat(ParametersSpan<uint64_t>* params, size_t index, float value) { params->set(index, value); }
-	PLUGIN_API void SetArgumentDouble(ParametersSpan<uint64_t>* params, size_t index, double value) { params->set(index, value); }
-	PLUGIN_API void SetArgumentPointer(ParametersSpan<uint64_t>* params, size_t index, void* value) { params->set(index, value); }
-	PLUGIN_API void SetArgumentString(Callback* callback, ParametersSpan<uint64_t>* params, size_t index, const plg::string& value) {
+	PLUGIN_API void SetArgumentBool(Parameters* params, size_t index, bool value) { params->set(index, value); }
+	PLUGIN_API void SetArgumentInt8(Parameters* params, size_t index, int8_t value) { params->set(index, value); }
+	PLUGIN_API void SetArgumentUInt8(Parameters* params, size_t index, uint8_t value) { params->set(index, value); }
+	PLUGIN_API void SetArgumentInt16(Parameters* params, size_t index, int16_t value) { params->set(index, value); }
+	PLUGIN_API void SetArgumentUInt16(Parameters* params, size_t index, uint16_t value) { params->set(index, value); }
+	PLUGIN_API void SetArgumentInt32(Parameters* params, size_t index, int32_t value) { params->set(index, value); }
+	PLUGIN_API void SetArgumentUInt32(Parameters* params, size_t index, uint32_t value) { params->set(index, value); }
+	PLUGIN_API void SetArgumentInt64(Parameters* params, size_t index, int64_t value) { params->set(index, value); }
+	PLUGIN_API void SetArgumentUInt64(Parameters* params, size_t index, uint64_t value) { params->set(index, value); }
+	PLUGIN_API void SetArgumentFloat(Parameters* params, size_t index, float value) { params->set(index, value); }
+	PLUGIN_API void SetArgumentDouble(Parameters* params, size_t index, double value) { params->set(index, value); }
+	PLUGIN_API void SetArgumentPointer(Parameters* params, size_t index, void* value) { params->set(index, value); }
+	PLUGIN_API void SetArgumentString(Callback* callback, Parameters* params, size_t index, const plg::string& value) {
 		params->set(index, plg::get<plg::string>(callback->setStorage(index, value)).c_str());
 	}
 
-	PLUGIN_API void SetArgument(Callback* callback, ParametersSpan<uint64_t>* params, size_t index, const plg::any& value) {
+	PLUGIN_API void SetArgument(Callback* callback, Parameters* params, size_t index, const plg::any& value) {
 		plg::visit([&](const auto& v) {
 			using T = std::decay_t<decltype(v)>;
 			if constexpr (is_none_type_v<T>) {
@@ -734,7 +749,7 @@ extern "C" {
 			} else if constexpr (std::is_same_v<T, plg::string>) {
 				params->set(index, plg::get<T>(callback->setStorage(index, value)).c_str());
 			} else {
-				Log::log("SetArgument: Type not supported", ErrorLevel::SEV);
+				Log::log(std::format("{}: Type not supported", __func__), ErrorLevel::SEV);
 			}
 		}, value);
 	}
@@ -829,7 +844,7 @@ extern "C" {
 			} else if constexpr (std::is_same_v<T, plg::string>) {
 				ret->set(plg::get<T>(callback->setStorage(-1, value)).c_str());
 			} else {
-				Log::log("SetReturn: Type not supported", ErrorLevel::SEV);
+				Log::log(std::format("{}: Type not supported", __func__), ErrorLevel::SEV);
 			}
 		}, value);
 	}
@@ -923,7 +938,7 @@ extern "C" {
 			} else if constexpr (std::is_same_v<T, plg::string>) {
 				params->set(reg, plg::get<T>(callback->setStorage(reg, value)).c_str());
 			} else {
-				Log::log("SetRegister: Type not supported", ErrorLevel::SEV);
+				Log::log(std::format("{}: Type not supported", __func__), ErrorLevel::SEV);
 			}
 		}, value);
 	}

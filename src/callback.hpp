@@ -183,6 +183,8 @@ namespace PLH {
 		[[maybe_unused]] size_t _count;
 	};
 
+	using Parameters = ParametersSpan<uint64_t>;
+
 	class ReturnSlot {
 	public:
 		using type = void;
