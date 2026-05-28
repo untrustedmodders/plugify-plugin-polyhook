@@ -23,6 +23,8 @@
         RemoveCallback;
         IsCallbackRegistered;
         AreCallbacksRegistered;
+        SetDebugName;
+        GetDebugName;
         GetFunctionAddr;
         GetOriginalAddr;
         GetArgumentBool;

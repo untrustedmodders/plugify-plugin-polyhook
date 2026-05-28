@@ -83,8 +83,11 @@ namespace PLH {
 		plg::any& setStorage(size_t idx, const plg::any& any) const;
 		plg::any& getStorage(size_t idx) const;
 
-		DataType getReturnType() const;
-		DataType getArgumentType(size_t idx) const;
+		DataType getReturnType() const noexcept;
+		DataType getArgumentType(size_t idx) const noexcept;
+
+		void setDebugName(std::string_view name);
+		std::string_view getDebugName() const noexcept;
 
 		bool addCallback(CallbackType type, CallbackHandler callback, int priority = 0);
 		bool removeCallback(CallbackType type, CallbackHandler callback);
@@ -103,8 +106,9 @@ namespace PLH {
 			const char* m_errorCode;
 		};
 		mutable std::shared_mutex m_mutex;
-		std::inplace_vector<DataType, asmjit::Globals::kMaxFuncArgs> m_arguments;
+		std::string m_name;
 		DataType m_returnType;
+		std::inplace_vector<DataType, asmjit::Globals::kMaxFuncArgs> m_arguments;
 		struct alignas(std::hardware_constructive_interference_size) CallbackObject {
 			plg::hybrid_vector<CallbackHandler, kMaxFuncStack> callbacks;
 			plg::hybrid_vector<int, kMaxFuncStack> priorities;

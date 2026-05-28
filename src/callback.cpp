@@ -212,7 +212,7 @@ uint64_t Callback::getJitFunc(const FuncSignature& sig, CallbackEntry pre, Callb
 	cc.mov(argCountParam, sig.argCount());
 
 	// create buffer for return struct
-	Mem retStack = cc.newStack(sizeof(uint64_t), alignment);
+	Mem retStack = cc.newStack(sizeof(uint64_t) * 2, alignment);  // high for zone
 	Gp retStruct = cc.newGpz("retStruct");
 	cc.lea(retStruct, retStack);
 
@@ -563,12 +563,20 @@ plg::any& Callback::getStorage(size_t idx) const {
 	return storage[this][++idx];
 }
 
-DataType Callback::getReturnType() const {
+DataType Callback::getReturnType() const noexcept {
 	return m_returnType;
 }
 
-DataType Callback::getArgumentType(size_t idx) const {
+DataType Callback::getArgumentType(size_t idx) const noexcept {
 	return m_arguments[++idx];
+}
+
+void Callback::setDebugName(std::string_view name) {
+	m_name  = name;
+}
+
+std::string_view Callback::getDebugName() const noexcept {
+	return m_name;
 }
 
 Callback::Callback() {

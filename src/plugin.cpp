@@ -58,6 +58,11 @@ enum RegisterType : size_t {
 };
 
 static void PreCallback(Callback* callback, uint64_t* p, size_t count, void* r, ReturnFlag* flag) {
+	static plg::source_location location = plg::source_location::current();
+	std::string_view name = callback->getDebugName();
+	plg::zone handle = plg::BeginZone(name, location);
+	plg::Log(name, plg::Severity::Trace, location);
+
 	ParametersSpan params(p, count);
 	ReturnSlot ret(r, SizeOf(callback->getReturnType()));
 
@@ -72,11 +77,15 @@ static void PreCallback(Callback* callback, uint64_t* p, size_t count, void* r, 
 		}
 	}
 
-	if (!callback->areCallbacksRegistered(Post)) {
+	if (!callback->areCallbacksRegistered(Post) && handle == 0) {
 		*flag |= ReturnFlag::NoPost;
 	}
 	if (returnAction >= ReturnAction::Supercede) {
 		*flag |= ReturnFlag::Supercede;
+	}
+
+	if (handle != 0) {
+		reinterpret_cast<uint64_t*>(r)[1] = handle;
 	}
 }
 
@@ -87,6 +96,11 @@ static void PostCallback(Callback* callback, uint64_t* p, size_t count, void* r,
 	for (auto callbacks = callback->getCallbacks(Post);
 		const auto& func : callbacks) {
 		func(callback, &params, static_cast<int32_t>(count), &ret, Post);
+	}
+
+	plg::zone handle = reinterpret_cast<uint64_t*>(r)[1];
+	if (handle != 0) {
+		plg::EndZone(handle);
 	}
 }
 
@@ -601,6 +615,20 @@ extern "C" {
 			return false;
 		}
 		return callback->areCallbacksRegistered();
+	}
+
+	PLUGIN_API void SetDebugName(Callback* callback, const plg::string& name) {
+		if (callback == nullptr) {
+			return ;
+		}
+		callback->setDebugName(name);
+	}
+
+	PLUGIN_API plg::string GetDebugName(Callback* callback) {
+		if (callback == nullptr) {
+			return {};
+		}
+		return callback->getDebugName();
 	}
 
 	PLUGIN_API void* GetFunctionAddr(Callback* callback) {
