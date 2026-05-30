@@ -105,6 +105,10 @@ static void PostCallback(Callback* callback, uint64_t* p, size_t count, void* r,
 }
 
 static void MidCallback(Callback* callback, uintptr_t* p) {
+	static plg::source_location location = plg::source_location::current();
+	std::string_view name = callback->getDebugName();
+	plg::Scope scope(name, location);
+
 	ParametersSpan params(p, COUNT);
 
 	for (constexpr std::array types = { Pre, Post }; const auto& type : types) {
