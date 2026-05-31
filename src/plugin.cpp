@@ -58,10 +58,7 @@ enum RegisterType : size_t {
 };
 
 static void PreCallback(Callback* callback, uint64_t* p, size_t count, void* r, ReturnFlag* flag) {
-	static plg::source_location location = plg::source_location::current();
-	std::string_view name = callback->getDebugName();
-	plg::zone handle = plg::BeginZone(name, location);
-	plg::Log(name, plg::Severity::Trace, location);
+	plg::Scope scope(callback->getDebugName(Pre));
 
 	ParametersSpan params(p, count);
 	ReturnSlot ret(r, SizeOf(callback->getReturnType()));
@@ -77,19 +74,17 @@ static void PreCallback(Callback* callback, uint64_t* p, size_t count, void* r, 
 		}
 	}
 
-	if (!callback->areCallbacksRegistered(Post) && handle == 0) {
+	if (!callback->areCallbacksRegistered(Post)) {
 		*flag |= ReturnFlag::NoPost;
 	}
 	if (returnAction >= ReturnAction::Supercede) {
 		*flag |= ReturnFlag::Supercede;
 	}
-
-	if (handle != 0) {
-		reinterpret_cast<uint64_t*>(r)[1] = handle;
-	}
 }
 
 static void PostCallback(Callback* callback, uint64_t* p, size_t count, void* r, ReturnFlag*) {
+	plg::Scope scope(callback->getDebugName(Post));
+
 	ParametersSpan params(p, count);
 	ReturnSlot ret(r, SizeOf(callback->getReturnType()));
 
@@ -97,17 +92,10 @@ static void PostCallback(Callback* callback, uint64_t* p, size_t count, void* r,
 		const auto& func : callbacks) {
 		func(callback, &params, static_cast<int32_t>(count), &ret, Post);
 	}
-
-	plg::zone handle = reinterpret_cast<uint64_t*>(r)[1];
-	if (handle != 0) {
-		plg::EndZone(handle);
-	}
 }
 
 static void MidCallback(Callback* callback, uintptr_t* p) {
-	static plg::source_location location = plg::source_location::current();
-	std::string_view name = callback->getDebugName();
-	plg::Scope scope(name, location);
+	plg::Scope scope(callback->getDebugName());
 
 	ParametersSpan params(p, COUNT);
 
@@ -144,7 +132,7 @@ plg::PluginResult PolyHookPlugin::OnPluginEnd() {
 	return {};
 }
 
-Callback* PolyHookPlugin::hookDetour(void* pFunc, DataType returnType, std::span<const DataType> arguments, uint8_t varIndex) {
+Callback* PolyHookPlugin::hookDetour(void* pFunc, const Signature& sig) {
 	if (!pFunc) {
 		m_error = "Invalid func pointer";
 		Log::log("polyhook::hookDetour: " + m_error, ErrorLevel::SEV);
@@ -158,9 +146,9 @@ Callback* PolyHookPlugin::hookDetour(void* pFunc, DataType returnType, std::span
 		return it->second.callback.get();
 	}
 
-	auto callback = std::make_unique<Callback>(returnType, arguments);
+	auto callback = std::make_unique<Callback>(sig);
 
-	uint64_t JIT = callback->getJitFunc(returnType, arguments, &PreCallback, &PostCallback, varIndex);
+	uint64_t JIT = callback->getJitFunc(sig, &PreCallback, &PostCallback);
 
 	if (auto error = callback->getError(); !error.empty()) {
 		m_error = error;
@@ -175,7 +163,7 @@ Callback* PolyHookPlugin::hookDetour(void* pFunc, DataType returnType, std::span
 	return m_detours.emplace(pFunc, DHook{std::move(detour), std::move(callback)}).first->second.callback.get();
 }
 
-Callback* PolyHookPlugin::hookDetour(void* pFunc) {
+Callback* PolyHookPlugin::hookDetour(void* pFunc, std::string_view name) {
 	if (!pFunc) {
 		m_error = "Invalid func pointer";
 		Log::log("polyhook::hookDetour: " + m_error, ErrorLevel::SEV);
@@ -189,7 +177,7 @@ Callback* PolyHookPlugin::hookDetour(void* pFunc) {
 		return it->second.callback.get();
 	}
 
-	auto callback = std::make_unique<Callback>();
+	auto callback = std::make_unique<Callback>(Signature{.name = name});
 
 	uint64_t JIT = callback->getJitFunc(&MidCallback);
 
@@ -207,7 +195,7 @@ Callback* PolyHookPlugin::hookDetour(void* pFunc) {
 }
 
 template<typename T>
-Callback* PolyHookPlugin::hookVirtual(void* pClass, int index, DataType returnType, std::span<const DataType> arguments, uint8_t varIndex) {
+Callback* PolyHookPlugin::hookVirtual(void* pClass, int index, const Signature& sig) {
 	if (!pClass || index == -1) {
 		m_error = "Invalid class or vfunc index";
 		Log::log("polyhook::hookVirtual: " + m_error, ErrorLevel::SEV);
@@ -230,8 +218,8 @@ Callback* PolyHookPlugin::hookVirtual(void* pClass, int index, DataType returnTy
 
 	auto& [vtable, callbacks, redirectMap, origVFuncs, klass] = it->second;
 
-	auto& callback = callbacks.emplace(index, std::make_unique<Callback>(returnType, arguments)).first->second;
-	uint64_t JIT = callback->getJitFunc(returnType, arguments, &PreCallback, &PostCallback, varIndex);
+	auto& callback = callbacks.emplace(index, std::make_unique<Callback>(sig)).first->second;
+	uint64_t JIT = callback->getJitFunc(sig, &PreCallback, &PostCallback);
 
 	if (auto error = callback->getError(); !error.empty()) {
 		m_error = error;
@@ -263,8 +251,8 @@ Callback* PolyHookPlugin::hookVirtual(void* pClass, int index, DataType returnTy
 }
 
 template<typename T>
-Callback* PolyHookPlugin::hookVirtual(void* pClass, void* pFunc, DataType returnType, std::span<const DataType> arguments, uint8_t varIndex) {
-	return hookVirtual<T>(pClass, getVirtualIndex(pFunc), returnType, arguments, varIndex);
+Callback* PolyHookPlugin::hookVirtual(void* pClass, void* pFunc, const Signature& sig) {
+	return hookVirtual<T>(pClass, getVirtualIndex(pFunc), sig);
 }
 
 bool PolyHookPlugin::unhookDetour(void* pFunc) {
@@ -534,22 +522,37 @@ PLUGIFY_WARN_IGNORE(4190)
 
 extern "C" {
 	// Detour
-	PLUGIN_API Callback* HookDetour(void* pFunc, DataType returnType, const plg::vector<DataType>& arguments, int varIndex) {
-		return g_polyHookPlugin.hookDetour(pFunc, returnType, arguments, static_cast<uint8_t>(varIndex));
+	PLUGIN_API Callback* HookDetour(void* pFunc, DataType returnType, const plg::vector<DataType>& arguments, int varIndex, const plg::string& name) {
+		return g_polyHookPlugin.hookDetour(pFunc, Signature{
+			.arguments = arguments,
+			.returnType = returnType,
+			.varIndex = varIndex,
+			.name = name,
+		});
 	}
-	PLUGIN_API Callback* HookDetour2(void* pFunc) {
-		return g_polyHookPlugin.hookDetour(pFunc);
+	PLUGIN_API Callback* HookDetour2(void* pFunc, const plg::string& name) {
+		return g_polyHookPlugin.hookDetour(pFunc, name);
 	}
 	PLUGIN_API bool UnhookDetour(void* pFunc) {
 		return g_polyHookPlugin.unhookDetour(pFunc);
 	}
 
 	// Virtual (VTableSwapHook)
-	PLUGIN_API Callback* HookVirtualTable(void* pClass, int index, DataType returnType, const plg::vector<DataType>& arguments, int varIndex) {
-		return g_polyHookPlugin.hookVirtual<VTableSwapHook>(pClass, index, returnType, arguments, static_cast<uint8_t>(varIndex));
+	PLUGIN_API Callback* HookVirtualTable(void* pClass, int index, DataType returnType, const plg::vector<DataType>& arguments, int varIndex, const plg::string& name) {
+		return g_polyHookPlugin.hookVirtual<VTableSwapHook>(pClass, index, Signature{
+			.arguments = arguments,
+			.returnType = returnType,
+			.varIndex = varIndex,
+			.name = name,
+		});
 	}
-	PLUGIN_API Callback* HookVirtualTable2(void* pClass, void* pFunc, DataType returnType, const plg::vector<DataType>& arguments, int varIndex) {
-		return g_polyHookPlugin.hookVirtual<VTableSwapHook>(pClass, pFunc, returnType, arguments, static_cast<uint8_t>(varIndex));
+	PLUGIN_API Callback* HookVirtualTable2(void* pClass, void* pFunc, DataType returnType, const plg::vector<DataType>& arguments, int varIndex, const plg::string& name) {
+		return g_polyHookPlugin.hookVirtual<VTableSwapHook>(pClass, pFunc, Signature{
+			.arguments = arguments,
+			.returnType = returnType,
+			.varIndex = varIndex,
+			.name = name,
+		});
 	}
 	PLUGIN_API bool UnhookVirtualTable(void* pClass, int index) {
 		return g_polyHookPlugin.unhookVirtual<VTableSwapHook>(pClass, index);
@@ -559,11 +562,21 @@ extern "C" {
 	}
 
 	// Virtual (VFuncSwapHook)
-	PLUGIN_API Callback* HookVirtualFunc(void* pClass, int index, DataType returnType, const plg::vector<DataType>& arguments, int varIndex) {
-		return g_polyHookPlugin.hookVirtual<VFuncSwapHook>(pClass, index, returnType, arguments, static_cast<uint8_t>(varIndex));
+	PLUGIN_API Callback* HookVirtualFunc(void* pClass, int index, DataType returnType, const plg::vector<DataType>& arguments, int varIndex, const plg::string& name) {
+		return g_polyHookPlugin.hookVirtual<VFuncSwapHook>(pClass, index, Signature{
+			.arguments = arguments,
+			.returnType = returnType,
+			.varIndex = varIndex,
+			.name = name,
+		});
 	}
-	PLUGIN_API Callback* HookVirtualFunc2(void* pClass, void* pFunc, DataType returnType, const plg::vector<DataType>& arguments, int varIndex) {
-		return g_polyHookPlugin.hookVirtual<VFuncSwapHook>(pClass, pFunc, returnType, arguments, static_cast<uint8_t>(varIndex));
+	PLUGIN_API Callback* HookVirtualFunc2(void* pClass, void* pFunc, DataType returnType, const plg::vector<DataType>& arguments, int varIndex, const plg::string& name) {
+		return g_polyHookPlugin.hookVirtual<VFuncSwapHook>(pClass, pFunc, Signature{
+			.arguments = arguments,
+			.returnType = returnType,
+			.varIndex = varIndex,
+			.name = name,
+		});
 	}
 	PLUGIN_API bool UnhookVirtualFunc(void* pClass, int index) {
 		return g_polyHookPlugin.unhookVirtual<VFuncSwapHook>(pClass, index);
@@ -599,8 +612,7 @@ extern "C" {
 	PLUGIN_API plg::string GetError() {
 		return g_polyHookPlugin.getError();
 	}
-
-
+	
 	PLUGIN_API bool AddCallback(Callback* callback, CallbackType type, Callback::CallbackHandler handler) {
 		if (callback == nullptr) {
 			return false;
@@ -634,20 +646,6 @@ extern "C" {
 			return false;
 		}
 		return callback->areCallbacksRegistered();
-	}
-
-	PLUGIN_API void SetDebugName(Callback* callback, const plg::string& name) {
-		if (callback == nullptr) {
-			return ;
-		}
-		callback->setDebugName(name);
-	}
-
-	PLUGIN_API plg::string GetDebugName(Callback* callback) {
-		if (callback == nullptr) {
-			return {};
-		}
-		return callback->getDebugName();
 	}
 
 	PLUGIN_API void* GetFunctionAddr(Callback* callback) {

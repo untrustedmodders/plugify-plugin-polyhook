@@ -25,8 +25,6 @@ _AddCallback2
 _RemoveCallback
 _IsCallbackRegistered
 _AreCallbacksRegistered
-_SetDebugName
-_GetDebugName
 _GetFunctionAddr
 _GetOriginalAddr
 _GetArgumentBool

@@ -26,12 +26,12 @@ namespace PLH {
 		plg::PluginResult OnPluginUpdate(std::chrono::milliseconds dt) override;
 		plg::PluginResult OnPluginEnd() override;
 
-		Callback* hookDetour(void* pFunc, DataType returnType, std::span<const DataType> arguments, uint8_t vaIndex);
-		Callback* hookDetour(void* pFunc);
+		Callback* hookDetour(void* pFunc, const Signature& sig);
+		Callback* hookDetour(void* pFunc, std::string_view name = {});
 		template<typename T>
-		Callback* hookVirtual(void* pClass, int index, DataType returnType, std::span<const DataType> arguments, uint8_t vaIndex);
+		Callback* hookVirtual(void* pClass, int index, const Signature& sig);
 		template<typename T>
-		Callback* hookVirtual(void* pClass, void* pFunc, DataType returnType, std::span<const DataType> arguments, uint8_t vaIndex);
+		Callback* hookVirtual(void* pClass, void* pFunc, const Signature& sig);
 
 		bool unhookDetour(void* pFunc);
 		template<typename T>

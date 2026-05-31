@@ -16,10 +16,12 @@
 #include <map>
 #include <thread>
 
-#include <plg/any.hpp>
-#include <plg/format.hpp>
-#include <plg/inplace_vector.hpp>
+#include <plg/plugin.hpp>
+#include <plg/enum.hpp>
+#include <plg/path.hpp>
 #include <plg/hybrid_vector.hpp>
+#include <plg/enum_array.hpp>
+#include <plugin_export.h>
 
 namespace PLH {
 	enum class DataType : uint8_t {
@@ -59,6 +61,13 @@ namespace PLH {
 		Supercede = 2,
 	};
 
+	struct Signature {
+		std::span<const DataType> arguments{};
+		DataType returnType{};
+		int varIndex{};
+		std::string_view name{};
+	};
+
 	class Callback {
 	public:
 		static constexpr size_t kMaxFuncStack = 62; // for 512 byte object
@@ -67,12 +76,11 @@ namespace PLH {
 		using CallbackEntry2 = void (*)(Callback* callback, uintptr_t* params);
 		using CallbackHandler = ReturnAction (*)(Callback* callback, void* params, int32_t count, void* ret, CallbackType type);
 
-		Callback();
-		Callback(DataType returnType, std::span<const DataType> arguments);
+		explicit Callback(const Signature& sig);
 		~Callback();
 
 		uint64_t getJitFunc(const asmjit::FuncSignature& sig, CallbackEntry pre, CallbackEntry post);
-		uint64_t getJitFunc(DataType retType, std::span<const DataType> paramTypes, CallbackEntry pre, CallbackEntry post, uint8_t vaIndex);
+		uint64_t getJitFunc(const Signature& sig, CallbackEntry pre, CallbackEntry post);
 		uint64_t getJitFunc(CallbackEntry2 entry); // for mid hook
 
 		uint64_t* getTrampolineHolder() noexcept;
@@ -86,8 +94,7 @@ namespace PLH {
 		DataType getReturnType() const noexcept;
 		DataType getArgumentType(size_t idx) const noexcept;
 
-		void setDebugName(std::string_view name);
-		std::string_view getDebugName() const noexcept;
+		std::string_view getDebugName(std::optional<CallbackType> type = {}) const noexcept;
 
 		bool addCallback(CallbackType type, CallbackHandler callback, int priority = 0);
 		bool removeCallback(CallbackType type, CallbackHandler callback);
@@ -106,14 +113,16 @@ namespace PLH {
 			const char* m_errorCode;
 		};
 		mutable std::shared_mutex m_mutex;
+		plg::enum_array<std::string, CallbackType> m_names;
 		std::string m_name;
-		DataType m_returnType;
-		std::inplace_vector<DataType, asmjit::Globals::kMaxFuncArgs> m_arguments;
 		struct alignas(std::hardware_constructive_interference_size) CallbackObject {
 			plg::hybrid_vector<CallbackHandler, kMaxFuncStack> callbacks;
 			plg::hybrid_vector<int, kMaxFuncStack> priorities;
 		};
-		std::array<CallbackObject, static_cast<size_t>(CallbackType::Count)> m_callbacks;
+		plg::enum_array<CallbackObject, CallbackType> m_callbacks;
+
+		DataType m_returnType;
+		std::inplace_vector<DataType, asmjit::Globals::kMaxFuncArgs> m_arguments;
 	};
 
 	template <typename T>

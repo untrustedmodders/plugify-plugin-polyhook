@@ -212,7 +212,7 @@ uint64_t Callback::getJitFunc(const FuncSignature& sig, CallbackEntry pre, Callb
 	cc.mov(argCountParam, sig.argCount());
 
 	// create buffer for return struct
-	Mem retStack = cc.newStack(sizeof(uint64_t) * 2, alignment);  // high for zone
+	Mem retStack = cc.newStack(sizeof(uint64_t), alignment);
 	Gp retStruct = cc.newGpz("retStruct");
 	cc.lea(retStruct, retStack);
 
@@ -377,12 +377,12 @@ uint64_t Callback::getJitFunc(const FuncSignature& sig, CallbackEntry pre, Callb
 	return m_functionPtr;
 }
 
-uint64_t Callback::getJitFunc(const DataType retType, std::span<const DataType> paramTypes, CallbackEntry pre, CallbackEntry post, uint8_t vaIndex) {
-	FuncSignature sig(CallConvId::kCDecl, vaIndex, getTypeId(retType));
-	for (const DataType& type : paramTypes) {
-		sig.addArg(getTypeId(type));
+uint64_t Callback::getJitFunc(const Signature& sig, CallbackEntry pre, CallbackEntry post) {
+	FuncSignature signature(CallConvId::kCDecl, static_cast<uint32_t>(sig.varIndex), getTypeId(sig.returnType));
+	for (const DataType& type : sig.arguments) {
+		signature.addArg(getTypeId(type));
 	}
-	return getJitFunc(sig, pre, post);
+	return getJitFunc(signature, pre, post);
 }
 
 uint64_t Callback::getJitFunc(CallbackEntry2 entry) {
@@ -476,7 +476,7 @@ bool Callback::addCallback(CallbackType type, CallbackHandler handler, int prior
 
 	std::unique_lock lock(m_mutex);
 
-	auto& [handlers, priorities] = m_callbacks[static_cast<size_t>(type)];
+	auto& [handlers, priorities] = m_callbacks[type];
 
 	if (std::any_of(handlers.begin(), handlers.end(),
 		[&](const auto& h){ return h == handler; }))
@@ -499,7 +499,7 @@ bool Callback::removeCallback(CallbackType type, CallbackHandler handler) {
 
 	std::unique_lock lock(m_mutex);
 
-	auto& [handlers, priorities] = m_callbacks[static_cast<size_t>(type)];
+	auto& [handlers, priorities] = m_callbacks[type];
 
     auto it = std::find(handlers.begin(), handlers.end(), handler);
     if (it == handlers.end())
@@ -518,7 +518,7 @@ bool Callback::isCallbackRegistered(CallbackType type, CallbackHandler handler) 
 
 	std::shared_lock lock(m_mutex);
 
-	const auto& [handlers, priorities] = m_callbacks[static_cast<size_t>(type)];
+	const auto& [handlers, priorities] = m_callbacks[type];
 
 	return std::any_of(handlers.begin(), handlers.end(), [&](const auto& x){ return x == handler; });
 }
@@ -526,7 +526,7 @@ bool Callback::isCallbackRegistered(CallbackType type, CallbackHandler handler) 
 bool Callback::areCallbacksRegistered(CallbackType type) const noexcept {
 	std::shared_lock lock(m_mutex);
 
-	const auto& [handlers, priorities] = m_callbacks[static_cast<size_t>(type)];
+	const auto& [handlers, priorities] = m_callbacks[type];
 
 	return !handlers.empty();
 }
@@ -538,7 +538,7 @@ bool Callback::areCallbacksRegistered() const noexcept {
 plg::hybrid_vector<Callback::CallbackHandler, Callback::kMaxFuncStack> Callback::getCallbacks(CallbackType type) noexcept {
 	std::shared_lock lock(m_mutex);
 
-	const auto& [handlers, priorities] = m_callbacks[static_cast<size_t>(type)];
+	const auto& [handlers, priorities] = m_callbacks[type];
 
 	return handlers;
 }
@@ -571,19 +571,13 @@ DataType Callback::getArgumentType(size_t idx) const noexcept {
 	return m_arguments[++idx];
 }
 
-void Callback::setDebugName(std::string_view name) {
-	m_name  = name;
+std::string_view Callback::getDebugName(std::optional<CallbackType> type) const noexcept {
+	return type ? m_names[*type] : m_name;
 }
 
-std::string_view Callback::getDebugName() const noexcept {
-	return m_name;
-}
-
-Callback::Callback() {
-	storage[this] = {};
-}
-
-Callback::Callback(DataType returnType, std::span<const DataType> arguments) : m_returnType(returnType), m_arguments(arguments.begin(), arguments.end()) {
+Callback::Callback(const Signature& sig) : m_name(sig.name), m_returnType(sig.returnType), m_arguments(sig.arguments.begin(), sig.arguments.end()) {
+	m_names[CallbackType::Pre] = m_name + "::Pre";
+	m_names[CallbackType::Post] = m_name + "::Post";
 	storage[this] = {};
 }
 
