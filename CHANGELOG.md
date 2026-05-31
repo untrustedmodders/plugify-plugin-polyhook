@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.5.1](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.5.0...v2.5.1) (2026-05-31)
+
+
+### Bug Fixes
+
+* add mid callback profiler zone ([bc6a4d7](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/bc6a4d7ad91737c396889147be80af17f35cf7fe))
+* rework debug name for thread safety ([4c463f2](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/4c463f28df32180a537ada9e22e9892ea8773b4d))
+
 ## [2.5.0](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.4.3...v2.5.0) (2026-05-28)
 
 
