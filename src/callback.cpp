@@ -575,8 +575,10 @@ std::string_view Callback::getDebugName(std::optional<CallbackType> type) const 
 }
 
 Callback::Callback(const Signature& sig) : m_name(sig.name), m_returnType(sig.returnType), m_arguments(sig.arguments.begin(), sig.arguments.end()) {
-	m_names[CallbackType::Pre] = m_name + "::Pre";
-	m_names[CallbackType::Post] = m_name + "::Post";
+	if (!m_name.empty()) {
+		m_names[CallbackType::Pre] = m_name + "::Pre";
+		m_names[CallbackType::Post] = m_name + "::Post";
+	}
 	storage[this] = {};
 }
 
