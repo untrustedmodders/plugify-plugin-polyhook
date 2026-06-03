@@ -417,7 +417,7 @@ uint64_t Callback::getJitFunc(CallbackEntry2 entry) {
 	a.mov(rcx, this);
 	a.mov(rbx, rsp);
 	a.and_(rsp, -16);
-	a.sub(rsp, 40);
+	a.sub(rsp, 32);
 	a.call(entry);
 	a.mov(rsp, rbx);
 #else // __systemV__
@@ -425,7 +425,6 @@ uint64_t Callback::getJitFunc(CallbackEntry2 entry) {
 	a.mov(rdi, this);
 	a.mov(rbx, rsp);
 	a.and_(rsp, -16);
-	a.sub(rsp, 24);
 	a.call(entry);
 	a.mov(rsp, rbx);
 #endif
