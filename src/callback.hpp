@@ -115,7 +115,7 @@ namespace PLH {
 		mutable std::shared_mutex m_mutex;
 		plg::enum_array<std::string, CallbackType> m_names;
 		std::string m_name;
-		struct alignas(std::hardware_constructive_interference_size) CallbackObject {
+		struct CallbackObject {
 			plg::hybrid_vector<CallbackHandler, kMaxFuncStack> callbacks;
 			plg::hybrid_vector<int, kMaxFuncStack> priorities;
 		};
