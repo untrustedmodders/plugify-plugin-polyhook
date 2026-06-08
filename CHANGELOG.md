@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.5.2](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.5.1...v2.5.2) (2026-06-08)
+
+
+### Bug Fixes
+
+* avoid empty name creating ([d070b2c](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/d070b2c829065b4f0b9e7f3469e1279cd131f2be))
+* remove alignment from structs ([f9c670d](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/f9c670d8651d74b1cae2d030b50e834c6e1171f5))
+* RTTI for vtableswap hooks ([ff844ae](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/ff844aeaae955fe84782adf34c4e35b8a00ab496))
+* stack alignment after `and rsp, -16` ([1a5a48b](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/1a5a48b04244e228e265bb07032513b265c4e286))
+
 ## [2.5.1](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.5.0...v2.5.1) (2026-05-31)
 
 
