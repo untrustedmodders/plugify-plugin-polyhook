@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.5.3](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.5.2...v2.5.3) (2026-06-09)
+
+
+### Bug Fixes
+
+* regenerate patch for polyhook ([6d2c706](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/6d2c706f26e6a53b03e632160bbd9cf796906fc3))
+
 ## [2.5.2](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.5.1...v2.5.2) (2026-06-08)
 
 
