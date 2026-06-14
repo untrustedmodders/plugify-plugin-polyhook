@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.5.4](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.5.3...v2.5.4) (2026-06-14)
+
+
+### Bug Fixes
+
+* add handle alias types for classes ([f5c1b1c](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/f5c1b1c63b1c9d54b7f8c87989868150fd587b8d))
+* update plugify ([633cc01](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/633cc018d0be312c0c435f3b12a9ccda1bae1a90))
+
 ## [2.5.3](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.5.2...v2.5.3) (2026-06-09)
 
 
