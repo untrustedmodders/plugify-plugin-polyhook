@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.5.5](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.5.4...v2.5.5) (2026-06-14)
+
+
+### Bug Fixes
+
+* add handle types for callbacks ([1ba0647](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/1ba0647bb4c7fb8bea2498f3db130664070e3d9c))
+
 ## [2.5.4](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.5.3...v2.5.4) (2026-06-14)
 
 
