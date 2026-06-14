@@ -19,6 +19,7 @@
 #include <plg/plugin.hpp>
 #include <plg/enum.hpp>
 #include <plg/path.hpp>
+#include <plg/bitmask.hpp>
 #include <plg/hybrid_vector.hpp>
 #include <plg/enum_array.hpp>
 #include <plugin_export.h>
@@ -60,6 +61,8 @@ namespace PLH {
 		NoPost = 1,
 		Supercede = 2,
 	};
+
+	consteval void enable_bitmask_operators(ReturnFlag);
 
 	struct Signature {
 		std::span<const DataType> arguments{};
@@ -230,19 +233,4 @@ namespace PLH {
 		type* _data;
 		[[maybe_unused]] size_t _size;
 	};
-}
-
-inline PLH::ReturnFlag operator|(PLH::ReturnFlag lhs, PLH::ReturnFlag rhs) noexcept {
-	using underlying = std::underlying_type_t<PLH::ReturnFlag>;
-	return static_cast<PLH::ReturnFlag>(static_cast<underlying>(lhs) | static_cast<underlying>(rhs));
-}
-
-inline bool operator&(PLH::ReturnFlag lhs, PLH::ReturnFlag rhs) noexcept {
-	using underlying = std::underlying_type_t<PLH::ReturnFlag>;
-	return static_cast<underlying>(lhs) & static_cast<underlying>(rhs);
-}
-
-inline PLH::ReturnFlag& operator|=(PLH::ReturnFlag& lhs, PLH::ReturnFlag rhs) noexcept {
-	lhs = lhs | rhs;
-	return lhs;
 }
