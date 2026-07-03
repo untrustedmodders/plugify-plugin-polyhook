@@ -20,8 +20,7 @@
 #include <plg/enum.hpp>
 #include <plg/path.hpp>
 #include <plg/bitmask.hpp>
-#include <plg/hybrid_vector.hpp>
-#include <plg/enum_array.hpp>
+#include <plg/inplace_vector.hpp>
 #include <plugin_export.h>
 
 namespace PLH {
@@ -73,11 +72,17 @@ namespace PLH {
 
 	class Callback {
 	public:
-		static constexpr size_t kMaxFuncStack = 62; // for 512 byte object
-
 		using CallbackEntry = void (*)(Callback* callback, uint64_t* params, size_t count, /*uint128_t*/ void* ret, ReturnFlag* flag);
 		using CallbackEntry2 = void (*)(Callback* callback, uintptr_t* params);
 		using CallbackHandler = ReturnAction (*)(Callback* callback, void* params, int32_t count, void* ret, CallbackType type);
+
+		struct CallbackView {
+			std::shared_lock<std::shared_mutex> lock;
+			std::span<const CallbackHandler> data;
+
+			auto begin() const noexcept { return data.begin(); }
+			auto end() const noexcept { return data.end(); }
+		};
 
 		explicit Callback(const Signature& sig);
 		~Callback();
@@ -88,7 +93,7 @@ namespace PLH {
 
 		uint64_t* getTrampolineHolder() noexcept;
 		uint64_t* getFunctionHolder() noexcept;
-		plg::hybrid_vector<CallbackHandler, kMaxFuncStack> getCallbacks(CallbackType type) noexcept;
+		CallbackView getCallbacks(CallbackType type) noexcept;
 		std::string_view getError() const noexcept;
 
 		plg::any& setStorage(size_t idx, const plg::any& any) const;
@@ -104,8 +109,12 @@ namespace PLH {
 		bool isCallbackRegistered(CallbackType type, CallbackHandler callback) const noexcept;
 		bool areCallbacksRegistered(CallbackType type) const noexcept;
 		bool areCallbacksRegistered() const noexcept;
+		void applyPending();
 
 	private:
+		bool addImmediately(CallbackType type, CallbackHandler handler, int priority);
+		bool removeImmediately(CallbackType type, CallbackHandler handler);
+
 		static void saveRegisters(asmjit::x86::Assembler& assembler);
 		static void restoreRegisters(asmjit::x86::Assembler& assembler);
 		static asmjit::TypeId getTypeId(DataType type) noexcept;
@@ -115,14 +124,27 @@ namespace PLH {
 			uint64_t m_trampolinePtr = 0;
 			const char* m_errorCode;
 		};
-		mutable std::shared_mutex m_mutex;
-		plg::enum_array<std::string, CallbackType> m_names;
+		
+		std::array<std::string, static_cast<size_t>(CallbackType::Count)> m_names;
 		std::string m_name;
+
 		struct CallbackObject {
-			plg::hybrid_vector<CallbackHandler, kMaxFuncStack> callbacks;
-			plg::hybrid_vector<int, kMaxFuncStack> priorities;
+			std::vector<CallbackHandler> handlers;
+			std::vector<int> priorities;
 		};
-		plg::enum_array<CallbackObject, CallbackType> m_callbacks;
+		std::array<CallbackObject, static_cast<size_t>(CallbackType::Count)> m_callbacks;
+		mutable std::shared_mutex m_mutex;
+
+		struct PendingOp {
+			enum class Mode : uint8_t { Add, Remove };
+
+			Mode mode;
+			CallbackType type;
+			int priority;
+			CallbackHandler handler;
+		};
+		std::vector<PendingOp> m_pending;
+		std::mutex m_mut;
 
 		DataType m_returnType;
 		std::inplace_vector<DataType, asmjit::Globals::kMaxFuncArgs> m_arguments;

@@ -473,9 +473,88 @@ bool Callback::addCallback(CallbackType type, CallbackHandler handler, int prior
 	if (!handler)
 		return false;
 
+	std::unique_lock lock(m_mutex, std::try_to_lock);
+	if (!lock.owns_lock()) {
+		std::unique_lock lk(m_mut);
+		m_pending.emplace_back(
+			PendingOp::Mode::Add,
+			type,
+			priority,
+			handler
+		);
+		return true;
+	}
+
+	return addImmediately(type, handler, priority);
+}
+
+bool Callback::removeCallback(CallbackType type, CallbackHandler handler) {
+	if (!handler)
+		return false;
+
+	std::unique_lock lock(m_mutex, std::try_to_lock);
+	if (!lock.owns_lock()) {
+		std::unique_lock lk(m_mut);
+		m_pending.emplace_back(
+			PendingOp::Mode::Remove,
+			type,
+			-1,
+			handler
+		);
+		return true;
+	}
+
+	return removeImmediately(type, handler);
+}
+
+bool Callback::isCallbackRegistered(CallbackType type, CallbackHandler handler) const noexcept {
+	if (!handler)
+		return false;
+
+	std::shared_lock lock(m_mutex);
+
+	const auto& [handlers, priorities] = m_callbacks[static_cast<size_t>(type)];
+
+	return std::any_of(handlers.begin(), handlers.end(), [&](const auto& x){ return x == handler; });
+}
+
+bool Callback::areCallbacksRegistered(CallbackType type) const noexcept {
+	std::shared_lock lock(m_mutex);
+
+	const auto& [handlers, priorities] = m_callbacks[static_cast<size_t>(type)];
+
+	return !handlers.empty();
+}
+
+bool Callback::areCallbacksRegistered() const noexcept {
+	return areCallbacksRegistered(CallbackType::Pre) || areCallbacksRegistered(CallbackType::Post);
+}
+
+void Callback::applyPending() {
+	std::unique_lock lk(m_mut);
+
+	if (m_pending.empty())
+		return;
+
 	std::unique_lock lock(m_mutex);
 
-	auto& [handlers, priorities] = m_callbacks[type];
+	for (const auto& [mode, type, priority, handler] : m_pending) {
+		switch (mode) {
+			case PendingOp::Mode::Add:
+				addImmediately(type, handler, priority);
+				break;
+
+			case PendingOp::Mode::Remove:
+				removeImmediately(type, handler);
+				break;
+		}
+	}
+
+	m_pending.clear();
+}
+
+bool Callback::addImmediately(CallbackType type, CallbackHandler handler, int priority) {
+	auto& [handlers, priorities] = m_callbacks[static_cast<size_t>(type)];
 
 	if (std::any_of(handlers.begin(), handlers.end(),
 		[&](const auto& h){ return h == handler; }))
@@ -492,54 +571,26 @@ bool Callback::addCallback(CallbackType type, CallbackHandler handler, int prior
 	return true;
 }
 
-bool Callback::removeCallback(CallbackType type, CallbackHandler handler) {
-	if (!handler)
+bool Callback::removeImmediately(CallbackType type, CallbackHandler handler) {
+	auto& [handlers, priorities] = m_callbacks[static_cast<size_t>(type)];
+
+	auto it = std::find(handlers.begin(), handlers.end(), handler);
+	if (it == handlers.end())
 		return false;
 
-	std::unique_lock lock(m_mutex);
-
-	auto& [handlers, priorities] = m_callbacks[type];
-
-    auto it = std::find(handlers.begin(), handlers.end(), handler);
-    if (it == handlers.end())
-        return false;
-
-    auto index = std::distance(handlers.begin(), it);
-    handlers.erase(handlers.begin() + index);
-    priorities.erase(priorities.begin() + index);
+	auto index = std::distance(handlers.begin(), it);
+	handlers.erase(handlers.begin() + index);
+	priorities.erase(priorities.begin() + index);
 
 	return true;
 }
 
-bool Callback::isCallbackRegistered(CallbackType type, CallbackHandler handler) const noexcept {
-	if (!handler)
-		return false;
-
+Callback::CallbackView Callback::getCallbacks(CallbackType type) noexcept {
 	std::shared_lock lock(m_mutex);
 
-	const auto& [handlers, priorities] = m_callbacks[type];
+	const auto& [handlers, priorities] = m_callbacks[static_cast<size_t>(type)];
 
-	return std::any_of(handlers.begin(), handlers.end(), [&](const auto& x){ return x == handler; });
-}
-
-bool Callback::areCallbacksRegistered(CallbackType type) const noexcept {
-	std::shared_lock lock(m_mutex);
-
-	const auto& [handlers, priorities] = m_callbacks[type];
-
-	return !handlers.empty();
-}
-
-bool Callback::areCallbacksRegistered() const noexcept {
-	return areCallbacksRegistered(CallbackType::Pre) || areCallbacksRegistered(CallbackType::Post);
-}
-
-plg::hybrid_vector<Callback::CallbackHandler, Callback::kMaxFuncStack> Callback::getCallbacks(CallbackType type) noexcept {
-	std::shared_lock lock(m_mutex);
-
-	const auto& [handlers, priorities] = m_callbacks[type];
-
-	return handlers;
+	return { std::move(lock), handlers };
 }
 
 uint64_t* Callback::getTrampolineHolder() noexcept {
@@ -571,13 +622,13 @@ DataType Callback::getArgumentType(size_t idx) const noexcept {
 }
 
 std::string_view Callback::getDebugName(std::optional<CallbackType> type) const noexcept {
-	return type ? m_names[*type] : m_name;
+	return type ? m_names[static_cast<size_t>(*type)] : m_name;
 }
 
 Callback::Callback(const Signature& sig) : m_name(sig.name), m_returnType(sig.returnType), m_arguments(sig.arguments.begin(), sig.arguments.end()) {
 	if (!m_name.empty()) {
-		m_names[CallbackType::Pre] = m_name + "::Pre";
-		m_names[CallbackType::Post] = m_name + "::Post";
+		m_names[static_cast<size_t>(CallbackType::Pre)] = m_name + "::Pre";
+		m_names[static_cast<size_t>(CallbackType::Post)] = m_name + "::Post";
 	}
 	storage[this] = {};
 }

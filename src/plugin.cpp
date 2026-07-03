@@ -59,6 +59,7 @@ enum RegisterType : size_t {
 
 static void PreCallback(Callback* callback, uint64_t* p, size_t count, void* r, ReturnFlag* flag) {
 	plg::Scope scope(callback->getDebugName(Pre));
+	plg::scope_guard guard = plg::make_scope_guard([&]{ callback->applyPending(); });
 
 	ParametersSpan params(p, count);
 	ReturnSlot ret(r, SizeOf(callback->getReturnType()));
@@ -68,9 +69,9 @@ static void PreCallback(Callback* callback, uint64_t* p, size_t count, void* r, 
 	if (callback->areCallbacksRegistered(Pre)) {
 		for (auto callbacks = callback->getCallbacks(Pre);
 		const auto& func : callbacks) {
-		ReturnAction result = func(callback, &params, static_cast<int32_t>(count), &ret, Pre);
-		if (result > returnAction)
-			returnAction = result;
+			ReturnAction result = func(callback, &params, static_cast<int32_t>(count), &ret, Pre);
+			if (result > returnAction)
+				returnAction = result;
 		}
 	}
 
@@ -84,6 +85,7 @@ static void PreCallback(Callback* callback, uint64_t* p, size_t count, void* r, 
 
 static void PostCallback(Callback* callback, uint64_t* p, size_t count, void* r, ReturnFlag*) {
 	plg::Scope scope(callback->getDebugName(Post));
+	plg::scope_guard guard = plg::make_scope_guard([&]{ callback->applyPending(); });
 
 	ParametersSpan params(p, count);
 	ReturnSlot ret(r, SizeOf(callback->getReturnType()));
@@ -96,6 +98,7 @@ static void PostCallback(Callback* callback, uint64_t* p, size_t count, void* r,
 
 static void MidCallback(Callback* callback, uintptr_t* p) {
 	plg::Scope scope(callback->getDebugName());
+	plg::scope_guard guard = plg::make_scope_guard([&]{ callback->applyPending(); });
 
 	ParametersSpan params(p, COUNT);
 
