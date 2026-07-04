@@ -90,7 +90,7 @@ namespace PLH {
 
 		uint64_t* getTrampolineHolder() noexcept;
 		uint64_t* getFunctionHolder() noexcept;
-		std::shared_ptr<const CallbackObject> getCallbacks(CallbackType type) const noexcept;
+		std::shared_ptr<const CallbackObject> getCallbackObject(CallbackType type) const noexcept;
 		std::string_view getError() const noexcept;
 
 		plg::any& setStorage(size_t idx, const plg::any& any) const;

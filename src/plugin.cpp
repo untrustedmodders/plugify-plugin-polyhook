@@ -66,8 +66,8 @@ static void PreCallback(Callback* callback, uint64_t* p, size_t count, void* r, 
 	ReturnAction returnAction = ReturnAction::Ignored;
 	
 	if (callback->areCallbacksRegistered(Pre)) {
-		for (auto callbacks = callback->getCallbacks(Pre);
-		const auto& func : callbacks->handlers) {
+		for (auto object = callback->getCallbackObject(Pre);
+		const auto& func : object->handlers) {
 			ReturnAction result = func(callback, &params, static_cast<int32_t>(count), &ret, Pre);
 			if (result > returnAction)
 				returnAction = result;
@@ -88,8 +88,8 @@ static void PostCallback(Callback* callback, uint64_t* p, size_t count, void* r,
 	ParametersSpan params(p, count);
 	ReturnSlot ret(r, SizeOf(callback->getReturnType()));
 
-	for (auto callbacks = callback->getCallbacks(Post);
-		const auto& func : callbacks->handlers) {
+	for (auto object = callback->getCallbackObject(Post);
+		const auto& func : object->handlers) {
 		func(callback, &params, static_cast<int32_t>(count), &ret, Post);
 	}
 }
@@ -101,8 +101,8 @@ static void MidCallback(Callback* callback, uintptr_t* p) {
 
 	for (constexpr std::array types = { Pre, Post }; const auto& type : types) {
 		if (callback->areCallbacksRegistered(type)) {
-			for (auto callbacks = callback->getCallbacks(type);
-			const auto& func : callbacks->handlers) {
+			for (auto object = callback->getCallbackObject(type);
+			const auto& func : object->handlers) {
 				func(callback, &params, COUNT, nullptr, type);
 			}
 		}
