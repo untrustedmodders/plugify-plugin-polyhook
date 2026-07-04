@@ -1,6 +1,7 @@
 #include "callback.hpp"
 
 #include <thread>
+#include <ranges>
 #include <immintrin.h>
 
 using namespace asmjit;
@@ -473,38 +474,44 @@ bool Callback::addCallback(CallbackType type, CallbackHandler handler, int prior
 	if (!handler)
 		return false;
 
-	std::unique_lock lock(m_mutex, std::try_to_lock);
-	if (!lock.owns_lock()) {
-		std::unique_lock lk(m_mut);
-		m_pending.emplace_back(
-			PendingOp::Mode::Add,
-			type,
-			priority,
-			handler
-		);
-		return true;
-	}
+	std::unique_lock lock(m_mutex);
 
-	return addImmediately(type, handler, priority);
+	auto old = m_callbacks[static_cast<size_t>(type)];
+	if (old && std::ranges::any_of(old->handlers, [&](auto h){ return h == handler; }))
+		return false;
+
+	auto fresh = std::make_shared<CallbackObject>(old ? *old : CallbackObject{});
+	auto it = std::ranges::upper_bound(fresh->priorities.begin(), fresh->priorities.end(), priority,
+		[](int p, int cur){ return p > cur; });
+	auto idx = std::distance(fresh->priorities.begin(), it);
+	fresh->handlers.insert(fresh->handlers.begin() + idx, handler);
+	fresh->priorities.insert(fresh->priorities.begin() + idx, priority);
+
+	m_callbacks[static_cast<size_t>(type)] = std::move(fresh);
 }
 
 bool Callback::removeCallback(CallbackType type, CallbackHandler handler) {
 	if (!handler)
 		return false;
 
-	std::unique_lock lock(m_mutex, std::try_to_lock);
-	if (!lock.owns_lock()) {
-		std::unique_lock lk(m_mut);
-		m_pending.emplace_back(
-			PendingOp::Mode::Remove,
-			type,
-			-1,
-			handler
-		);
-		return true;
-	}
+	std::unique_lock lock(m_mutex);
 
-	return removeImmediately(type, handler);
+	auto old = m_callbacks[static_cast<size_t>(type)];
+	if (!old)
+		return false;
+
+	auto it = std::ranges::find(old->handlers, handler);
+	if (it == old->handlers.end())
+		return false;
+
+	auto index = std::distance(old->handlers.begin(), it);
+
+	auto fresh = std::make_shared<CallbackObject>(*old);
+	fresh->handlers.erase(fresh->handlers.begin() + index);
+	fresh->priorities.erase(fresh->priorities.begin() + index);
+
+	m_callbacks[static_cast<size_t>(type)] = std::move(fresh);
+	return true;
 }
 
 bool Callback::isCallbackRegistered(CallbackType type, CallbackHandler handler) const noexcept {
@@ -512,85 +519,23 @@ bool Callback::isCallbackRegistered(CallbackType type, CallbackHandler handler) 
 		return false;
 
 	std::shared_lock lock(m_mutex);
-
-	const auto& [handlers, priorities] = m_callbacks[static_cast<size_t>(type)];
-
-	return std::any_of(handlers.begin(), handlers.end(), [&](const auto& x){ return x == handler; });
+	auto snapshot = m_callbacks[static_cast<size_t>(type)];
+	return snapshot && std::ranges::any_of(snapshot->handlers, [&](const auto& h){ return h == handler; });
 }
 
 bool Callback::areCallbacksRegistered(CallbackType type) const noexcept {
 	std::shared_lock lock(m_mutex);
-
-	const auto& [handlers, priorities] = m_callbacks[static_cast<size_t>(type)];
-
-	return !handlers.empty();
+	auto snapshot = m_callbacks[static_cast<size_t>(type)];
+	return snapshot && !snapshot->handlers.empty();
 }
 
 bool Callback::areCallbacksRegistered() const noexcept {
 	return areCallbacksRegistered(CallbackType::Pre) || areCallbacksRegistered(CallbackType::Post);
 }
 
-void Callback::applyPending() {
-	std::unique_lock lk(m_mut);
-
-	if (m_pending.empty())
-		return;
-
-	std::unique_lock lock(m_mutex);
-
-	for (const auto& [mode, type, priority, handler] : m_pending) {
-		switch (mode) {
-			case PendingOp::Mode::Add:
-				addImmediately(type, handler, priority);
-				break;
-
-			case PendingOp::Mode::Remove:
-				removeImmediately(type, handler);
-				break;
-		}
-	}
-
-	m_pending.clear();
-}
-
-bool Callback::addImmediately(CallbackType type, CallbackHandler handler, int priority) {
-	auto& [handlers, priorities] = m_callbacks[static_cast<size_t>(type)];
-
-	if (std::any_of(handlers.begin(), handlers.end(),
-		[&](const auto& h){ return h == handler; }))
-		return false;
-
-	auto it = std::upper_bound(priorities.begin(), priorities.end(), priority,
-		[](int p, int cur){ return p > cur; }); // descending order
-
-	auto index = std::distance(priorities.begin(), it);
-
-	handlers.insert(handlers.begin() + index, handler);
-	priorities.insert(priorities.begin() + index, priority);
-
-	return true;
-}
-
-bool Callback::removeImmediately(CallbackType type, CallbackHandler handler) {
-	auto& [handlers, priorities] = m_callbacks[static_cast<size_t>(type)];
-
-	auto it = std::find(handlers.begin(), handlers.end(), handler);
-	if (it == handlers.end())
-		return false;
-
-	auto index = std::distance(handlers.begin(), it);
-	handlers.erase(handlers.begin() + index);
-	priorities.erase(priorities.begin() + index);
-
-	return true;
-}
-
-Callback::CallbackView Callback::getCallbacks(CallbackType type) noexcept {
+std::shared_ptr<const Callback::CallbackObject> Callback::getCallbacks(CallbackType type) const noexcept {
 	std::shared_lock lock(m_mutex);
-
-	const auto& [handlers, priorities] = m_callbacks[static_cast<size_t>(type)];
-
-	return { std::move(lock), handlers };
+	return m_callbacks[static_cast<size_t>(type)];
 }
 
 uint64_t* Callback::getTrampolineHolder() noexcept {
