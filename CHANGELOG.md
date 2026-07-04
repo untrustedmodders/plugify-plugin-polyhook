@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.5.6](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.5.5...v2.5.6) (2026-07-04)
+
+
+### Bug Fixes
+
+* add missing return ([20649d3](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/20649d3ff2cb01b93cfc4ff8ddfa2207d96c34ac))
+* improve performance ([2c216a3](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/2c216a341fa52ad56c9fd0fcb26093f48040b4f4))
+* remove listeners ([97d4a12](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/97d4a126dd803e0a62afc55a4a61289ba8ee00ba))
+
 ## [2.5.5](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.5.4...v2.5.5) (2026-06-14)
 
 
