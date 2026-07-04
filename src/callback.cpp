@@ -488,6 +488,7 @@ bool Callback::addCallback(CallbackType type, CallbackHandler handler, int prior
 	fresh->priorities.insert(fresh->priorities.begin() + idx, priority);
 
 	m_callbacks[static_cast<size_t>(type)] = std::move(fresh);
+	return true;
 }
 
 bool Callback::removeCallback(CallbackType type, CallbackHandler handler) {
