@@ -567,7 +567,7 @@ bool Callback::areCallbacksRegistered() const noexcept {
 	return areCallbacksRegistered(CallbackType::Pre) || areCallbacksRegistered(CallbackType::Post);
 }
 
-std::shared_ptr<const Callback::CallbackObject> Callback::getCallbackObject(CallbackType type) const noexcept {
+Callback::CallbackObjectPtr Callback::getCallbackObject(CallbackType type) const noexcept {
 	std::shared_lock lock(m_mutex);
 	return m_callbacks[static_cast<size_t>(type)];
 }

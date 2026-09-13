@@ -66,6 +66,7 @@ namespace PLH {
 	struct Signature {
 		std::span<const DataType> arguments{};
 		DataType returnType{};
+		bool multiThreaded{};
 		int varIndex{};
 		std::string_view name{};
 	};
@@ -80,6 +81,7 @@ namespace PLH {
 			std::vector<CallbackHandler> handlers;
 			std::vector<int> priorities;
 		};
+		using CallbackObjectPtr = std::shared_ptr<const CallbackObject>;
 
 		explicit Callback(const Signature& sig);
 		~Callback();
@@ -90,7 +92,7 @@ namespace PLH {
 
 		uint64_t* getTrampolineHolder() noexcept;
 		uint64_t* getFunctionHolder() noexcept;
-		std::shared_ptr<const CallbackObject> getCallbackObject(CallbackType type) const noexcept;
+		CallbackObjectPtr getCallbackObject(CallbackType type) const noexcept;
 		std::string_view getError() const noexcept;
 
 		plg::any& setStorage(size_t idx, const plg::any& any) const;
@@ -113,7 +115,7 @@ namespace PLH {
 		static void restoreRegisters(asmjit::x86::Assembler& assembler);
 		static asmjit::TypeId getTypeId(DataType type) noexcept;
 		static bool hasHiArgSlot(const asmjit::x86::Compiler& compiler, asmjit::TypeId typeId) noexcept;
-
+		
 		uint64_t m_functionPtr = 0;
 		union {
 			uint64_t m_trampolinePtr = 0;
@@ -123,7 +125,7 @@ namespace PLH {
 		std::array<std::string, static_cast<size_t>(CallbackType::Count)> m_names;
 		std::string m_name;
 
-		std::array<std::shared_ptr<const CallbackObject>, static_cast<size_t>(CallbackType::Count)> m_callbacks;
+		std::array<CallbackObjectPtr, static_cast<size_t>(CallbackType::Count)> m_callbacks;
 		mutable std::shared_mutex m_mutex;
 
 		DataType m_returnType;
