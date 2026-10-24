@@ -129,6 +129,8 @@ plg::PluginResult PolyHookPlugin::OnPluginEnd() {
 	while (!m_removals.empty()) {
 		m_removals.pop();
 	}
+
+	Callback::releaseThreadStorage();
 	return {};
 }
 

@@ -95,6 +95,7 @@ namespace PLH {
 
 		plg::any& setStorage(size_t idx, const plg::any& any) const;
 		plg::any& getStorage(size_t idx) const;
+		static void releaseThreadStorage();
 
 		DataType getReturnType() const noexcept;
 		DataType getArgumentType(size_t idx) const noexcept;

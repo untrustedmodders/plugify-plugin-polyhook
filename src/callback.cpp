@@ -20,7 +20,16 @@ struct SimpleErrorHandler : ErrorHandler {
 using namespace PLH;
 
 static JitRuntime rt;
-static thread_local std::map<Callback const*, std::array<plg::any, Globals::kMaxFuncArgs + 1>> storage;
+using Storage = std::map<Callback const*, std::array<plg::any, Globals::kMaxFuncArgs + 1>>;
+// Raw pointer keeps the thread_local trivially destructible: a TLS destructor pins the library in memory and breaks plugin reload
+static thread_local Storage* storage = nullptr;
+
+static Storage& getThreadStorage() {
+	if (!storage) {
+		storage = new Storage();
+	}
+	return *storage;
+}
 
 struct ArgRegSlot {
 	explicit ArgRegSlot(uint32_t idx) {
@@ -552,11 +561,11 @@ std::string_view Callback::getError() const noexcept {
 }
 
 plg::any& Callback::setStorage(size_t idx, const plg::any& any) const {
-	return storage[this][++idx] = any;
+	return getThreadStorage()[this][++idx] = any;
 }
 
 plg::any& Callback::getStorage(size_t idx) const {
-	return storage[this][++idx];
+	return getThreadStorage()[this][++idx];
 }
 
 DataType Callback::getReturnType() const noexcept {
@@ -576,14 +585,21 @@ Callback::Callback(const Signature& sig) : m_name(sig.name), m_returnType(sig.re
 		m_names[static_cast<size_t>(CallbackType::Pre)] = m_name + "::Pre";
 		m_names[static_cast<size_t>(CallbackType::Post)] = m_name + "::Post";
 	}
-	storage[this] = {};
+	getThreadStorage()[this] = {};
 }
 
 Callback::~Callback() {
 	if (m_functionPtr) {
 		rt.release(m_functionPtr);
 	}
-	storage.erase(this);
+	if (storage) {
+		storage->erase(this);
+	}
+}
+
+void Callback::releaseThreadStorage() {
+	delete storage;
+	storage = nullptr;
 }
 
 void Callback::saveRegisters(Assembler& a) {
