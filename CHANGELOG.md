@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.5.7](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.5.6...v2.5.7) (2026-10-24)
+
+
+### Bug Fixes
+
+* allow plugin reload by avoiding thread_local destructor ([b0f3dce](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/b0f3dcec98f1041b31f2ff8f52928b77ad084644))
+
 ## [2.5.6](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.5.5...v2.5.6) (2026-08-16)
 
 
