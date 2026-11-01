@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.5.8](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.5.7...v2.5.8) (2026-11-01)
+
+
+### Bug Fixes
+
+* **linux:** protect the full range across page boundaries ([0aadc50](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/0aadc50fb66afd5c77af4f601e5e4b25e1be7b86))
+
 ## [2.5.7](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.5.6...v2.5.7) (2026-10-24)
 
 
