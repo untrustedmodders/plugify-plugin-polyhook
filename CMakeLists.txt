@@ -102,3 +102,12 @@ configure_file(
         ${CMAKE_CURRENT_SOURCE_DIR}/plugify-plugin-polyhook.pplugin.in
         ${CMAKE_CURRENT_BINARY_DIR}/plugify-plugin-polyhook.pplugin
 )
+
+include(CTest)
+if(BUILD_TESTING AND LINUX)
+	add_executable(polyhook_mem_protect_tests
+		${polyhook_2_SOURCE_DIR}/MainTests.cpp
+		${polyhook_2_SOURCE_DIR}/UnitTests/linux/TestMemProtector.cpp)
+	target_link_libraries(polyhook_mem_protect_tests PRIVATE PolyHook_2)
+	add_test(NAME polyhook_mem_protect COMMAND polyhook_mem_protect_tests "[MemProtector]")
+endif()

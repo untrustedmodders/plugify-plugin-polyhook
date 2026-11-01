@@ -70,3 +70,80 @@ index a8f5df3..4e804d8 100644
  	m_hooked = true;
  	Log::log("vtable hooked", ErrorLevel::INFO);
  	return true;
+diff --git a/UnitTests/linux/TestMemProtector.cpp b/UnitTests/linux/TestMemProtector.cpp
+index 739ecfb..b7d54e4 100644
+--- a/UnitTests/linux/TestMemProtector.cpp
++++ b/UnitTests/linux/TestMemProtector.cpp
+@@ -1,6 +1,7 @@
+ #include "Catch.hpp"
+ #include "polyhook2/MemProtector.hpp"
+ #include "polyhook2/Tests/StackCanary.hpp"
++#include "polyhook2/Misc.hpp"
+ 
+ #include "polyhook2/PolyHookOsIncludes.hpp"
+ 
+@@ -66,4 +67,48 @@ TEST_CASE("Test setting page protections", "[MemProtector]") {
+ 		REQUIRE(prot2.originalProt() == (PLH::ProtFlag::X | PLH::ProtFlag::W));
+ 	}
+ 	munmap(page, 4*1024);
+-}
+\ No newline at end of file
++}
++
++TEST_CASE("Unaligned protection covers only the requested pages", "[MemProtector]") {
++	const size_t pageSize = PLH::getPageSize();
++	char* pages = (char*)mmap(nullptr, 3 * pageSize, PROT_READ | PROT_WRITE,
++		MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
++	REQUIRE(pages != MAP_FAILED);
++	PLH::MemAccessor accessor;
++	auto currentProtection = [&](char* address) {
++		bool status = false;
++		auto protection = accessor.mem_protect((uint64_t)address, 0, PLH::ProtFlag::NONE, status);
++		REQUIRE(status);
++		return protection;
++	};
++
++	size_t offset = pageSize - 16;
++	size_t length = 32;
++	bool secondExecutable = true;
++	SECTION("crosses the first page boundary") {}
++	SECTION("ends exactly at the first page boundary") {
++		length = 16;
++		secondExecutable = false;
++	}
++	SECTION("starts on a page boundary") {
++		offset = 0;
++		length = pageSize;
++		secondExecutable = false;
++	}
++	SECTION("zero length at an unaligned address changes nothing") {
++		length = 0;
++		secondExecutable = false;
++	}
++	{
++		PLH::MemoryProtector protection((uint64_t)(pages + offset), length,
++			PLH::ProtFlag::R | PLH::ProtFlag::W | PLH::ProtFlag::X, accessor);
++		REQUIRE(protection.isGood());
++		REQUIRE(protection.originalProt() == (PLH::ProtFlag::R | PLH::ProtFlag::W));
++		REQUIRE((currentProtection(pages) & PLH::ProtFlag::X) == (length != 0));
++		REQUIRE((currentProtection(pages + pageSize) & PLH::ProtFlag::X) == secondExecutable);
++		REQUIRE(currentProtection(pages + 2 * pageSize) == (PLH::ProtFlag::R | PLH::ProtFlag::W));
++	}
++	for (size_t page = 0; page < 3; ++page)
++		REQUIRE(currentProtection(pages + page * pageSize) == (PLH::ProtFlag::R | PLH::ProtFlag::W));
++	REQUIRE(munmap(pages, 3 * pageSize) == 0);
++}
+diff --git a/sources/MemAccessor.cpp b/sources/MemAccessor.cpp
+index 7ed3bf9..b2c28c8 100644
+--- a/sources/MemAccessor.cpp
++++ b/sources/MemAccessor.cpp
+@@ -124,7 +124,8 @@ bool PLH::MemAccessor::safe_mem_read(uint64_t src, uint64_t dest, uint64_t size,
+ PLH::ProtFlag PLH::MemAccessor::mem_protect(uint64_t dest, uint64_t size, PLH::ProtFlag prot, bool& status) const {
+ 	region_t region_infos = get_region_from_addr(dest);
+ 	uint64_t aligned_dest = MEMORY_ROUND(dest, PLH::getPageSize());
+-	uint64_t aligned_size = MEMORY_ROUND_UP(size, PLH::getPageSize());
++	// Include the first-page offset so a crossing range also protects its last page.
++	uint64_t aligned_size = size == 0 ? 0 : MEMORY_ROUND_UP(size + (dest - aligned_dest), PLH::getPageSize());
+ 	status = mprotect((void*)aligned_dest, aligned_size, TranslateProtection(prot)) == 0;
+ 	return region_infos.prot;
+ }
