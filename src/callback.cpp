@@ -96,6 +96,27 @@ TypeId Callback::getTypeId(const DataType type) noexcept {
 	return TypeId::kVoid;
 }
 
+// The stub passes on only the arguments of its signature, so variadic ones have to be there too:
+// the argument registers that are left, then as much of the caller's stack as the signature can hold.
+static void addVariadicSlots(FuncSignature& sig) {
+#if defined(POLYHOOK2_ARCH_X64) && !defined(POLYHOOK2_OS_WINDOWS)
+	uint32_t gpCount = 0;
+	uint32_t vecCount = 0;
+	for (uint32_t argIdx = 0; argIdx < sig.argCount(); ++argIdx) {
+		++(TypeUtils::isFloat(sig.args()[argIdx]) ? vecCount : gpCount);
+	}
+	for (; gpCount < 6; ++gpCount) {
+		sig.addArg(TypeId::kUInt64);
+	}
+	for (; vecCount < 8; ++vecCount) {
+		sig.addArg(TypeId::kFloat64);
+	}
+#endif
+	while (sig.argCount() < Globals::kMaxFuncArgs) {
+		sig.addArg(TypeId::kUIntPtr);
+	}
+}
+
 uint64_t Callback::getJitFunc(const FuncSignature& sig, CallbackEntry pre, CallbackEntry post) {
 	if (m_functionPtr) {
 		return m_functionPtr;
@@ -219,7 +240,7 @@ uint64_t Callback::getJitFunc(const FuncSignature& sig, CallbackEntry pre, Callb
 
 	// fill reg to pass struct arg count to callback
 	Gp argCountParam = cc.newGpz("argCountParam");
-	cc.mov(argCountParam, sig.argCount());
+	cc.mov(argCountParam, m_arguments.size());
 
 	// create buffer for return struct
 	Mem retStack = cc.newStack(sizeof(uint64_t), alignment);
@@ -391,6 +412,9 @@ uint64_t Callback::getJitFunc(const Signature& sig, CallbackEntry pre, CallbackE
 	FuncSignature signature(CallConvId::kCDecl, static_cast<uint32_t>(sig.varIndex), getTypeId(sig.returnType));
 	for (const DataType& type : sig.arguments) {
 		signature.addArg(getTypeId(type));
+	}
+	if (sig.varIndex > 0) {
+		addVariadicSlots(signature);
 	}
 	return getJitFunc(signature, pre, post);
 }
