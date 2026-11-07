@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.5.9](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.5.8...v2.5.9) (2026-11-07)
+
+
+### Bug Fixes
+
+* support hooking variadic functions ([170ba36](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/170ba36d19bc0a342b7b77d2346f4e47a4c49eba))
+
 ## [2.5.8](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.5.7...v2.5.8) (2026-11-01)
 
 
