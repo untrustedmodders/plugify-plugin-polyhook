@@ -2,6 +2,8 @@
 
 #include <thread>
 #include <ranges>
+#include <memory>
+#include <cstddef>
 #include <immintrin.h>
 
 using namespace asmjit;
@@ -20,15 +22,26 @@ struct SimpleErrorHandler : ErrorHandler {
 using namespace PLH;
 
 static JitRuntime rt;
-using Storage = std::map<Callback const*, std::array<plg::any, Globals::kMaxFuncArgs + 1>>;
-// Raw pointer keeps the thread_local trivially destructible: a TLS destructor pins the library in memory and breaks plugin reload
-static thread_local Storage* storage = nullptr;
+using Storage = std::flat_map<Callback const*, std::array<plg::any, Globals::kMaxFuncArgs + 1>>;
+
+// The thread_local has to stay trivially destructible: a TLS destructor pins the library in memory and breaks plugin reload.
+// So the map lives inline in the TLS block, constructed on first use and destroyed explicitly by releaseThreadStorage.
+struct StorageSlot {
+	alignas(Storage) std::byte buffer[sizeof(Storage)];
+	Storage* storage;
+};
+static_assert(
+	std::is_trivially_destructible_v<StorageSlot>,
+	"StorageSlot is thread_local: a destructor would make the plugin register "
+	"per-thread cleanup with the loader"
+);
+static thread_local StorageSlot slot{};
 
 static Storage& getThreadStorage() {
-	if (!storage) {
-		storage = new Storage();
+	if (!slot.storage) {
+		slot.storage = std::construct_at(reinterpret_cast<Storage*>(slot.buffer));
 	}
-	return *storage;
+	return *slot.storage;
 }
 
 struct ArgRegSlot {
@@ -567,7 +580,7 @@ bool Callback::areCallbacksRegistered() const noexcept {
 	return areCallbacksRegistered(CallbackType::Pre) || areCallbacksRegistered(CallbackType::Post);
 }
 
-std::shared_ptr<const Callback::CallbackObject> Callback::getCallbackObject(CallbackType type) const noexcept {
+Callback::CallbackObjectPtr Callback::getCallbackObject(CallbackType type) const noexcept {
 	std::shared_lock lock(m_mutex);
 	return m_callbacks[static_cast<size_t>(type)];
 }
@@ -616,14 +629,15 @@ Callback::~Callback() {
 	if (m_functionPtr) {
 		rt.release(m_functionPtr);
 	}
-	if (storage) {
-		storage->erase(this);
+	if (slot.storage) {
+		slot.storage->erase(this);
 	}
 }
 
 void Callback::releaseThreadStorage() {
-	delete storage;
-	storage = nullptr;
+	if (slot.storage) {
+		std::destroy_at(std::exchange(slot.storage, nullptr));
+	}
 }
 
 void Callback::saveRegisters(Assembler& a) {

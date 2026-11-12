@@ -13,12 +13,12 @@
 #include <array>
 #include <span>
 #include <shared_mutex>
-#include <map>
 #include <thread>
 
 #include <plg/plugin.hpp>
 #include <plg/enum.hpp>
 #include <plg/path.hpp>
+#include <plg/flat.hpp>
 #include <plg/bitmask.hpp>
 #include <plg/inplace_vector.hpp>
 #include <plugin_export.h>
@@ -80,6 +80,7 @@ namespace PLH {
 			std::vector<CallbackHandler> handlers;
 			std::vector<int> priorities;
 		};
+		using CallbackObjectPtr = std::shared_ptr<const CallbackObject>;
 
 		explicit Callback(const Signature& sig);
 		~Callback();
@@ -90,7 +91,7 @@ namespace PLH {
 
 		uint64_t* getTrampolineHolder() noexcept;
 		uint64_t* getFunctionHolder() noexcept;
-		std::shared_ptr<const CallbackObject> getCallbackObject(CallbackType type) const noexcept;
+		CallbackObjectPtr getCallbackObject(CallbackType type) const noexcept;
 		std::string_view getError() const noexcept;
 
 		plg::any& setStorage(size_t idx, const plg::any& any) const;
@@ -120,10 +121,12 @@ namespace PLH {
 			const char* m_errorCode;
 		};
 
-		std::array<std::string, static_cast<size_t>(CallbackType::Count)> m_names;
+		static constexpr size_t kMaxCallbacks = static_cast<size_t>(CallbackType::Count);
+
+		std::array<std::string, kMaxCallbacks> m_names;
 		std::string m_name;
 
-		std::array<std::shared_ptr<const CallbackObject>, static_cast<size_t>(CallbackType::Count)> m_callbacks;
+		std::array<CallbackObjectPtr, kMaxCallbacks> m_callbacks;
 		mutable std::shared_mutex m_mutex;
 
 		DataType m_returnType;
