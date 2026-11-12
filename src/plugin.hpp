@@ -27,7 +27,7 @@ namespace PLH {
 		plg::PluginResult OnPluginEnd() override;
 
 		Callback* hookDetour(void* pFunc, const Signature& sig);
-		Callback* hookDetour(void* pFunc, std::string_view name = {}, bool multiThreaded = false);
+		Callback* hookDetour(void* pFunc, std::string_view name = {});
 		template<typename T>
 		Callback* hookVirtual(void* pClass, int index, const Signature& sig);
 		template<typename T>

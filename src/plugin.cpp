@@ -3,8 +3,6 @@
 PLH::PolyHookPlugin g_polyHookPlugin;
 PLUGIFY_PLUGIN(PLUGIN_API, &g_polyHookPlugin)
 
-static std::thread::id s_mainThread;
-
 using namespace PLH;
 using enum CallbackType;
 using namespace std::chrono_literals;
@@ -59,16 +57,8 @@ enum RegisterType : size_t {
 	COUNT
 };
 
-template<bool isMultiThread>
 static void PreCallback(Callback* callback, uint64_t* p, size_t count, void* r, ReturnFlag* flag) {
 	plg::Scope scope(callback->getDebugName(Pre));
-
-	if constexpr (!isMultiThread) {
-		if (std::this_thread::get_id() != s_mainThread) {
-			std::println(std::cerr, "polyhook::PreCallback: '{}' is not marked as multi-threaded, but was invoked from a non-main thread.", callback->getDebugName());
-			std::abort();
-		}
-	}
 
 	ParametersSpan params(p, count);
 	ReturnSlot ret(r, SizeOf(callback->getReturnType()));
@@ -92,7 +82,6 @@ static void PreCallback(Callback* callback, uint64_t* p, size_t count, void* r, 
 	}
 }
 
-//template<bool isMT>
 static void PostCallback(Callback* callback, uint64_t* p, size_t count, void* r, ReturnFlag*) {
 	plg::Scope scope(callback->getDebugName(Post));
 
@@ -105,16 +94,8 @@ static void PostCallback(Callback* callback, uint64_t* p, size_t count, void* r,
 	}
 }
 
-template<bool isMultiThread>
 static void MidCallback(Callback* callback, uintptr_t* p) {
 	plg::Scope scope(callback->getDebugName());
-
-	if constexpr (!isMultiThread) {
-		if (std::this_thread::get_id() != s_mainThread) {
-			std::println(std::cerr, "polyhook::MidCallback: '{}' is not marked as multi-threaded, but was invoked from a non-main thread.", callback->getDebugName());
-			std::abort();
-		}
-	}
 
 	ParametersSpan params(p, COUNT);
 
@@ -132,7 +113,6 @@ plg::PluginResult PolyHookPlugin::OnPluginStart() {
 	auto logger = std::make_shared<ErrorLog>();
 	logger->setLogLevel(ErrorLevel::SEV);
 	Log::registerLogger(logger);
-	s_mainThread = std::this_thread::get_id();
 	return {};
 }
 
@@ -170,7 +150,7 @@ Callback* PolyHookPlugin::hookDetour(void* pFunc, const Signature& sig) {
 
 	auto callback = std::make_unique<Callback>(sig);
 
-	uint64_t JIT = callback->getJitFunc(sig, sig.multiThreaded ? &PreCallback<true> : &PreCallback<false>, &PostCallback);
+	uint64_t JIT = callback->getJitFunc(sig, &PreCallback, &PostCallback);
 
 	if (auto error = callback->getError(); !error.empty()) {
 		m_error = error;
@@ -185,7 +165,7 @@ Callback* PolyHookPlugin::hookDetour(void* pFunc, const Signature& sig) {
 	return m_detours.emplace(pFunc, DHook{std::move(detour), std::move(callback)}).first->second.callback.get();
 }
 
-Callback* PolyHookPlugin::hookDetour(void* pFunc, std::string_view name, bool multiThreaded) {
+Callback* PolyHookPlugin::hookDetour(void* pFunc, std::string_view name) {
 	if (!pFunc) {
 		m_error = "Invalid func pointer";
 		Log::log("polyhook::hookDetour: " + m_error, ErrorLevel::SEV);
@@ -199,9 +179,9 @@ Callback* PolyHookPlugin::hookDetour(void* pFunc, std::string_view name, bool mu
 		return it->second.callback.get();
 	}
 
-	auto callback = std::make_unique<Callback>(Signature{.multiThreaded = multiThreaded, .name = name});
+	auto callback = std::make_unique<Callback>(Signature{.name = name});
 
-	uint64_t JIT = callback->getJitFunc(multiThreaded ? &MidCallback<true> : &MidCallback<false>);
+	uint64_t JIT = callback->getJitFunc(&MidCallback);
 
 	if (auto error = callback->getError(); !error.empty()) {
 		m_error = error;
@@ -241,7 +221,7 @@ Callback* PolyHookPlugin::hookVirtual(void* pClass, int index, const Signature& 
 	auto& [vtable, callbacks, redirectMap, origVFuncs, klass] = it->second;
 
 	auto& callback = callbacks.emplace(index, std::make_unique<Callback>(sig)).first->second;
-	uint64_t JIT = callback->getJitFunc(sig, sig.multiThreaded ? &PreCallback<true> : &PreCallback<false>, &PostCallback);
+	uint64_t JIT = callback->getJitFunc(sig, &PreCallback, &PostCallback);
 
 	if (auto error = callback->getError(); !error.empty()) {
 		m_error = error;
@@ -540,37 +520,34 @@ PLUGIFY_LINKAGE()
 
 extern "C" {
 	// Detour
-	PLUGIN_API Callback* HookDetour(void* pFunc, DataType returnType, const plg::vector<DataType>& arguments, int varIndex, bool multiThreaded, const plg::string& name) {
+	PLUGIN_API Callback* HookDetour(void* pFunc, DataType returnType, const plg::vector<DataType>& arguments, int varIndex, const plg::string& name) {
 		return g_polyHookPlugin.hookDetour(pFunc, Signature{
 			.arguments = arguments,
 			.returnType = returnType,
-			.multiThreaded = multiThreaded,
 			.varIndex = varIndex,
 			.name = name,
 		});
 	}
-	PLUGIN_API Callback* HookDetour2(void* pFunc, bool multiThreaded, const plg::string& name) {
-		return g_polyHookPlugin.hookDetour(pFunc, name, multiThreaded);
+	PLUGIN_API Callback* HookDetour2(void* pFunc, const plg::string& name) {
+		return g_polyHookPlugin.hookDetour(pFunc, name);
 	}
 	PLUGIN_API bool UnhookDetour(void* pFunc) {
 		return g_polyHookPlugin.unhookDetour(pFunc);
 	}
 
 	// Virtual (VTableSwapHook)
-	PLUGIN_API Callback* HookVirtualTable(void* pClass, int index, DataType returnType, const plg::vector<DataType>& arguments, int varIndex, bool multiThreaded, const plg::string& name) {
+	PLUGIN_API Callback* HookVirtualTable(void* pClass, int index, DataType returnType, const plg::vector<DataType>& arguments, int varIndex, const plg::string& name) {
 		return g_polyHookPlugin.hookVirtual<VTableSwapHook>(pClass, index, Signature{
 			.arguments = arguments,
 			.returnType = returnType,
-			.multiThreaded = multiThreaded,
 			.varIndex = varIndex,
 			.name = name,
 		});
 	}
-	PLUGIN_API Callback* HookVirtualTable2(void* pClass, void* pFunc, DataType returnType, const plg::vector<DataType>& arguments, int varIndex, bool multiThreaded, const plg::string& name) {
+	PLUGIN_API Callback* HookVirtualTable2(void* pClass, void* pFunc, DataType returnType, const plg::vector<DataType>& arguments, int varIndex, const plg::string& name) {
 		return g_polyHookPlugin.hookVirtual<VTableSwapHook>(pClass, pFunc, Signature{
 			.arguments = arguments,
 			.returnType = returnType,
-			.multiThreaded = multiThreaded,
 			.varIndex = varIndex,
 			.name = name,
 		});
@@ -583,20 +560,18 @@ extern "C" {
 	}
 
 	// Virtual (VFuncSwapHook)
-	PLUGIN_API Callback* HookVirtualFunc(void* pClass, int index, DataType returnType, const plg::vector<DataType>& arguments, int varIndex, bool multiThreaded, const plg::string& name) {
+	PLUGIN_API Callback* HookVirtualFunc(void* pClass, int index, DataType returnType, const plg::vector<DataType>& arguments, int varIndex, const plg::string& name) {
 		return g_polyHookPlugin.hookVirtual<VFuncSwapHook>(pClass, index, Signature{
 			.arguments = arguments,
 			.returnType = returnType,
-			.multiThreaded = multiThreaded,
 			.varIndex = varIndex,
 			.name = name,
 		});
 	}
-	PLUGIN_API Callback* HookVirtualFunc2(void* pClass, void* pFunc, DataType returnType, const plg::vector<DataType>& arguments, int varIndex, bool multiThreaded, const plg::string& name) {
+	PLUGIN_API Callback* HookVirtualFunc2(void* pClass, void* pFunc, DataType returnType, const plg::vector<DataType>& arguments, int varIndex, const plg::string& name) {
 		return g_polyHookPlugin.hookVirtual<VFuncSwapHook>(pClass, pFunc, Signature{
 			.arguments = arguments,
 			.returnType = returnType,
-			.multiThreaded = multiThreaded,
 			.varIndex = varIndex,
 			.name = name,
 		});

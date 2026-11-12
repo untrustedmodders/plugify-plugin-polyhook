@@ -116,12 +116,6 @@
           "default": -1
         },
         {
-          "type": "bool",
-          "name": "multiThreaded",
-          "description": "Marking callback as multi-threaded",
-          "default": false
-        },
-        {
           "type": "string",
           "name": "name",
           "description": "The debug name of hook for profiler and logging",
@@ -199,12 +193,6 @@
           "default": -1
         },
         {
-          "type": "bool",
-          "name": "multiThreaded",
-          "description": "Marking callback as multi-threaded",
-          "default": false
-        },
-        {
           "type": "string",
           "name": "name",
           "description": "The debug name of hook for profiler and logging",
@@ -253,12 +241,6 @@
           "name": "varIndex",
           "description": "Index of a first variadic argument or -1",
           "default": -1
-        },
-        {
-          "type": "bool",
-          "name": "multiThreaded",
-          "description": "Marking callback as multi-threaded",
-          "default": false
         },
         {
           "type": "string",
@@ -312,12 +294,6 @@
           "default": -1
         },
         {
-          "type": "bool",
-          "name": "multiThreaded",
-          "description": "Marking callback as multi-threaded",
-          "default": false
-        },
-        {
           "type": "string",
           "name": "name",
           "description": "The debug name of hook for profiler and logging",
@@ -366,12 +342,6 @@
           "name": "varIndex",
           "description": "Index of a first variadic argument or -1",
           "default": -1
-        },
-        {
-          "type": "bool",
-          "name": "multiThreaded",
-          "description": "Marking callback as multi-threaded",
-          "default": false
         },
         {
           "type": "string",
