@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.5.10](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.5.9...v2.5.10) (2026-11-12)
+
+
+### Bug Fixes
+
+* add thread protection ([2e74229](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/2e742296e0726f532666f1e8ec52acf5aa8b8fde))
+* add thread protection ([2e74229](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/2e742296e0726f532666f1e8ec52acf5aa8b8fde))
+* make storage static and use flatmap ([660a81f](https://github.com/untrustedmodders/plugify-plugin-polyhook/commit/660a81f18ea52644e212d158206374596e6d142e))
+
 ## [2.5.9](https://github.com/untrustedmodders/plugify-plugin-polyhook/compare/v2.5.8...v2.5.9) (2026-11-07)
 
 
